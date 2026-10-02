@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Ringkasan - Berdikari Wedding</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: '#0B4A3B',
+                        secondary: '#F3F4F6',
+                        accent: '#D4AF37'
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-gray-50 text-gray-800 font-sans flex h-screen overflow-hidden">
+    
+    <!-- Sidebar -->
+    <aside class="w-64 bg-primary text-white flex flex-col hidden md:flex">
+        <div class="p-6 border-b border-white/10">
+            <div class="flex items-center gap-2">
+                <i class="fas fa-rings text-accent text-2xl"></i>
+                <span class="font-bold text-lg tracking-wider">BERDIKARI<span class="font-light">VENDOR</span></span>
+            </div>
+        </div>
+        <nav class="flex-1 px-4 py-6 space-y-2">
+            <a href="#" class="flex items-center gap-3 px-4 py-3 bg-white/10 rounded-lg text-white font-medium">
+                <i class="fas fa-th-large w-5"></i> Dashboard Ringkasan
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-white/5 rounded-lg transition">
+                <i class="fas fa-box w-5"></i> Katalog Produk
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-white/5 rounded-lg transition">
+                <i class="fas fa-shopping-cart w-5"></i> Pesanan (Transaksi)
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-white/5 rounded-lg transition">
+                <i class="fas fa-users w-5"></i> Klien / Pelanggan
+            </a>
+            <a href="#" class="flex items-center gap-3 px-4 py-3 text-gray-300 hover:bg-white/5 rounded-lg transition">
+                <i class="fas fa-cog w-5"></i> Pengaturan
+            </a>
+        </nav>
+        <div class="p-4 border-t border-white/10">
+            <a href="index.html" class="flex items-center gap-3 px-4 py-2 text-sm text-gray-300 hover:text-white transition">
+                <i class="fas fa-arrow-left w-5"></i> Kembali ke Web Utama
+            </a>
+        </div>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+        <!-- Header -->
+        <header class="bg-white shadow-sm h-16 flex items-center justify-between px-8 z-10 shrink-0">
+            <h1 class="text-xl font-semibold">Dashboard Ringkasan</h1>
+            <div class="flex items-center gap-4">
+                <button class="text-gray-400 hover:text-gray-600"><i class="fas fa-bell"></i></button>
+                <div class="flex items-center gap-3 pl-4 border-l">
+                    <img src="https://ui-avatars.com/api/?name=Admin+Berdikari&background=0B4A3B&color=fff" class="w-8 h-8 rounded-full" alt="Profile">
+                    <span class="text-sm font-medium">Admin Berdikari</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Scrollable Content -->
+        <div class="flex-1 overflow-y-auto p-8 bg-gray-50">
+            
+            <!-- Stat Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 text-xl">
+                        <i class="fas fa-box-open"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Total Produk</p>
+                        <h3 class="text-2xl font-bold text-gray-800">45</h3>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center text-green-600 text-xl">
+                        <i class="fas fa-shopping-bag"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Pesanan Aktif</p>
+                        <h3 class="text-2xl font-bold text-gray-800">12</h3>
+                    </div>
+                </div>
+
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center text-yellow-600 text-xl">
+                        <i class="fas fa-eye"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Kunjungan Web</p>
+                        <h3 class="text-2xl font-bold text-gray-800">1,204</h3>
+                    </div>
+                </div>
+                
+                <div class="bg-white p-6 rounded-xl shadow-sm border border-gray-100 flex items-center gap-4">
+                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-purple-600 text-xl">
+                        <i class="fas fa-wallet"></i>
+                    </div>
+                    <div>
+                        <p class="text-sm text-gray-500 font-medium">Total Omzet</p>
+                        <h3 class="text-2xl font-bold text-gray-800">Rp 85M</h3>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Products Summary Table -->
+            <div class="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                <div class="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-white">
+                    <h2 class="font-semibold text-gray-800">Summary Produk / Layanan Anda</h2>
+                    <button class="bg-primary text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition"><i class="fas fa-plus mr-2"></i>Tambah Baru</button>
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead>
+                            <tr class="bg-gray-50 text-gray-500 text-sm border-b">
+                                <th class="px-6 py-4 font-medium">Nama Produk / Layanan</th>
+                                <th class="px-6 py-4 font-medium">Kategori</th>
+                                <th class="px-6 py-4 font-medium">Harga / Paket</th>
+                                <th class="px-6 py-4 font-medium">Ketersediaan</th>
+                                <th class="px-6 py-4 font-medium text-right">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-gray-100">
+                            <!-- Item 1 -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-lg bg-gray-200 overflow-hidden shrink-0">
+                                        <img src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?ixlib=rb-4.0.3&w=100&q=60" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-gray-800 block">Paket Tenda VIP & Dekorasi</span>
+                                        <span class="text-xs text-gray-400">SKU: TND-001</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600">Tenda & Dekorasi</td>
+                                <td class="px-6 py-4 font-semibold text-primary">Rp 15.000.000</td>
+                                <td class="px-6 py-4"><span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Tersedia</span></td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-gray-400 hover:text-blue-500 mx-1"><i class="fas fa-edit"></i></button>
+                                    <button class="text-gray-400 hover:text-red-500 mx-1"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <!-- Item 2 -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-lg bg-gray-200 overflow-hidden shrink-0">
+                                        <img src="https://images.unsplash.com/photo-1555244162-803834f70033?ixlib=rb-4.0.3&w=100&q=60" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-gray-800 block">Catering Premium 500 Pax</span>
+                                        <span class="text-xs text-gray-400">SKU: CTR-500</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600">Catering</td>
+                                <td class="px-6 py-4 font-semibold text-primary">Rp 25.000.000</td>
+                                <td class="px-6 py-4"><span class="px-2.5 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold">Tersedia</span></td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-gray-400 hover:text-blue-500 mx-1"><i class="fas fa-edit"></i></button>
+                                    <button class="text-gray-400 hover:text-red-500 mx-1"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                            <!-- Item 3 -->
+                            <tr class="hover:bg-gray-50 transition">
+                                <td class="px-6 py-4 flex items-center gap-3">
+                                    <div class="w-12 h-12 rounded-lg bg-gray-200 overflow-hidden shrink-0">
+                                        <img src="https://images.unsplash.com/photo-1549416878-b9ca95e26903?ixlib=rb-4.0.3&w=100&q=60" class="w-full h-full object-cover">
+                                    </div>
+                                    <div>
+                                        <span class="font-semibold text-gray-800 block">Makeup Artist (MUA) Pengantin</span>
+                                        <span class="text-xs text-gray-400">SKU: MUA-001</span>
+                                    </div>
+                                </td>
+                                <td class="px-6 py-4 text-gray-600">MUA / Tata Rias</td>
+                                <td class="px-6 py-4 font-semibold text-primary">Rp 4.000.000</td>
+                                <td class="px-6 py-4"><span class="px-2.5 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold">Bulan ini Penuh</span></td>
+                                <td class="px-6 py-4 text-right">
+                                    <button class="text-gray-400 hover:text-blue-500 mx-1"><i class="fas fa-edit"></i></button>
+                                    <button class="text-gray-400 hover:text-red-500 mx-1"><i class="fas fa-trash"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </main>
+</body>
+</html>
