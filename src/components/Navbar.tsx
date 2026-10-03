@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Heart, 
@@ -55,41 +55,62 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
 
-  // Dynamic Notifications State with Red Indicator
-  const [notifications, setNotifications] = useState([
-    {
-      id: 'notif-1',
-      title: 'Pesan Baru Concierge',
-      message: 'Halo! Tim Project Director NikaHub siap membantu konsultasi denah tenda VIP & katering.',
-      time: 'Baru saja',
-      unread: true,
-      type: 'chat' as const,
-      linkTo: 'chat' as ActivePage
-    },
-    {
-      id: 'notif-2',
-      title: 'Update Jadwal H-1 Ready',
-      message: 'Jadwal garansi serah terima tenda & panggung 100% siap H-1 pukul 14.00 WIB.',
-      time: '12m lalu',
-      unread: true,
-      type: 'system' as const,
-      linkTo: 'chat' as ActivePage
-    },
-    {
-      id: 'notif-3',
-      title: 'Koleksi Musim 2026',
-      message: 'Koleksi Tenda Transparan Sultan & Jamuan VIP sudah rilis di katalog.',
-      time: '1j lalu',
-      unread: false,
-      type: 'promo' as const,
-      linkTo: 'catalog' as ActivePage
-    }
-  ]);
+  // Dynamic Notifications State (Empty by default, populates only when user is logged in)
+  const [notifications, setNotifications] = useState<Array<{
+    id: string;
+    title: string;
+    message: string;
+    time: string;
+    unread: boolean;
+    type: 'chat' | 'system' | 'promo';
+    linkTo: ActivePage;
+  }>>([]);
 
-  const unreadCount = notifications.filter(n => n.unread).length;
+  // Sync notifications based on user login status
+  useEffect(() => {
+    if (user) {
+      try {
+        const key = `nikahub_notifs_${user.email.toLowerCase()}`;
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          setNotifications(JSON.parse(stored));
+        } else {
+          // Send initial welcome notification upon login
+          const welcomeNotif = [
+            {
+              id: `welcome-${Date.now()}`,
+              title: `Selamat Datang, ${user.name || 'Pengantin'}!`,
+              message: 'Akun Anda telah aktif terverifikasi. Tim Concierge NikaHub siap membantu konsultasi reservasi.',
+              time: 'Baru saja',
+              unread: true,
+              type: 'system' as const,
+              linkTo: 'chat' as ActivePage
+            }
+          ];
+          setNotifications(welcomeNotif);
+          localStorage.setItem(key, JSON.stringify(welcomeNotif));
+        }
+      } catch {
+        setNotifications([]);
+      }
+    } else {
+      // If no user is logged in, notifications must be strictly empty!
+      setNotifications([]);
+    }
+  }, [user]);
+
+  const unreadCount = user ? notifications.filter(n => n.unread).length : 0;
 
   const handleOpenNotification = (notif: typeof notifications[0]) => {
-    setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, unread: false } : n));
+    const updated = notifications.map(n => n.id === notif.id ? { ...n, unread: false } : n);
+    setNotifications(updated);
+    if (user) {
+      try {
+        localStorage.setItem(`nikahub_notifs_${user.email.toLowerCase()}`, JSON.stringify(updated));
+      } catch (e) {
+        console.error(e);
+      }
+    }
     setNotificationDropdownOpen(false);
     onPageChange(notif.linkTo);
   };
@@ -219,7 +240,9 @@ export const Navbar: React.FC<NavbarProps> = ({
                         <div>
                           <h4 className="font-serif font-bold text-sm text-emerald-950">Notifikasi & Update</h4>
                           <span className="text-[10px] text-gray-500 font-medium">
-                            {unreadCount > 0 ? `${unreadCount} notifikasi belum dibaca` : 'Semua notifikasi dibaca'}
+                            {!user 
+                              ? 'Silakan masuk akun terlebih dahulu' 
+                              : unreadCount > 0 ? `${unreadCount} notifikasi belum dibaca` : 'Kosong (0 notifikasi baru)'}
                           </span>
                         </div>
                       </div>
@@ -231,43 +254,74 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </button>
                     </div>
 
-                    {/* Notifications List */}
-                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
-                      {notifications.map((notif) => (
-                        <div
-                          key={notif.id}
-                          onClick={() => handleOpenNotification(notif)}
-                          className={`p-3 rounded-2xl border transition-all cursor-pointer flex gap-3 relative ${
-                            notif.unread
-                              ? 'bg-rose-50/40 border-rose-200/80 hover:bg-rose-50'
-                              : 'bg-[#FAF9F5] border-gray-100 hover:bg-sand/60'
-                          }`}
-                        >
-                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
-                            notif.type === 'chat' ? 'bg-emerald-950 text-champagne-300' : 'bg-champagne-100 text-emerald-950'
-                          }`}>
-                            {notif.type === 'chat' ? <MessageSquare className="w-4 h-4 text-champagne-400" /> : <Bell className="w-4 h-4 text-champagne-700" />}
-                          </div>
-
-                          <div className="flex-1 min-w-0 pr-3">
-                            <div className="flex items-center justify-between mb-0.5">
-                              <h5 className="font-bold text-xs text-emerald-950 truncate">{notif.title}</h5>
-                              <span className="text-[10px] text-gray-400 font-medium shrink-0 ml-1">{notif.time}</span>
-                            </div>
-                            <p className="text-[11px] text-emerald-950/75 leading-relaxed line-clamp-2">
-                              {notif.message}
-                            </p>
-                            <span className="text-[10px] font-bold text-emerald-900 hover:underline flex items-center gap-1 mt-1">
-                              <span>Buka Halaman Live Chat ↗</span>
-                            </span>
-                          </div>
-
-                          {notif.unread && (
-                            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 absolute top-3 right-3 shadow-xs animate-pulse" />
-                          )}
+                    {/* Content Area */}
+                    {!user ? (
+                      <div className="text-center py-6 px-3 space-y-3">
+                        <div className="w-12 h-12 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center mx-auto text-amber-600">
+                          <Lock className="w-6 h-6" />
                         </div>
-                      ))}
-                    </div>
+                        <div className="space-y-1">
+                          <h5 className="font-serif font-bold text-sm text-emerald-950">Belum Masuk Akun</h5>
+                          <p className="text-xs text-gray-500 max-w-xs mx-auto leading-relaxed">
+                            Tidak ada notifikasi yang tampil. Silakan masuk (login) ke akun Anda terlebih dahulu untuk melihat notifikasi pesanan & obrolan Concierge.
+                          </p>
+                        </div>
+                        <button
+                          onClick={() => {
+                            setNotificationDropdownOpen(false);
+                            onOpenLogin();
+                          }}
+                          className="px-5 py-2.5 rounded-full bg-emerald-950 text-sand hover:bg-emerald-900 font-bold text-xs uppercase tracking-wider transition-all cursor-pointer shadow-sm"
+                        >
+                          Masuk / Daftar Akun
+                        </button>
+                      </div>
+                    ) : notifications.length === 0 ? (
+                      <div className="text-center py-6 px-3 space-y-2">
+                        <div className="w-12 h-12 rounded-full bg-emerald-50 flex items-center justify-center mx-auto text-emerald-800">
+                          <Bell className="w-6 h-6" />
+                        </div>
+                        <h5 className="font-serif font-bold text-sm text-emerald-950">Kosong (Tidak Ada Notifikasi)</h5>
+                        <p className="text-xs text-gray-500">Belum ada notifikasi baru untuk akun Anda.</p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                        {notifications.map((notif) => (
+                          <div
+                            key={notif.id}
+                            onClick={() => handleOpenNotification(notif)}
+                            className={`p-3 rounded-2xl border transition-all cursor-pointer flex gap-3 relative ${
+                              notif.unread
+                                ? 'bg-rose-50/40 border-rose-200/80 hover:bg-rose-50'
+                                : 'bg-[#FAF9F5] border-gray-100 hover:bg-sand/60'
+                            }`}
+                          >
+                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                              notif.type === 'chat' ? 'bg-emerald-950 text-champagne-300' : 'bg-champagne-100 text-emerald-950'
+                            }`}>
+                              {notif.type === 'chat' ? <MessageSquare className="w-4 h-4 text-champagne-400" /> : <Bell className="w-4 h-4 text-champagne-700" />}
+                            </div>
+
+                            <div className="flex-1 min-w-0 pr-3">
+                              <div className="flex items-center justify-between mb-0.5">
+                                <h5 className="font-bold text-xs text-emerald-950 truncate">{notif.title}</h5>
+                                <span className="text-[10px] text-gray-400 font-medium shrink-0 ml-1">{notif.time}</span>
+                              </div>
+                              <p className="text-[11px] text-emerald-950/75 leading-relaxed line-clamp-2">
+                                {notif.message}
+                              </p>
+                              <span className="text-[10px] font-bold text-emerald-900 hover:underline flex items-center gap-1 mt-1">
+                                <span>Buka Halaman Live Chat ↗</span>
+                              </span>
+                            </div>
+
+                            {notif.unread && (
+                              <span className="w-2.5 h-2.5 rounded-full bg-rose-600 absolute top-3 right-3 shadow-xs animate-pulse" />
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    )}
 
                     {/* Footer Action to open Chat directly */}
                     <div className="pt-2 border-t border-gray-100">
