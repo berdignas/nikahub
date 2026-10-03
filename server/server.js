@@ -4,6 +4,13 @@ import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import nodemailer from 'nodemailer';
+import dns from 'dns';
+import net from 'net';
+
+// Force Linux / Node.js to prioritize IPv4 over unrouted IPv6
+if (dns.setDefaultResultOrder) {
+  dns.setDefaultResultOrder('ipv4first');
+}
 
 // Load Environment Variables from .env file
 dotenv.config();
@@ -28,6 +35,35 @@ const chatMessagesDB = new Map();
 
 // Helper: Send Real Email with Multiple Fallbacks (Forces IPv4 to prevent Linux IPv6 routing timeouts)
 const sendEmailWithFallback = async ({ from, to, subject, html }) => {
+  // If RESEND_API_KEY is configured, try HTTPS API first (100% bypasses any VPS SMTP port blocks)
+  const resendKey = process.env.RESEND_API_KEY;
+  if (resendKey) {
+    try {
+      console.log('📡 Mencoba mengirim email via Resend HTTPS API (Port 443)...');
+      const res = await fetch('https://api.resend.com/emails', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${resendKey}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          from: process.env.RESEND_FROM || 'Berdikari Wedding <onboarding@resend.dev>',
+          to: [to],
+          subject,
+          html
+        })
+      });
+      const data = await res.json();
+      if (res.ok && data.id) {
+        console.log(`✅ Sukses mengirim email via Resend API! ID: ${data.id}`);
+        return { success: true, via: 'Resend HTTPS API', result: data };
+      }
+      console.warn('⚠️ Resend API gagal:', data);
+    } catch (e) {
+      console.warn('⚠️ Resend API network error:', e.message);
+    }
+  }
+
   const user = process.env.SMTP_USER || process.env.GMAIL_USER;
   const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
 
@@ -36,10 +72,6 @@ const sendEmailWithFallback = async ({ from, to, subject, html }) => {
   }
 
   // List of fallback configurations to attempt:
-  // 1. Port 587 STARTTLS (IPv4 forced)
-  // 1. Port 465 SSL/TLS (Direct SSL, IPv4 forced)
-  // 2. Port 587 STARTTLS (IPv4 forced)
-  // 3. Service: 'gmail' (IPv4 forced)
   const configs = [
     {
       name: 'smtp.gmail.com:465 (SSL, IPv4)',
@@ -48,8 +80,8 @@ const sendEmailWithFallback = async ({ from, to, subject, html }) => {
       secure: true,
       auth: { user, pass },
       family: 4,
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
+      connectionTimeout: 6000,
+      greetingTimeout: 6000,
       socketTimeout: 8000,
       tls: { rejectUnauthorized: false }
     },
@@ -61,18 +93,29 @@ const sendEmailWithFallback = async ({ from, to, subject, html }) => {
       requireTLS: true,
       auth: { user, pass },
       family: 4,
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
+      connectionTimeout: 6000,
+      greetingTimeout: 6000,
       socketTimeout: 8000,
       tls: { rejectUnauthorized: false }
+    },
+    {
+      name: 'Google IP 172.253.118.108:465 (Direct IPv4 SSL)',
+      host: '172.253.118.108',
+      port: 465,
+      secure: true,
+      auth: { user, pass },
+      connectionTimeout: 6000,
+      greetingTimeout: 6000,
+      socketTimeout: 8000,
+      tls: { servername: 'smtp.gmail.com', rejectUnauthorized: false }
     },
     {
       name: 'service:gmail (IPv4)',
       service: 'gmail',
       auth: { user, pass },
       family: 4,
-      connectionTimeout: 5000,
-      greetingTimeout: 5000,
+      connectionTimeout: 6000,
+      greetingTimeout: 6000,
       socketTimeout: 8000
     }
   ];
@@ -145,6 +188,39 @@ app.get(['/api/test-email', '/test-email'], async (req, res) => {
       stack: err.stack
     });
   }
+});
+
+// Diagnostic Port Check Endpoint
+app.get(['/api/test-ports', '/test-ports'], async (req, res) => {
+  const checkPort = (host, port) => {
+    return new Promise((resolve) => {
+      const socket = new net.Socket();
+      socket.setTimeout(3500);
+      socket.on('connect', () => {
+        socket.destroy();
+        resolve({ host, port, status: 'OPEN' });
+      });
+      socket.on('timeout', () => {
+        socket.destroy();
+        resolve({ host, port, status: 'TIMEOUT_BLOCKED' });
+      });
+      socket.on('error', (err) => {
+        socket.destroy();
+        resolve({ host, port, status: `ERROR: ${err.message}` });
+      });
+      socket.connect(port, host);
+    });
+  };
+
+  const results = await Promise.all([
+    checkPort('smtp.gmail.com', 465),
+    checkPort('smtp.gmail.com', 587),
+    checkPort('172.253.118.108', 465),
+    checkPort('api.resend.com', 443),
+    checkPort('google.com', 443)
+  ]);
+
+  return res.json({ success: true, ports: results });
 });
 
 // REAL EMAIL VERIFICATION ENDPOINT (supports both /api/auth/send-verification-email and /auth/send-verification-email)
