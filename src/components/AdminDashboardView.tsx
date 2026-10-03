@@ -178,8 +178,52 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   // Orders State for Admin
   const [orders, setOrders] = useState<any[]>([]);
 
-  // Clients State
-  const [clients] = useState<any[]>([]);
+  // Clients State loaded dynamically from localStorage & API
+  const [clients, setClients] = useState<any[]>([]);
+
+  const refreshClientsList = () => {
+    try {
+      const storedStr = localStorage.getItem('nikahub_users');
+      let usersList: any[] = storedStr ? Object.values(JSON.parse(storedStr)) : [];
+      setClients(usersList);
+    } catch {
+      setClients([]);
+    }
+  };
+
+  React.useEffect(() => {
+    refreshClientsList();
+  }, [activeTab]);
+
+  const handleDeleteClientUser = async (userEmail: string, userName?: string) => {
+    const displayName = userName || userEmail;
+    if (!window.confirm(`Apakah Anda yakin ingin menghapus user/klien "${displayName}" (${userEmail}) dari database?`)) {
+      return;
+    }
+
+    // 1. Delete from LocalStorage
+    try {
+      const storedStr = localStorage.getItem('nikahub_users');
+      if (storedStr) {
+        const map = JSON.parse(storedStr);
+        delete map[userEmail.toLowerCase()];
+        localStorage.setItem('nikahub_users', JSON.stringify(map));
+      }
+    } catch (e) {
+      console.error('Failed deleting from local storage', e);
+    }
+
+    // 2. Delete from Backend API if connected
+    try {
+      await fetch(`http://localhost:5000/api/auth/users/${encodeURIComponent(userEmail)}`, {
+        method: 'DELETE'
+      }).catch(() => null);
+    } catch {
+      // ignore
+    }
+
+    refreshClientsList();
+  };
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
@@ -589,34 +633,82 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       {activeTab === 'clients' && (
         <div className="bg-white rounded-3xl p-6 border border-emerald-950/10 shadow-lg space-y-4">
           <div className="flex items-center justify-between pb-3 border-b border-gray-100">
-            <h3 className="font-serif font-bold text-xl text-emerald-950">Database Client Terdaftar</h3>
-            <span className="text-xs text-gray-500 font-medium">Total: {clients.length} Klien</span>
+            <div>
+              <h3 className="font-serif font-bold text-xl text-emerald-950">Database Client Terdaftar</h3>
+              <p className="text-xs text-gray-500">Kelola & hapus akun pengguna/klien terdaftar di sistem NikaHub Atelier.</p>
+            </div>
+            <span className="text-xs text-emerald-950 bg-emerald-100 border border-emerald-300 px-3 py-1 rounded-full font-bold">
+              Total: {clients.length} Klien
+            </span>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {clients.map((c, idx) => (
-              <div key={idx} className="p-4 rounded-2xl bg-sand/40 border border-sand-300 space-y-2 text-xs">
-                <div className="flex items-center justify-between">
-                  <strong className="font-bold text-sm text-emerald-950">{c.name}</strong>
-                  <span className="px-2 py-0.5 rounded-full bg-emerald-950 text-sand text-[10px] font-bold">Terverifikasi</span>
+          {clients.length === 0 ? (
+            <div className="py-12 text-center text-xs text-gray-400 space-y-2">
+              <Users className="w-8 h-8 mx-auto text-gray-300" />
+              <p>Belum ada client yang terdaftar saat ini.</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {clients.map((c, idx) => (
+                <div key={idx} className="p-4 rounded-2xl bg-sand/40 border border-sand-300 space-y-3 text-xs relative group shadow-xs">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <div className="w-8 h-8 rounded-full bg-emerald-950 text-sand font-bold text-xs flex items-center justify-center shrink-0 uppercase">
+                        {(c.name || c.email).charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <strong className="font-bold text-sm text-emerald-950 truncate block">{c.name || c.email.split('@')[0]}</strong>
+                        <span className="text-[10px] text-gray-500 truncate block">{c.email}</span>
+                      </div>
+                    </div>
+
+                    <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${
+                      c.isVerified !== false ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800'
+                    }`}>
+                      {c.isVerified !== false ? 'Terverifikasi' : 'Pending'}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1 text-[11px] text-emerald-950/80 bg-white/70 p-2.5 rounded-xl border border-gray-100">
+                    <p>📞 <strong>WA:</strong> {c.phone || '-'}</p>
+                    <p>📅 <strong>Rencana Acara:</strong> {c.eventDate || 'Belum ditentukan'}</p>
+                    <p>👥 <strong>Estimasi Tamu:</strong> {c.guestEstimate || '500 Pax'}</p>
+                    {c.createdAt && (
+                      <p className="text-[10px] text-gray-400 pt-1 border-t border-gray-100">
+                        Terdaftar: {new Date(c.createdAt).toLocaleDateString('id-ID', { day: 'numeric', month: 'short', year: 'numeric' })}
+                      </p>
+                    )}
+                  </div>
+
+                  {/* Actions */}
+                  <div className="pt-2 border-t border-gray-200 flex items-center justify-between gap-2">
+                    {c.phone ? (
+                      <a
+                        href={`https://wa.me/${c.phone}?text=Halo%20${encodeURIComponent(c.name || 'Pengantin')},%20kami%20dari%20Tim%20NikaHub%20Atelier`}
+                        target="_blank"
+                        rel="noreferrer"
+                        className="px-3 py-1.5 rounded-xl bg-emerald-950 text-sand font-bold text-[11px] hover:bg-emerald-900 transition-colors flex items-center gap-1.5"
+                      >
+                        <PhoneCall className="w-3.5 h-3.5 text-champagne-400" />
+                        <span>Chat WA</span>
+                      </a>
+                    ) : (
+                      <span className="text-[10px] text-gray-400">No WA -</span>
+                    )}
+
+                    <button
+                      onClick={() => handleDeleteClientUser(c.email, c.name)}
+                      className="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-600 hover:bg-rose-600 hover:text-white font-bold text-[11px] transition-colors flex items-center gap-1 cursor-pointer"
+                      title="Hapus Klien Ini"
+                    >
+                      <Trash2 className="w-3.5 h-3.5" />
+                      <span>Hapus User</span>
+                    </button>
+                  </div>
                 </div>
-                <p className="text-emerald-950/70">{c.email}</p>
-                <p className="text-emerald-950/70">WA: {c.phone}</p>
-                <div className="pt-2 border-t border-gray-200 flex items-center justify-between text-[11px] text-gray-500">
-                  <span>Terdaftar: {c.registered}</span>
-                  <a
-                    href={`https://wa.me/${c.phone}?text=Halo%20${encodeURIComponent(c.name)},%20kami%20dari%20Tim%20NikaHub%20Atelier`}
-                    target="_blank"
-                    rel="noreferrer"
-                    className="font-bold text-emerald-950 hover:underline flex items-center gap-1"
-                  >
-                    <PhoneCall className="w-3 h-3 text-champagne-700" />
-                    <span>Chat WA</span>
-                  </a>
-                </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
       )}
 

@@ -3,6 +3,7 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import nodemailer from 'nodemailer';
 
 // Load Environment Variables from .env file
 dotenv.config();
@@ -25,6 +26,23 @@ const usersDB = new Map();
 const ordersDB = [];
 const chatMessagesDB = new Map();
 
+// Helper: Setup Nodemailer Transporter for sending real emails
+const createTransporter = () => {
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.SMTP_PORT || '587');
+  const user = process.env.SMTP_USER || process.env.GMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
+
+  if (user && pass) {
+    return nodemailer.createTransport({
+      host,
+      port,
+      secure: port === 465,
+      auth: { user, pass }
+    });
+  }
+  return null;
+};
 
 // ==========================================
 // REST API ROUTES
@@ -37,8 +55,89 @@ app.get('/api/health', (req, res) => {
     app: 'NikaHub Wedding Atelier API',
     environment: process.env.NODE_ENV || 'development',
     whatsappNumber: WHATSAPP_NUMBER,
+    smtpConfigured: !!(process.env.SMTP_USER || process.env.GMAIL_USER),
     timestamp: new Date().toISOString()
   });
+});
+
+// REAL EMAIL VERIFICATION ENDPOINT
+app.post('/api/auth/send-verification-email', async (req, res) => {
+  const { email, name, code } = req.body;
+
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ success: false, message: 'Alamat Email tidak valid!' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  const verifyCode = code || Math.floor(100000 + Math.random() * 900000).toString();
+  const userName = name || cleanEmail.split('@')[0];
+  const siteUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const verifyLink = `${siteUrl}/?verify_email=${encodeURIComponent(cleanEmail)}&code=${verifyCode}`;
+
+  const transporter = createTransporter();
+
+  const htmlTemplate = `
+    <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #FAF9F5; color: #064e3b;">
+      <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #064e3b;">
+        <h2 style="margin: 0; color: #064e3b; font-family: Georgia, serif; font-size: 26px;">✨ NIKAHUB ATELIER</h2>
+        <p style="margin: 6px 0 0; font-size: 11px; color: #b45309; font-weight: bold; letter-spacing: 1px; text-transform: uppercase;">Surat Verifikasi Email Resmi</p>
+      </div>
+      <div style="padding: 24px 0; line-height: 1.6;">
+        <p style="font-size: 15px;">Halo <strong>${userName}</strong>,</p>
+        <p style="font-size: 13px; color: #1f2937;">Terima kasih telah mendaftar di <strong>NikaHub Atelier & Wedding Service</strong>. Untuk menyelesaikan pendaftaran dan mengaktifkan akun Anda, silakan gunakan kode verifikasi di bawah ini:</p>
+        <div style="text-align: center; margin: 28px 0;">
+          <span style="font-size: 32px; font-weight: bold; letter-spacing: 8px; background-color: #064e3b; color: #fef3c7; padding: 14px 32px; border-radius: 14px; display: inline-block; box-shadow: 0 4px 12px rgba(6,78,59,0.2);">
+            ${verifyCode}
+          </span>
+        </div>
+        <p style="text-align: center; font-size: 13px; color: #4b5563; margin-top: 10px;">Atau klik tombol konfirmasi langsung di bawah ini:</p>
+        <div style="text-align: center; margin: 20px 0;">
+          <a href="${verifyLink}" style="background-color: #064e3b; color: #ffffff; text-decoration: none; padding: 14px 28px; border-radius: 30px; font-weight: bold; display: inline-block; font-size: 13px;">
+            Verifikasi Email Saya Sekarang →
+          </a>
+        </div>
+      </div>
+      <div style="border-top: 1px solid #e5e7eb; padding-top: 16px; text-align: center; font-size: 11px; color: #9ca3af;">
+        © 2026 NikaHub Atelier & Berdikari Wedding Luxury. All rights reserved.
+      </div>
+    </div>
+  `;
+
+  if (transporter) {
+    try {
+      await transporter.sendMail({
+        from: process.env.SMTP_FROM || `"NikaHub Atelier" <${process.env.SMTP_USER || process.env.GMAIL_USER}>`,
+        to: cleanEmail,
+        subject: `[NikaHub Atelier] Kode Verifikasi Email Anda: ${verifyCode}`,
+        html: htmlTemplate
+      });
+
+      console.log(`✅ Real Email sent successfully via SMTP to ${cleanEmail}`);
+      return res.json({
+        success: true,
+        sentRealEmail: true,
+        code: verifyCode,
+        message: `Email verifikasi asli telah berhasil dikirim ke ${cleanEmail}!`
+      });
+    } catch (err) {
+      console.error('⚠️ SMTP Mail error:', err.message);
+      return res.json({
+        success: true,
+        sentRealEmail: false,
+        code: verifyCode,
+        message: `Email verifikasi siap dikirim. Set SMTP_USER & SMTP_PASS di server/.env untuk pengiriman asli via Gmail.`,
+        error: err.message
+      });
+    }
+  } else {
+    console.log(`\n📧 [SIMULASI EMAIL TERKIRIM KE ${cleanEmail}]: Kode Verifikasi: ${verifyCode}\nLink: ${verifyLink}\n(Set SMTP_USER & SMTP_PASS di server/.env untuk kirim email nyata via Gmail)\n`);
+    return res.json({
+      success: true,
+      sentRealEmail: false,
+      code: verifyCode,
+      message: `Kode verifikasi ${verifyCode} dibuat untuk ${cleanEmail}.`
+    });
+  }
 });
 
 // 1. Pendaftaran User Baru dengan Pertanyaan Sederhana
@@ -134,6 +233,22 @@ app.get('/api/auth/me', (req, res) => {
   }
 
   return res.json({ success: true, user });
+});
+
+// 3b. Get All Registered Users (Admin User Management)
+app.get('/api/auth/users', (req, res) => {
+  const usersList = Array.from(usersDB.values());
+  return res.json({ success: true, count: usersList.length, users: usersList });
+});
+
+// 3c. Delete User by Email (Admin User Management)
+app.delete('/api/auth/users/:email', (req, res) => {
+  const cleanEmail = decodeURIComponent(req.params.email).toLowerCase();
+  if (usersDB.has(cleanEmail)) {
+    usersDB.delete(cleanEmail);
+    return res.json({ success: true, message: `User ${cleanEmail} berhasil dihapus.` });
+  }
+  return res.status(404).json({ success: false, message: 'User tidak ditemukan.' });
 });
 
 // 4. Submit Booking Order (Menu CO)
