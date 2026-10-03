@@ -654,7 +654,7 @@ export const ProfileDetailView: React.FC<ProfileDetailViewProps> = ({
                 </button>
 
                 <a
-                  href={`https://wa.me/6281234567890?text=${waMessage}`}
+                  href={`https://wa.me/qr/XCPMCWREYZVOM1`}
                   target="_blank"
                   rel="noreferrer"
                   className="w-full py-3.5 rounded-full bg-champagne-400 hover:bg-champagne-300 text-emerald-950 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all cursor-pointer shadow-sm text-center"
@@ -814,3 +814,4 @@ export const ProfileDetailView: React.FC<ProfileDetailViewProps> = ({
     </div>
   );
 };
+

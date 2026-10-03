@@ -214,7 +214,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
                   </button>
 
                   <a
-                    href={`https://wa.me/6281234567890?text=${waMessage}`}
+                    href={`https://wa.me/qr/XCPMCWREYZVOM1`}
                     target="_blank"
                     rel="noreferrer"
                     className="py-3 px-6 rounded-full bg-champagne-500 hover:bg-champagne-400 text-emerald-950 transition-colors font-semibold text-xs sm:text-sm flex items-center justify-center gap-2 active:scale-95"
@@ -234,3 +234,4 @@ export const ProductModal: React.FC<ProductModalProps> = ({
     </AnimatePresence>
   );
 };
+

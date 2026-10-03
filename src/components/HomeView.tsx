@@ -563,7 +563,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
               <a
-                href="https://wa.me/6281234567890?text=Halo%20NikaHub%20Wedding,%20saya%20ingin%20cek%20ketersediaan%20slot%20tanggal%20pernikahan"
+                href="https://wa.me/qr/XCPMCWREYZVOM1"
                 target="_blank"
                 rel="noreferrer"
                 className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-champagne-400 hover:bg-champagne-300 text-emerald-950 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
@@ -627,3 +627,4 @@ export const HomeView: React.FC<HomeViewProps> = ({
     </div>
   );
 };
+

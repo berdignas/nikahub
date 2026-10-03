@@ -78,7 +78,7 @@ export const Footer: React.FC = () => {
               <a href="#" className="w-9 h-9 rounded-full bg-white/5 hover:bg-champagne-400 hover:text-emerald-950 flex items-center justify-center transition-colors text-sand/80">
                 <Facebook className="w-4 h-4" />
               </a>
-              <a href="https://wa.me/6281234567890" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-white/5 hover:bg-champagne-400 hover:text-emerald-950 flex items-center justify-center transition-colors text-sand/80">
+              <a href="https://wa.me/qr/XCPMCWREYZVOM1" target="_blank" rel="noreferrer" className="w-9 h-9 rounded-full bg-white/5 hover:bg-champagne-400 hover:text-emerald-950 flex items-center justify-center transition-colors text-sand/80">
                 <Phone className="w-4 h-4" />
               </a>
             </div>
@@ -143,3 +143,4 @@ export const Footer: React.FC = () => {
     </footer>
   );
 };
+

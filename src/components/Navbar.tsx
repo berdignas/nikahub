@@ -341,7 +341,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <button
                         onClick={() => {
                           setNotificationDropdownOpen(false);
-                          onPageChange('chat');
+                          window.open('https://wa.me/qr/XCPMCWREYZVOM1', '_blank');
                         }}
                         className="w-full py-2.5 rounded-full bg-emerald-950 text-sand hover:bg-emerald-900 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
                       >
@@ -388,7 +388,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                       <div className="space-y-1">
                         <button
                           onClick={() => {
-                            onPageChange('chat');
+                            window.open('https://wa.me/qr/XCPMCWREYZVOM1', '_blank');
                             setUserDropdownOpen(false);
                           }}
                           className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-950/5 flex items-center gap-2 transition-colors cursor-pointer"
@@ -521,7 +521,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="pt-3 border-t border-emerald-950/10 space-y-2">
               <button
                 onClick={() => {
-                  onPageChange('chat');
+                  window.open('https://wa.me/qr/XCPMCWREYZVOM1', '_blank');
                   setMobileMenuOpen(false);
                 }}
                 className="w-full py-3.5 rounded-full bg-emerald-950 text-sand font-bold text-xs flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform relative"
@@ -546,7 +546,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           animate={{ scale: 1, opacity: 1 }}
           whileHover={{ scale: 1.05 }}
           whileTap={{ scale: 0.95 }}
-          onClick={() => onPageChange('chat')}
+          onClick={() => window.open('https://wa.me/qr/XCPMCWREYZVOM1', '_blank')}
           className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full bg-emerald-950 text-sand shadow-2xl border border-champagne-400/30 flex items-center gap-2.5 hover:bg-emerald-900 transition-all cursor-pointer group active:scale-95"
           aria-label="Live Chat Concierge"
         >
@@ -569,3 +569,4 @@ export const Navbar: React.FC<NavbarProps> = ({
 };
 
 export default Navbar;
+

@@ -60,7 +60,7 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
 
     const msg = `Halo Tim Concierge NikaHub Wedding,\n\nSaya (${user.name || user.email}) ingin memesan dan mengajukan verifikasi jadwal sewa untuk paket berikut:\n\n${itemsSummary}\n\n*Email Akun:* ${user.email}\n*Estimasi Total Biaya:* ${formatRupiah(totalPrice)}\n\n📅 *Rencana Tanggal Acara:* ${eventDate}\n📍 *Kota/Lokasi Acara:* ${eventCity}\n📝 *Catatan Ukuran/Gedung:* ${eventNotes || 'Belum ada catatan khusus'}\n\nMohon bantu cek ketersediaan slot tanggal dan jadwal survey lokasi bersama tim NikaHub. Terima kasih!`;
 
-    const url = `https://wa.me/6281234567890?text=${encodeURIComponent(msg)}`;
+    const url = `https://wa.me/qr/XCPMCWREYZVOM1`;
     window.open(url, '_blank');
   };
 
@@ -298,3 +298,4 @@ export const CartDrawer: React.FC<CartDrawerProps> = ({
     </AnimatePresence>
   );
 };
+

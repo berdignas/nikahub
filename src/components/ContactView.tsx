@@ -85,7 +85,7 @@ export const ContactView: React.FC = () => {
 
     const text = `Halo NikaHub Wedding,%0ANama: ${encodeURIComponent(name)}%0ANo WhatsApp: ${encodeURIComponent(phone)}%0AJenis Temu: ${encodeURIComponent(meetingType)}%0ARencana Tanggal: ${encodeURIComponent(preferredDate || '-')}%0AEstimasi Tamu: ${encodeURIComponent(guestEstimate)} pax%0ACatatan: ${encodeURIComponent(notes || '-')}`;
     
-    window.open(`https://wa.me/6281234567890?text=${text}`, '_blank');
+    window.open(`https://wa.me/qr/XCPMCWREYZVOM1`, '_blank');
     setSubmitted(true);
   };
 
@@ -223,7 +223,7 @@ export const ContactView: React.FC = () => {
 
             <div className="pt-4 border-t border-gray-100">
               <a
-                href="https://wa.me/6281234567890?text=Halo%20NikaHub%20Wedding,%20saya%20ingin%20konsultasi%20langsung%20seputar%20paket%20pernikahan"
+                href="https://wa.me/qr/XCPMCWREYZVOM1"
                 target="_blank"
                 rel="noreferrer"
                 className="w-full py-4 rounded-full bg-emerald-950 hover:bg-emerald-900 text-sand font-bold text-xs flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-md"
@@ -444,3 +444,4 @@ export const ContactView: React.FC = () => {
     </div>
   );
 };
+

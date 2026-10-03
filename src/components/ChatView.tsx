@@ -242,7 +242,7 @@ export const ChatView: React.FC<ChatViewProps> = ({
               Layanan Resmi NikaHub Atelier
             </span>
             <a
-              href="https://wa.me/6281234567890?text=Halo%20NikaHub,%20saya%20ingin%20konsultasi"
+              href="https://wa.me/qr/XCPMCWREYZVOM1"
               target="_blank"
               rel="noreferrer"
               className="text-emerald-900 font-bold hover:underline flex items-center gap-1"
@@ -258,3 +258,4 @@ export const ChatView: React.FC<ChatViewProps> = ({
     </div>
   );
 };
+
