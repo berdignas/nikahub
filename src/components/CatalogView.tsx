@@ -166,66 +166,64 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
       <div className="max-w-7xl mx-auto px-4 sm:px-6 mt-10">
 
-        {/* 1. TIER 1: PRIMARY CATEGORY TABS (RAPI & TIDAK KEPANJANGAN) */}
-        <div className="bg-white p-3 sm:p-4 rounded-3xl border border-emerald-950/10 shadow-sm mb-6">
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar pb-1">
-            {MAIN_CATEGORY_GROUPS.map((group) => {
-              const isActive = activeCategory === group.id;
-              const count = getProductCount(group.id);
-
-              return (
-                <button
-                  key={group.id}
-                  onClick={() => handleSelectGroup(group.id)}
-                  className={`flex items-center gap-2.5 px-5 py-3 rounded-2xl text-xs font-bold transition-all shrink-0 cursor-pointer ${
-                    isActive 
-                      ? 'bg-emerald-950 text-sand shadow-md' 
-                      : 'bg-[#FAF9F5] text-emerald-950/80 hover:bg-gray-100 hover:text-emerald-950'
-                  }`}
+        {/* 1. FILTER KATALOG BERBENTUK DROPDOWN (TANPA GULIR KE SAMPING) */}
+        <div className="bg-white p-4 sm:p-6 rounded-2xl sm:rounded-3xl border border-emerald-950/10 shadow-sm mb-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-center">
+            
+            {/* Primary Category Group Dropdown Select */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-emerald-950/70 flex items-center gap-1.5">
+                <SlidersHorizontal className="w-3.5 h-3.5 text-champagne-700" />
+                Pilih Kategori Utama:
+              </label>
+              <div className="relative">
+                <select
+                  value={activeCategory}
+                  onChange={(e) => handleSelectGroup(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-[#FAF9F5] border border-emerald-950/15 font-bold text-xs sm:text-sm text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 appearance-none cursor-pointer pr-10 shadow-xs"
                 >
-                  <span className={isActive ? 'text-champagne-400' : 'text-champagne-700'}>
-                    {getCategoryIcon(group.iconName)}
-                  </span>
-                  <span>{group.label}</span>
-                  <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                    isActive ? 'bg-white/15 text-champagne-300' : 'bg-gray-200/70 text-gray-600'
-                  }`}>
-                    {count}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-
-          {/* 2. TIER 2: SUB-CATEGORY CHIPS (MENYESUAIKAN DENGAN KATEGORI INDUK) */}
-          <div className="mt-3 pt-3 border-t border-gray-100 flex flex-wrap items-center justify-between gap-3">
-            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
-              <span className="text-[11px] font-bold text-gray-400 uppercase tracking-wider shrink-0 mr-1 hidden sm:inline">
-                Spesifik:
-              </span>
-              {currentGroup.subCategories.map((sub) => {
-                const isSubActive = activeSubCategory === sub.id;
-
-                return (
-                  <button
-                    key={sub.id}
-                    onClick={() => setActiveSubCategory(sub.id)}
-                    className={`px-3.5 py-1.5 rounded-full text-xs font-semibold transition-all shrink-0 cursor-pointer ${
-                      isSubActive 
-                        ? 'bg-champagne-400 text-emerald-950 shadow-xs' 
-                        : 'bg-white border border-gray-200 text-emerald-950/70 hover:border-emerald-950 hover:text-emerald-950'
-                    }`}
-                  >
-                    {sub.label}
-                  </button>
-                );
-              })}
+                  {MAIN_CATEGORY_GROUPS.map((group) => {
+                    const count = getProductCount(group.id);
+                    return (
+                      <option key={group.id} value={group.id}>
+                        {group.label} ({count} Layanan)
+                      </option>
+                    );
+                  })}
+                </select>
+                <ChevronRight className="w-4 h-4 text-emerald-950/60 absolute right-3.5 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none" />
+              </div>
             </div>
 
-            <p className="text-[11px] text-gray-500 italic hidden lg:block">
-              {currentGroup.description}
-            </p>
+            {/* Sub-Category Dropdown Select */}
+            <div className="space-y-1.5">
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-emerald-950/70 flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-champagne-700" />
+                Filter Spesifik Sub-Kategori:
+              </label>
+              <div className="relative">
+                <select
+                  value={activeSubCategory}
+                  onChange={(e) => setActiveSubCategory(e.target.value)}
+                  className="w-full px-4 py-3 rounded-2xl bg-white border border-gray-200 font-semibold text-xs sm:text-sm text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 appearance-none cursor-pointer pr-10 shadow-xs"
+                >
+                  {currentGroup.subCategories.map((sub) => (
+                    <option key={sub.id} value={sub.id}>
+                      {sub.label}
+                    </option>
+                  ))}
+                </select>
+                <ChevronRight className="w-4 h-4 text-emerald-950/60 absolute right-3.5 top-1/2 -translate-y-1/2 rotate-90 pointer-events-none" />
+              </div>
+            </div>
+
           </div>
+
+          {currentGroup.description && (
+            <p className="text-[11px] text-gray-500 italic mt-3 pt-3 border-t border-gray-100">
+              * {currentGroup.description}
+            </p>
+          )}
         </div>
 
         {/* 3. SEARCH & SORT TOOLBAR */}
