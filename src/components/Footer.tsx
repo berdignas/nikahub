@@ -132,10 +132,14 @@ export const Footer: React.FC = () => {
         {/* Bottom Credits */}
         <div className="pt-8 flex flex-col sm:flex-row items-center justify-between text-xs text-sand/50 gap-4 font-sans">
           <p>Â© 2026 NikaHub Wedding Atelier. All rights reserved.</p>
-          <div className="flex gap-6">
+          <div className="flex gap-6 items-center flex-wrap">
             <a href="#" className="hover:text-sand transition-colors">Syarat & Ketentuan</a>
             <a href="#" className="hover:text-sand transition-colors">Kebijakan Privasi Klien</a>
             <a href="#" className="hover:text-sand transition-colors">Pendaftaran Mitra Vendor</a>
+            <a href="#login-berdignas-nikahub" onClick={() => window.location.hash = 'login-berdignas-nikahub'} className="hover:text-champagne-300 transition-colors flex items-center gap-1 font-semibold text-sand/70">
+              <ShieldCheck className="w-3.5 h-3.5 text-champagne-400" />
+              <span>Admin Portal</span>
+            </a>
           </div>
         </div>
 

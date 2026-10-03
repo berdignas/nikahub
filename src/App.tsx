@@ -83,13 +83,19 @@ export function App() {
     }
   }, [currentPage]);
 
-  // Secret URL Route Detector (/login-berdignas-nikahub) & Mobile Hardware Back Navigation
+  // Secret URL Route Detector (/login-berdignas-nikahub, #login-berdignas-nikahub, ?login-berdignas-nikahub) & Mobile Hardware Back Navigation
   useEffect(() => {
     const checkSecretRoute = () => {
       const path = window.location.pathname;
       const hash = window.location.hash;
+      const search = window.location.search;
 
-      if (path.includes('login-berdignas-nikahub') || hash.includes('login-berdignas-nikahub')) {
+      if (
+        path.includes('login-berdignas-nikahub') ||
+        hash.includes('login-berdignas-nikahub') ||
+        search.includes('login-berdignas-nikahub') ||
+        search.includes('admin')
+      ) {
         const isAdminAuth = sessionStorage.getItem('nikahub_admin_session') === 'authenticated';
         return isAdminAuth ? ('admin-dashboard' as ActivePage) : ('admin-login' as ActivePage);
       }
