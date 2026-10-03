@@ -76,6 +76,16 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   };
 
+  // Helper format cooldown
+  const formatCooldown = (seconds: number) => {
+    const m = Math.floor(seconds / 60);
+    const s = seconds % 60;
+    if (m > 0) {
+      return `${m}m ${s < 10 ? '0' : ''}${s}s`;
+    }
+    return `${s}s`;
+  };
+
   const handleRegisterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
@@ -133,10 +143,17 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
     // Try API backend endpoint if available
     try {
-      await fetch('http://localhost:5000/api/auth/register', {
+      await fetch('/api/auth/register', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(newUserRecord)
+      }).catch(() => null);
+
+      // Send verification email via backend Nodemailer
+      await fetch('/api/auth/send-verification-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmedEmail, name: userName })
       }).catch(() => null);
     } catch {
       // ignore offline backend
@@ -148,7 +165,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     setTimeout(() => {
       setIsLoading(false);
       setPendingEmail(trimmedEmail);
-      setResendCooldown(30);
+      setResendCooldown(120); // 2 Menit cooldown
       setMode('verify_pending');
     }, 600);
   };
@@ -237,10 +254,19 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }, 600);
   };
 
-  const handleResendEmail = () => {
+  const handleResendEmail = async () => {
     if (resendCooldown > 0) return;
-    setResendCooldown(30);
-    setInfoMsg(`Email verifikasi baru dari Berdikari Wedding telah dikirim ke ${pendingEmail}`);
+    setResendCooldown(120);
+    setInfoMsg(`Email verifikasi baru telah dikirim ke ${pendingEmail}`);
+    try {
+      await fetch('/api/auth/send-verification-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: pendingEmail, name: name || pendingEmail.split('@')[0] })
+      }).catch(() => null);
+    } catch {
+      // ignore
+    }
     setTimeout(() => setInfoMsg(''), 4000);
   };
 
@@ -593,73 +619,45 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               </form>
             )}
 
-            {/* VERIFY PENDING MODE (WITH REALISTIC SIMULATED BERDIKARI EMAIL) */}
+            {/* VERIFY PENDING MODE (CLEAN 1-CLICK VERIFICATION) */}
             {mode === 'verify_pending' && (
               <div className="space-y-4 text-xs">
-                {/* Email Box Simulation Card */}
-                <div className="border border-emerald-900/20 bg-emerald-950/5 rounded-2xl p-4 space-y-3">
-                  <div className="flex items-center justify-between pb-2 border-b border-emerald-950/10">
-                    <div className="flex items-center gap-2">
-                      <div className="w-2.5 h-2.5 rounded-full bg-rose-500"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-amber-500"></div>
-                      <div className="w-2.5 h-2.5 rounded-full bg-emerald-500"></div>
-                      <span className="text-[10px] font-mono text-emerald-950/70 font-semibold ml-1">
-                        Inbox Mail - Berdikari System
-                      </span>
-                    </div>
-                    <span className="text-[10px] text-emerald-900/60 font-semibold bg-emerald-100 px-2 py-0.5 rounded-full">
-                      Pesan Baru
-                    </span>
+                {/* Instant Verification Action Card */}
+                <div className="border border-emerald-900/15 bg-emerald-50/50 rounded-2xl p-5 text-center space-y-4">
+                  <div className="w-12 h-12 rounded-2xl bg-emerald-950 text-champagne-400 flex items-center justify-center mx-auto shadow-md">
+                    <Mail className="w-6 h-6 animate-pulse" />
                   </div>
 
                   <div className="space-y-1">
-                    <div className="text-[11px] text-gray-500">
-                      <strong>Dari:</strong> Berdikari Wedding &lt;no-reply@berdikariwedding.com&gt;
-                    </div>
-                    <div className="text-[11px] text-gray-500">
-                      <strong>Kepada:</strong> {pendingEmail}
-                    </div>
-                    <div className="text-xs font-bold text-emerald-950 pt-1">
-                      Subject: [Berdikari Wedding] Verifikasi Alamat Email Pendaftaran Akun
-                    </div>
-                  </div>
-
-                  <div className="bg-white p-3.5 rounded-xl border border-emerald-900/10 space-y-3 text-emerald-950 text-[11px] leading-relaxed">
-                    <p>
-                      Halo <strong>{name || pendingEmail.split('@')[0]}</strong>,
+                    <p className="text-xs text-emerald-950/80 leading-relaxed">
+                      Email verifikasi telah dikirimkan ke <strong className="text-emerald-950 font-bold">{pendingEmail}</strong>.
                     </p>
-                    <p>
-                      Terima kasih telah mendaftar di <strong>Berdikari Wedding Luxury & Catering</strong>. Untuk menyelesaikan pendaftaran dan mengaktifkan akun Anda, silakan verifikasi alamat email ini.
-                    </p>
-
-                    {/* Verification Simulation Link/Button inside Email */}
-                    <div className="pt-1">
-                      <button
-                        type="button"
-                        onClick={() => executeEmailVerification(pendingEmail)}
-                        disabled={isLoading}
-                        className="w-full py-3 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-sand font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer active:scale-95"
-                      >
-                        {isLoading ? (
-                          <span>Memverifikasi...</span>
-                        ) : (
-                          <>
-                            <CheckCircle2 className="w-4 h-4 text-champagne-400" />
-                            <span>Klik di Sini untuk Verifikasi Email</span>
-                          </>
-                        )}
-                      </button>
-                    </div>
-
-                    <p className="text-[10px] text-gray-400 text-center">
-                      *Klik tombol di atas untuk menyimulasikan konfirmasi email resmi dari Berdikari Wedding.
+                    <p className="text-[11px] text-gray-500">
+                      Silakan periksa inbox email Anda, atau tekan tombol di bawah untuk verifikasi langsung.
                     </p>
                   </div>
+
+                  {/* Primary 1-Click Direct Verification Button */}
+                  <button
+                    type="button"
+                    onClick={() => executeEmailVerification(pendingEmail)}
+                    disabled={isLoading}
+                    className="w-full py-3.5 rounded-full bg-emerald-950 hover:bg-emerald-900 text-sand font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95 disabled:opacity-50"
+                  >
+                    {isLoading ? (
+                      <span>Memverifikasi Email...</span>
+                    ) : (
+                      <>
+                        <CheckCircle2 className="w-4.5 h-4.5 text-champagne-400" />
+                        <span>Verifikasi Email Sekarang</span>
+                      </>
+                    )}
+                  </button>
                 </div>
 
-                {/* Optional Manual 6-Digit Code Input */}
-                <form onSubmit={handleCodeVerificationSubmit} className="pt-1 border-t border-gray-100 space-y-2">
-                  <label className="block text-[11px] font-bold text-emerald-950">
+                {/* Optional 6-Digit Code Input */}
+                <form onSubmit={handleCodeVerificationSubmit} className="pt-2 border-t border-gray-100 space-y-2">
+                  <label className="block text-[11px] font-bold text-emerald-950 text-center">
                     Atau Masukkan Kode Verifikasi (6-Digit):
                   </label>
                   <div className="flex gap-2">
@@ -671,13 +669,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                         placeholder="Contoh: 849201"
                         value={verificationCodeInput}
                         onChange={(e) => setVerificationCodeInput(e.target.value)}
-                        className="w-full pl-9 pr-3 py-2 rounded-xl border border-gray-200 text-xs font-mono tracking-widest text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50"
+                        className="w-full pl-9 pr-3 py-2.5 rounded-xl border border-gray-200 text-xs font-mono tracking-widest text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50"
                       />
                     </div>
                     <button
                       type="submit"
                       disabled={isLoading}
-                      className="px-4 py-2 rounded-xl bg-emerald-950 text-sand font-bold text-xs hover:bg-emerald-900 cursor-pointer disabled:opacity-50"
+                      className="px-4 py-2.5 rounded-xl bg-emerald-950 text-sand font-bold text-xs hover:bg-emerald-900 cursor-pointer disabled:opacity-50"
                     >
                       Verifikasi
                     </button>
@@ -685,7 +683,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 </form>
 
                 {error && (
-                  <p className="text-[11px] text-rose-600 font-semibold px-1">
+                  <p className="text-[11px] text-rose-600 font-semibold px-1 text-center">
                     {error}
                   </p>
                 )}
@@ -708,7 +706,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   >
                     <RefreshCw className={`w-3.5 h-3.5 ${resendCooldown > 0 ? 'animate-spin' : ''}`} />
                     <span>
-                      {resendCooldown > 0 ? `Kirim ulang (${resendCooldown}s)` : 'Kirim Ulang Email'}
+                      {resendCooldown > 0 ? `Kirim ulang (${formatCooldown(resendCooldown)})` : 'Kirim Ulang Email'}
                     </span>
                   </button>
                 </div>
