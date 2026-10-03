@@ -2,7 +2,6 @@ import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Heart, 
-  ShoppingBag, 
   Sparkles, 
   Menu, 
   X,
@@ -14,7 +13,9 @@ import {
   User as UserIcon,
   LogOut,
   ChevronDown,
-  Lock
+  Lock,
+  Bell,
+  BellRing
 } from 'lucide-react';
 import { User } from '../types';
 
@@ -52,6 +53,46 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
+
+  // Dynamic Notifications State with Red Indicator
+  const [notifications, setNotifications] = useState([
+    {
+      id: 'notif-1',
+      title: 'Pesan Baru Concierge',
+      message: 'Halo! Tim Project Director NikaHub siap membantu konsultasi denah tenda VIP & katering.',
+      time: 'Baru saja',
+      unread: true,
+      type: 'chat' as const,
+      linkTo: 'chat' as ActivePage
+    },
+    {
+      id: 'notif-2',
+      title: 'Update Jadwal H-1 Ready',
+      message: 'Jadwal garansi serah terima tenda & panggung 100% siap H-1 pukul 14.00 WIB.',
+      time: '12m lalu',
+      unread: true,
+      type: 'system' as const,
+      linkTo: 'chat' as ActivePage
+    },
+    {
+      id: 'notif-3',
+      title: 'Koleksi Musim 2026',
+      message: 'Koleksi Tenda Transparan Sultan & Jamuan VIP sudah rilis di katalog.',
+      time: '1j lalu',
+      unread: false,
+      type: 'promo' as const,
+      linkTo: 'catalog' as ActivePage
+    }
+  ]);
+
+  const unreadCount = notifications.filter(n => n.unread).length;
+
+  const handleOpenNotification = (notif: typeof notifications[0]) => {
+    setNotifications(prev => prev.map(n => n.id === notif.id ? { ...n, unread: false } : n));
+    setNotificationDropdownOpen(false);
+    onPageChange(notif.linkTo);
+  };
 
   // Hidden/Internal page 'checkout', 'admin-login', 'admin-dashboard' are NOT in navLinks
   const navLinks: { id: ActivePage; label: string; icon: React.ElementType }[] = [
@@ -136,19 +177,115 @@ export const Navbar: React.FC<NavbarProps> = ({
               )}
             </div>
 
-            {/* Checkout / Halaman CO Drawer Trigger */}
-            <button 
-              onClick={() => onPageChange('checkout')}
-              className="group flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 pl-2.5 sm:pl-3 rounded-full bg-emerald-950 text-sand shadow-bezel border border-emerald-800 hover:bg-emerald-900 transition-all active:scale-95 cursor-pointer"
-              title="Halaman Checkout CO"
-            >
-              <span className="text-[11px] sm:text-xs font-semibold tracking-wider font-sans whitespace-nowrap">
-                {cartCount > 0 ? `${cartCount} CO` : 'Menu CO'}
-              </span>
-              <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/10 group-hover:bg-champagne-400 group-hover:text-emerald-950 flex items-center justify-center transition-colors shrink-0">
-                <ShoppingBag className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-              </div>
-            </button>
+            {/* Notification Bell Button (Replaces Menu CO) */}
+            <div className="relative">
+              <button 
+                onClick={() => setNotificationDropdownOpen(!notificationDropdownOpen)}
+                className="group flex items-center gap-1.5 sm:gap-2 p-1 sm:p-1.5 pl-2.5 sm:pl-3 rounded-full bg-emerald-950 text-sand shadow-bezel border border-emerald-800 hover:bg-emerald-900 transition-all active:scale-95 cursor-pointer relative"
+                title="Notifikasi & Live Chat"
+              >
+                <span className="text-[11px] sm:text-xs font-semibold tracking-wider font-sans whitespace-nowrap">
+                  Notifikasi
+                </span>
+                <div className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-white/10 group-hover:bg-champagne-400 group-hover:text-emerald-950 flex items-center justify-center transition-colors shrink-0 relative">
+                  <Bell className="w-3.5 h-3.5 text-champagne-400 group-hover:text-emerald-950" />
+                </div>
+
+                {/* Red Dot Notification Indicator */}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-rose-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-4 w-4 bg-rose-600 text-white text-[9px] font-bold items-center justify-center border border-white shadow-xs">
+                      {unreadCount}
+                    </span>
+                  </span>
+                )}
+              </button>
+
+              {/* Notification Dropdown Panel */}
+              <AnimatePresence>
+                {notificationDropdownOpen && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 10, scale: 0.95 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                    className="absolute right-0 top-12 w-80 sm:w-96 bg-white rounded-3xl shadow-2xl border border-emerald-950/10 p-4 space-y-3 text-emerald-950 z-50 overflow-hidden"
+                  >
+                    <div className="flex items-center justify-between pb-2.5 border-b border-gray-100">
+                      <div className="flex items-center gap-2">
+                        <div className="p-1.5 rounded-full bg-rose-50 text-rose-600">
+                          <BellRing className="w-4 h-4" />
+                        </div>
+                        <div>
+                          <h4 className="font-serif font-bold text-sm text-emerald-950">Notifikasi & Update</h4>
+                          <span className="text-[10px] text-gray-500 font-medium">
+                            {unreadCount > 0 ? `${unreadCount} notifikasi belum dibaca` : 'Semua notifikasi dibaca'}
+                          </span>
+                        </div>
+                      </div>
+                      <button 
+                        onClick={() => setNotificationDropdownOpen(false)}
+                        className="p-1 rounded-full hover:bg-gray-100 text-gray-400 hover:text-gray-600 cursor-pointer"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
+
+                    {/* Notifications List */}
+                    <div className="space-y-2 max-h-72 overflow-y-auto pr-1">
+                      {notifications.map((notif) => (
+                        <div
+                          key={notif.id}
+                          onClick={() => handleOpenNotification(notif)}
+                          className={`p-3 rounded-2xl border transition-all cursor-pointer flex gap-3 relative ${
+                            notif.unread
+                              ? 'bg-rose-50/40 border-rose-200/80 hover:bg-rose-50'
+                              : 'bg-[#FAF9F5] border-gray-100 hover:bg-sand/60'
+                          }`}
+                        >
+                          <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 text-xs font-bold ${
+                            notif.type === 'chat' ? 'bg-emerald-950 text-champagne-300' : 'bg-champagne-100 text-emerald-950'
+                          }`}>
+                            {notif.type === 'chat' ? <MessageSquare className="w-4 h-4 text-champagne-400" /> : <Bell className="w-4 h-4 text-champagne-700" />}
+                          </div>
+
+                          <div className="flex-1 min-w-0 pr-3">
+                            <div className="flex items-center justify-between mb-0.5">
+                              <h5 className="font-bold text-xs text-emerald-950 truncate">{notif.title}</h5>
+                              <span className="text-[10px] text-gray-400 font-medium shrink-0 ml-1">{notif.time}</span>
+                            </div>
+                            <p className="text-[11px] text-emerald-950/75 leading-relaxed line-clamp-2">
+                              {notif.message}
+                            </p>
+                            <span className="text-[10px] font-bold text-emerald-900 hover:underline flex items-center gap-1 mt-1">
+                              <span>Buka Halaman Live Chat ↗</span>
+                            </span>
+                          </div>
+
+                          {notif.unread && (
+                            <span className="w-2.5 h-2.5 rounded-full bg-rose-600 absolute top-3 right-3 shadow-xs animate-pulse" />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+
+                    {/* Footer Action to open Chat directly */}
+                    <div className="pt-2 border-t border-gray-100">
+                      <button
+                        onClick={() => {
+                          setNotificationDropdownOpen(false);
+                          onPageChange('chat');
+                        }}
+                        className="w-full py-2.5 rounded-full bg-emerald-950 text-sand hover:bg-emerald-900 text-xs font-bold flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-sm"
+                      >
+                        <MessageSquare className="w-4 h-4 text-champagne-400" />
+                        <span>Buka Live Chat Concierge</span>
+                      </button>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
 
             {/* Email Authentication / User Menu */}
             {user ? (
@@ -182,17 +319,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
 
                       <div className="space-y-1">
-                        <button
-                          onClick={() => {
-                            onPageChange('checkout');
-                            setUserDropdownOpen(false);
-                          }}
-                          className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-950/5 flex items-center gap-2 transition-colors cursor-pointer"
-                        >
-                          <ShoppingBag className="w-4 h-4 text-emerald-800" />
-                          <span>Halaman Checkout / CO ({cartCount})</span>
-                        </button>
-
                         <button
                           onClick={() => {
                             onPageChange('chat');
@@ -328,13 +454,18 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="pt-3 border-t border-emerald-950/10 space-y-2">
               <button
                 onClick={() => {
-                  onPageChange('checkout');
+                  onPageChange('chat');
                   setMobileMenuOpen(false);
                 }}
-                className="w-full py-3.5 rounded-full bg-emerald-950 text-sand font-bold text-xs flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform"
+                className="w-full py-3.5 rounded-full bg-emerald-950 text-sand font-bold text-xs flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform relative"
               >
-                <ShoppingBag className="w-4 h-4 text-champagne-400" />
-                <span>Buka Halaman CO & Reservasi ({cartCount})</span>
+                <Bell className="w-4 h-4 text-champagne-400" />
+                <span>Notifikasi & Live Chat Concierge</span>
+                {unreadCount > 0 && (
+                  <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold ml-1 animate-pulse">
+                    {unreadCount} Baru
+                  </span>
+                )}
               </button>
             </div>
           </motion.div>
