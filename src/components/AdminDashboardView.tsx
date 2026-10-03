@@ -87,7 +87,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onDeleteProduct,
   onLogoutAdmin,
 }) => {
-  const [activeTab, setActiveTab] = useState<'catalog' | 'orders' | 'clients'>('catalog');
+  const [activeTab, setActiveTab] = useState<'catalog' | 'orders' | 'clients' | 'settings'>('catalog');
+  const [webSettings, setWebSettings] = useState({
+    heroTitle: 'Wujudkan Pernikahan Impian Bersama NikaHub',
+    heroSubtitle: 'Layanan All-in-One Wedding Organizer & Concierge di Indonesia',
+    promoText: 'Diskon Spesial 10% untuk Paket Tenda VIP & Catering Bulan Ini!',
+    contactWhatsApp: '6281234567890',
+    instagramHandle: '@nikahub_id',
+    featuredRecommendations: 'Tenda VIP, Catering Premium, MUA Exclusive'
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   
@@ -399,46 +407,58 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs (Mobile Optimized Segmented Control) */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-emerald-950/10 pb-5">
-        
-        <div className="flex bg-gray-100 p-1.5 rounded-2xl w-full sm:w-auto">
-          <button
-            onClick={() => setActiveTab('catalog')}
-            className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer ${
-              activeTab === 'catalog' 
-                ? 'bg-white text-emerald-950 shadow-sm' 
-                : 'text-gray-500 hover:text-emerald-950'
-            }`}
-          >
-            <Store className={`w-4 h-4 ${activeTab === 'catalog' ? 'text-champagne-600' : ''}`} />
-            <span>Katalog</span>
-          </button>
+      {/* Navigation Tabs (Mobile Optimized Segmented Control - STICKY TOP) */}
+      <div className="sticky top-0 z-40 bg-sand/90 backdrop-blur-xl border-b border-emerald-950/10 pt-4 pb-4 -mx-4 px-4 sm:mx-0 sm:px-0">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="flex bg-gray-100/80 p-1.5 rounded-2xl w-full sm:w-auto overflow-x-auto snap-x no-scrollbar">
+            <button
+              onClick={() => setActiveTab('catalog')}
+              className={`snap-start flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                activeTab === 'catalog' 
+                  ? 'bg-white text-emerald-950 shadow-sm' 
+                  : 'text-gray-500 hover:text-emerald-950'
+              }`}
+            >
+              <Store className={`w-4 h-4 shrink-0 ${activeTab === 'catalog' ? 'text-champagne-600' : ''}`} />
+              <span>Katalog</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTab('orders')}
-            className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer ${
-              activeTab === 'orders' 
-                ? 'bg-white text-emerald-950 shadow-sm' 
-                : 'text-gray-500 hover:text-emerald-950'
-            }`}
-          >
-            <ShoppingBag className={`w-4 h-4 ${activeTab === 'orders' ? 'text-champagne-600' : ''}`} />
-            <span>Pesanan</span>
-          </button>
+            <button
+              onClick={() => setActiveTab('orders')}
+              className={`snap-start flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                activeTab === 'orders' 
+                  ? 'bg-white text-emerald-950 shadow-sm' 
+                  : 'text-gray-500 hover:text-emerald-950'
+              }`}
+            >
+              <ShoppingBag className={`w-4 h-4 shrink-0 ${activeTab === 'orders' ? 'text-champagne-600' : ''}`} />
+              <span>Pesanan</span>
+            </button>
 
-          <button
-            onClick={() => setActiveTab('clients')}
-            className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer ${
-              activeTab === 'clients' 
-                ? 'bg-white text-emerald-950 shadow-sm' 
-                : 'text-gray-500 hover:text-emerald-950'
-            }`}
-          >
-            <Users className={`w-4 h-4 ${activeTab === 'clients' ? 'text-champagne-600' : ''}`} />
-            <span>Klien</span>
-          </button>
-        </div>
+            <button
+              onClick={() => setActiveTab('clients')}
+              className={`snap-start flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                activeTab === 'clients' 
+                  ? 'bg-white text-emerald-950 shadow-sm' 
+                  : 'text-gray-500 hover:text-emerald-950'
+              }`}
+            >
+              <Users className={`w-4 h-4 shrink-0 ${activeTab === 'clients' ? 'text-champagne-600' : ''}`} />
+              <span>Klien</span>
+            </button>
+
+            <button
+              onClick={() => setActiveTab('settings')}
+              className={`snap-start flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex items-center justify-center gap-1.5 cursor-pointer whitespace-nowrap ${
+                activeTab === 'settings' 
+                  ? 'bg-emerald-950 text-champagne-400 shadow-sm' 
+                  : 'text-gray-500 hover:text-emerald-950'
+              }`}
+            >
+              <Edit3 className={`w-4 h-4 shrink-0 ${activeTab === 'settings' ? 'text-champagne-400' : ''}`} />
+              <span>CMS Web</span>
+            </button>
+          </div>
 
         {activeTab === 'catalog' && (
           <button
@@ -449,6 +469,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <span>Tambah Layanan Baru</span>
           </button>
         )}
+        </div>
       </div>
 
       {/* TAB 1: KATALOG LAYANAN (FULL CRUD) */}
@@ -719,6 +740,108 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               ))}
             </div>
           )}
+        </div>
+      )}
+
+      {/* TAB 4: PENGATURAN WEBSITE (CMS FRONTEND) */}
+      {activeTab === 'settings' && (
+        <div className="bg-white rounded-3xl p-6 border border-emerald-950/10 shadow-lg space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-gray-100">
+            <div>
+              <h3 className="font-serif font-bold text-xl text-emerald-950">Content Management System (CMS)</h3>
+              <p className="text-xs text-gray-500">Atur konten teks utama yang akan dilihat klien pada halaman depan website.</p>
+            </div>
+            <button
+              onClick={() => {
+                alert('Pengaturan CMS berhasil disimpan secara lokal (Simulasi).');
+              }}
+              className="px-5 py-3 bg-emerald-950 hover:bg-emerald-900 text-sand rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto"
+            >
+              <Save className="w-4 h-4 text-champagne-400" />
+              <span>Simpan Perubahan</span>
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div className="space-y-4">
+              <h4 className="font-bold text-sm text-emerald-950 flex items-center gap-2 border-b border-gray-100 pb-2">
+                <Sparkles className="w-4 h-4 text-champagne-600" /> Pengaturan Banner Utama (Hero)
+              </h4>
+              <div>
+                <label className="block text-[10px] font-bold text-emerald-950 mb-1.5 uppercase tracking-wider">Judul Banner (Headline)</label>
+                <input
+                  type="text"
+                  value={webSettings.heroTitle}
+                  onChange={(e) => setWebSettings({...webSettings, heroTitle: e.target.value})}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-950 outline-none bg-gray-50 hover:bg-white transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-emerald-950 mb-1.5 uppercase tracking-wider">Teks Subtitle / Deskripsi</label>
+                <textarea
+                  value={webSettings.heroSubtitle}
+                  onChange={(e) => setWebSettings({...webSettings, heroSubtitle: e.target.value})}
+                  rows={2}
+                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-950 outline-none resize-none bg-gray-50 hover:bg-white transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4">
+              <h4 className="font-bold text-sm text-emerald-950 flex items-center gap-2 border-b border-gray-100 pb-2">
+                <Store className="w-4 h-4 text-champagne-600" /> Promo & Rekomendasi
+              </h4>
+              <div>
+                <label className="block text-[10px] font-bold text-emerald-950 mb-1.5 uppercase tracking-wider">Teks Banner Promo (Berjalan)</label>
+                <input
+                  type="text"
+                  value={webSettings.promoText}
+                  onChange={(e) => setWebSettings({...webSettings, promoText: e.target.value})}
+                  placeholder="Misal: Diskon 10% Spesial Bulan Ini!"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-950 outline-none bg-gray-50 hover:bg-white transition-colors"
+                />
+              </div>
+              <div>
+                <label className="block text-[10px] font-bold text-emerald-950 mb-1.5 uppercase tracking-wider">Label Kategori Unggulan</label>
+                <input
+                  type="text"
+                  value={webSettings.featuredRecommendations}
+                  onChange={(e) => setWebSettings({...webSettings, featuredRecommendations: e.target.value})}
+                  placeholder="Misal: Tenda VIP, Catering"
+                  className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-950 outline-none bg-gray-50 hover:bg-white transition-colors"
+                />
+              </div>
+            </div>
+
+            <div className="space-y-4 md:col-span-2">
+              <h4 className="font-bold text-sm text-emerald-950 flex items-center gap-2 border-b border-gray-100 pb-2">
+                <PhoneCall className="w-4 h-4 text-champagne-600" /> Kontak & Sosial Media
+              </h4>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-[10px] font-bold text-emerald-950 mb-1.5 uppercase tracking-wider">Nomor WhatsApp Default CS</label>
+                  <input
+                    type="text"
+                    value={webSettings.contactWhatsApp}
+                    onChange={(e) => setWebSettings({...webSettings, contactWhatsApp: e.target.value})}
+                    placeholder="Contoh: 6281234567890"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-950 outline-none font-mono bg-gray-50 hover:bg-white transition-colors"
+                  />
+                  <p className="text-[10px] text-gray-400 mt-1">*Nomor ini digunakan jika ada tombol hubungi kami yang belum di-set manual.</p>
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-emerald-950 mb-1.5 uppercase tracking-wider">Username Instagram / Tautan</label>
+                  <input
+                    type="text"
+                    value={webSettings.instagramHandle}
+                    onChange={(e) => setWebSettings({...webSettings, instagramHandle: e.target.value})}
+                    placeholder="Contoh: @nikahub_id"
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs focus:ring-2 focus:ring-emerald-950 outline-none bg-gray-50 hover:bg-white transition-colors"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       )}
 
