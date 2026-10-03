@@ -37,31 +37,29 @@ const chatMessagesDB = new Map();
 const sendEmailWithFallback = async ({ from, to, subject, html }) => {
   // If RESEND_API_KEY is configured, try HTTPS API first (100% bypasses any VPS SMTP port blocks)
   const resendKey = process.env.RESEND_API_KEY;
-  if (resendKey) {
-    try {
-      console.log('📡 Mencoba mengirim email via Resend HTTPS API (Port 443)...');
-      const res = await fetch('https://api.resend.com/emails', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${resendKey}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          from: process.env.RESEND_FROM || 'Berdikari Wedding <onboarding@resend.dev>',
-          to: [to],
-          subject,
-          html
-        })
-      });
-      const data = await res.json();
-      if (res.ok && data.id) {
-        console.log(`✅ Sukses mengirim email via Resend API! ID: ${data.id}`);
-        return { success: true, via: 'Resend HTTPS API', result: data };
-      }
-      console.warn('⚠️ Resend API gagal:', data);
-    } catch (e) {
-      console.warn('⚠️ Resend API network error:', e.message);
+  if (resendKey && resendKey.trim()) {
+    const cleanKey = resendKey.trim();
+    console.log(`📡 Mencoba mengirim email via Resend HTTPS API (Key: ${cleanKey.slice(0, 6)}...)...`);
+    const res = await fetch('https://api.resend.com/emails', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${cleanKey}`,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        from: process.env.RESEND_FROM || 'NikaHub Wedding <onboarding@resend.dev>',
+        to: [to],
+        subject,
+        html
+      })
+    });
+    const data = await res.json();
+    if (res.ok && data.id) {
+      console.log(`✅ Sukses mengirim email via Resend API! ID: ${data.id}`);
+      return { success: true, via: 'Resend HTTPS API (Port 443)', result: data };
     }
+    console.warn('⚠️ Resend API gagal:', data);
+    throw new Error(`Resend API Error: ${data.message || JSON.stringify(data)}`);
   }
 
   const user = process.env.SMTP_USER || process.env.GMAIL_USER;
@@ -143,12 +141,15 @@ const sendEmailWithFallback = async ({ from, to, subject, html }) => {
 
 // Health Check Endpoint (supports both /api/health and /health)
 app.get(['/api/health', '/health'], (req, res) => {
+  const resendKey = process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.trim() : '';
   res.json({
     status: 'ok',
     app: 'NikaHub Wedding Atelier API',
     environment: process.env.NODE_ENV || 'development',
     whatsappNumber: WHATSAPP_NUMBER,
     smtpConfigured: !!(process.env.SMTP_USER || process.env.GMAIL_USER),
+    resendConfigured: !!resendKey,
+    resendKeyPreview: resendKey ? `${resendKey.slice(0, 6)}...` : 'not_set',
     timestamp: new Date().toISOString()
   });
 });
@@ -158,28 +159,29 @@ app.get(['/api/test-email', '/test-email'], async (req, res) => {
   const targetEmail = req.query.to || 'faizacket@gmail.com';
   const user = process.env.SMTP_USER || process.env.GMAIL_USER;
   const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
+  const resendKey = process.env.RESEND_API_KEY ? process.env.RESEND_API_KEY.trim() : '';
 
-  if (!user || !pass) {
+  if (!resendKey && (!user || !pass)) {
     return res.status(400).json({
       success: false,
-      message: 'SMTP credentials missing in server/.env',
-      user: !!user,
-      pass: !!pass
+      message: 'Kredensial email (RESEND_API_KEY atau GMAIL_PASS) belum ada di server/.env',
+      resendConfigured: !!resendKey,
+      smtpConfigured: !!(user && pass)
     });
   }
 
   try {
     const result = await sendEmailWithFallback({
-      from: `"NikaHub Test" <${user}>`,
+      from: `"NikaHub Test" <${user || 'onboarding@resend.dev'}>`,
       to: targetEmail,
       subject: `[Test Berdikari Wedding] Diagnostik Email ${Date.now()}`,
-      html: `<h2>Test Pengiriman Email Berhasil!</h2><p>Server NikaHub Wedding Atelier sukses terhubung ke Google SMTP pada ${new Date().toLocaleString('id-ID')}.</p>`
+      html: `<h2>Test Pengiriman Email Berhasil!</h2><p>Server NikaHub Wedding Atelier sukses mengirim email pada ${new Date().toLocaleString('id-ID')}.</p>`
     });
     return res.json({
       success: true,
       message: `Email berhasil terkirim ke ${targetEmail}!`,
       method: result.via,
-      messageId: result.result?.messageId
+      result: result.result
     });
   } catch (err) {
     return res.status(500).json({
