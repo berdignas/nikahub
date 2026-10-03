@@ -110,6 +110,43 @@ app.get(['/api/health', '/health'], (req, res) => {
   });
 });
 
+// Diagnostic Email Test Endpoint
+app.get(['/api/test-email', '/test-email'], async (req, res) => {
+  const targetEmail = req.query.to || 'faizacket@gmail.com';
+  const user = process.env.SMTP_USER || process.env.GMAIL_USER;
+  const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
+
+  if (!user || !pass) {
+    return res.status(400).json({
+      success: false,
+      message: 'SMTP credentials missing in server/.env',
+      user: !!user,
+      pass: !!pass
+    });
+  }
+
+  try {
+    const result = await sendEmailWithFallback({
+      from: `"NikaHub Test" <${user}>`,
+      to: targetEmail,
+      subject: `[Test Berdikari Wedding] Diagnostik Email ${Date.now()}`,
+      html: `<h2>Test Pengiriman Email Berhasil!</h2><p>Server NikaHub Wedding Atelier sukses terhubung ke Google SMTP pada ${new Date().toLocaleString('id-ID')}.</p>`
+    });
+    return res.json({
+      success: true,
+      message: `Email berhasil terkirim ke ${targetEmail}!`,
+      method: result.via,
+      messageId: result.result?.messageId
+    });
+  } catch (err) {
+    return res.status(500).json({
+      success: false,
+      message: `Gagal mengirim email: ${err.message}`,
+      stack: err.stack
+    });
+  }
+});
+
 // REAL EMAIL VERIFICATION ENDPOINT (supports both /api/auth/send-verification-email and /auth/send-verification-email)
 app.post(['/api/auth/send-verification-email', '/auth/send-verification-email'], async (req, res) => {
   const { email, name, code } = req.body;
