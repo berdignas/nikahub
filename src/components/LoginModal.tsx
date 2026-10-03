@@ -275,30 +275,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               {mode === 'verify_pending' && `Email verifikasi dari Berdikari Wedding telah dikirim ke ${pendingEmail}`}
               {mode === 'verify_success' && 'Akun Berdikari Wedding Anda aktif! Silakan masuk kembali.'}
             </p>
-
-            {/* Mode Switch Tabs (Only shown in register/login mode) */}
-            {(mode === 'register' || mode === 'login') && (
-              <div className="flex bg-white/10 p-1 rounded-full mt-4 max-w-xs mx-auto text-xs font-semibold">
-                <button
-                  type="button"
-                  onClick={() => { setMode('register'); setError(''); }}
-                  className={`flex-1 py-1.5 rounded-full transition-colors cursor-pointer ${
-                    mode === 'register' ? 'bg-champagne-400 text-emerald-950 font-bold' : 'text-sand/80 hover:text-white'
-                  }`}
-                >
-                  Daftar Baru
-                </button>
-                <button
-                  type="button"
-                  onClick={() => { setMode('login'); setError(''); }}
-                  className={`flex-1 py-1.5 rounded-full transition-colors cursor-pointer ${
-                    mode === 'login' ? 'bg-champagne-400 text-emerald-950 font-bold' : 'text-sand/80 hover:text-white'
-                  }`}
-                >
-                  Masuk (Login)
-                </button>
-              </div>
-            )}
           </div>
 
           {/* Body Form & Content */}
@@ -423,6 +399,20 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     </>
                   )}
                 </button>
+
+                {/* Single Form Mode Switch Link */}
+                <div className="text-center pt-3 border-t border-gray-100 mt-3">
+                  <p className="text-xs text-gray-600">
+                    Sudah punya akun?{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setMode('login'); setError(''); setInfoMsg(''); }}
+                      className="font-bold text-emerald-950 hover:underline cursor-pointer ml-1"
+                    >
+                      Masuk (Login) di Sini →
+                    </button>
+                  </p>
+                </div>
               </form>
             )}
 
@@ -478,6 +468,20 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     </>
                   )}
                 </button>
+
+                {/* Single Form Mode Switch Link */}
+                <div className="text-center pt-3 border-t border-gray-100 mt-3">
+                  <p className="text-xs text-gray-600">
+                    Belum punya akun?{' '}
+                    <button
+                      type="button"
+                      onClick={() => { setMode('register'); setError(''); setInfoMsg(''); }}
+                      className="font-bold text-emerald-950 hover:underline cursor-pointer ml-1"
+                    >
+                      Silakan Daftar Akun Baru →
+                    </button>
+                  </p>
+                </div>
               </form>
             )}
 
