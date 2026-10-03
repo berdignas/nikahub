@@ -134,7 +134,6 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'home', label: 'Beranda', icon: Home },
     { id: 'catalog', label: 'Katalog Layanan', icon: Store },
     { id: 'portfolio', label: 'Inspirasi Event', icon: Layers },
-    { id: 'chat', label: 'Live Chat', icon: MessageSquare },
     { id: 'contact', label: 'Konsultasi & Atelier', icon: PhoneCall },
   ];
 
@@ -527,8 +526,8 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }}
                 className="w-full py-3.5 rounded-full bg-emerald-950 text-sand font-bold text-xs flex items-center justify-center gap-2 shadow-md active:scale-98 transition-transform relative"
               >
-                <Bell className="w-4 h-4 text-champagne-400" />
-                <span>Notifikasi & Live Chat Concierge</span>
+                <MessageSquare className="w-4 h-4 text-champagne-400" />
+                <span>Live Chat Concierge NikaHub</span>
                 {unreadCount > 0 && (
                   <span className="px-2 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold ml-1 animate-pulse">
                     {unreadCount} Baru
@@ -539,6 +538,32 @@ export const Navbar: React.FC<NavbarProps> = ({
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Floating Quick Live Chat Widget (Bottom Right - Best Industry Position) */}
+      {currentPage !== 'chat' && currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
+        <motion.button
+          initial={{ scale: 0, opacity: 0 }}
+          animate={{ scale: 1, opacity: 1 }}
+          whileHover={{ scale: 1.05 }}
+          whileTap={{ scale: 0.95 }}
+          onClick={() => onPageChange('chat')}
+          className="fixed bottom-5 right-5 sm:bottom-6 sm:right-6 z-40 px-3.5 sm:px-4 py-2.5 sm:py-3 rounded-full bg-emerald-950 text-sand shadow-2xl border border-champagne-400/30 flex items-center gap-2.5 hover:bg-emerald-900 transition-all cursor-pointer group active:scale-95"
+          aria-label="Live Chat Concierge"
+        >
+          <div className="relative flex items-center justify-center">
+            <MessageSquare className="w-4 h-4 sm:w-5 sm:h-5 text-champagne-400 group-hover:rotate-12 transition-transform" />
+            {unreadCount > 0 && (
+              <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-rose-500 animate-ping" />
+            )}
+          </div>
+          <span className="text-xs font-bold font-sans tracking-wide hidden sm:inline">Live Chat Concierge</span>
+          {unreadCount > 0 && (
+            <span className="px-1.5 py-0.5 rounded-full bg-rose-600 text-white text-[10px] font-bold animate-pulse">
+              {unreadCount}
+            </span>
+          )}
+        </motion.button>
+      )}
     </>
   );
 };
