@@ -48,8 +48,8 @@ const createTransporter = () => {
 // REST API ROUTES
 // ==========================================
 
-// Health Check Endpoint
-app.get('/api/health', (req, res) => {
+// Health Check Endpoint (supports both /api/health and /health)
+app.get(['/api/health', '/health'], (req, res) => {
   res.json({
     status: 'ok',
     app: 'NikaHub Wedding Atelier API',
@@ -60,8 +60,8 @@ app.get('/api/health', (req, res) => {
   });
 });
 
-// REAL EMAIL VERIFICATION ENDPOINT
-app.post('/api/auth/send-verification-email', async (req, res) => {
+// REAL EMAIL VERIFICATION ENDPOINT (supports both /api/auth/send-verification-email and /auth/send-verification-email)
+app.post(['/api/auth/send-verification-email', '/auth/send-verification-email'], async (req, res) => {
   const { email, name, code } = req.body;
 
   if (!email || !email.includes('@')) {
@@ -141,7 +141,7 @@ app.post('/api/auth/send-verification-email', async (req, res) => {
 });
 
 // 1. Pendaftaran User Baru dengan Pertanyaan Sederhana
-app.post('/api/auth/register', (req, res) => {
+app.post(['/api/auth/register', '/auth/register'], (req, res) => {
   const { email, name, phone, eventDate, guestEstimate, preferredStyle } = req.body;
 
   if (!email || !email.includes('@')) {
@@ -189,7 +189,7 @@ app.post('/api/auth/register', (req, res) => {
 });
 
 // 2. Login dengan Email Saja
-app.post('/api/auth/login', (req, res) => {
+app.post(['/api/auth/login', '/auth/login'], (req, res) => {
   const { email } = req.body;
 
   if (!email || !email.includes('@')) {
@@ -221,7 +221,7 @@ app.post('/api/auth/login', (req, res) => {
 });
 
 // 3. Get User Info / Current Profile
-app.get('/api/auth/me', (req, res) => {
+app.get(['/api/auth/me', '/auth/me'], (req, res) => {
   const email = req.query.email;
   if (!email) {
     return res.status(400).json({ success: false, message: 'Email query parameter dibutuhkan.' });
@@ -236,13 +236,13 @@ app.get('/api/auth/me', (req, res) => {
 });
 
 // 3b. Get All Registered Users (Admin User Management)
-app.get('/api/auth/users', (req, res) => {
+app.get(['/api/auth/users', '/auth/users'], (req, res) => {
   const usersList = Array.from(usersDB.values());
   return res.json({ success: true, count: usersList.length, users: usersList });
 });
 
 // 3c. Delete User by Email (Admin User Management)
-app.delete('/api/auth/users/:email', (req, res) => {
+app.delete(['/api/auth/users/:email', '/auth/users/:email'], (req, res) => {
   const cleanEmail = decodeURIComponent(req.params.email).toLowerCase();
   if (usersDB.has(cleanEmail)) {
     usersDB.delete(cleanEmail);
@@ -252,7 +252,7 @@ app.delete('/api/auth/users/:email', (req, res) => {
 });
 
 // 4. Submit Booking Order (Menu CO)
-app.post('/api/orders', (req, res) => {
+app.post(['/api/orders', '/orders'], (req, res) => {
   const { email, items, eventDate, eventCity, eventNotes, totalPrice } = req.body;
 
   if (!email || !items || !items.length) {
@@ -282,7 +282,7 @@ app.post('/api/orders', (req, res) => {
 });
 
 // 5. Get User Orders
-app.get('/api/orders', (req, res) => {
+app.get(['/api/orders', '/orders'], (req, res) => {
   const email = req.query.email;
   if (!email) {
     return res.json({ success: true, orders: ordersDB });
@@ -293,7 +293,7 @@ app.get('/api/orders', (req, res) => {
 });
 
 // 6. Concierge Chat Messages API
-app.get('/api/chat', (req, res) => {
+app.get(['/api/chat', '/chat'], (req, res) => {
   const email = (req.query.email || 'guest').toString().toLowerCase();
   const history = chatMessagesDB.get(email) || [
     {
@@ -307,7 +307,7 @@ app.get('/api/chat', (req, res) => {
   return res.json({ success: true, messages: history });
 });
 
-app.post('/api/chat', (req, res) => {
+app.post(['/api/chat', '/chat'], (req, res) => {
   const { email, text } = req.body;
   if (!text) {
     return res.status(400).json({ success: false, message: 'Teks pesan tidak boleh kosong.' });
