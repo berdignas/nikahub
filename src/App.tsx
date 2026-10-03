@@ -74,6 +74,15 @@ export function App() {
     window.history.pushState(state, '', window.location.href);
   };
 
+  // Ensure history state always has a guard entry when on home dashboard
+  useEffect(() => {
+    if (currentPage === 'home') {
+      if (!window.history.state || (window.history.state.page !== 'home_guard' && window.history.state.page !== 'home')) {
+        window.history.pushState({ page: 'home_guard', timestamp: Date.now() }, '', window.location.href);
+      }
+    }
+  }, [currentPage]);
+
   // Secret URL Route Detector (/login-berdignas-nikahub) & Mobile Hardware Back Navigation
   useEffect(() => {
     const checkSecretRoute = () => {
@@ -100,7 +109,7 @@ export function App() {
         timestamp: Date.now()
       };
       window.history.replaceState(baseState, '', window.location.href);
-      window.history.pushState({ ...baseState, page: initialPage, isRoot: false }, '', window.location.href);
+      window.history.pushState({ ...baseState, page: initialPage === 'home' ? 'home_guard' : initialPage, isRoot: false }, '', window.location.href);
     }
 
     // Check if URL has ?verify_email=
@@ -120,13 +129,21 @@ export function App() {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state;
 
-      // If user is currently on dashboard ('home') and presses back (or pops to root), refresh the page instead of exiting tab!
-      if (currentPageRef.current === 'home' && (!state || state.isRoot || state.page === 'home_base')) {
+      // If user is currently on dashboard ('home') and presses back -> RELOAD PAGE!
+      if (currentPageRef.current === 'home') {
         window.location.reload();
         return;
       }
 
-      if (state && state.page && state.page !== 'home_base') {
+      if (state && state.page) {
+        if (state.page === 'home' || state.page === 'home_base' || state.page === 'home_guard') {
+          setCurrentPage('home');
+          setSelectedProduct(null);
+          setIsCartOpen(false);
+          setIsLoginModalOpen(false);
+          return;
+        }
+
         setCurrentPage(state.page);
         setIsCartOpen(!!state.isCartOpen);
         setIsLoginModalOpen(!!state.isLoginModalOpen);
@@ -140,7 +157,7 @@ export function App() {
           setSelectedProduct(null);
         }
       } else {
-        // Fallback: Refresh dashboard page to prevent closing tab
+        // Fallback: Reload dashboard page to prevent closing tab
         window.location.reload();
       }
     };
