@@ -89,17 +89,17 @@ export const PortfolioView: React.FC = () => {
       <motion.div 
         initial="hidden"
         whileInView="visible"
-        viewport={{ once: true, margin: "-100px" }}
+        viewport={{ once: true, margin: "-50px" }}
         variants={staggerContainer}
         className="max-w-7xl mx-auto px-4 sm:px-6"
       >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6 sm:gap-8">
           {PORTFOLIO_ITEMS.map((item, idx) => (
             <motion.div 
               key={item.id}
               variants={fadeInUp}
-              className={`group cursor-pointer relative rounded-[2rem] overflow-hidden bg-emerald-950 ${
-                idx % 3 === 0 ? 'md:col-span-2 aspect-[21/9]' : 'aspect-square sm:aspect-[4/5]'
+              className={`group cursor-pointer relative rounded-3xl sm:rounded-[2rem] overflow-hidden bg-emerald-950 ${
+                idx % 3 === 0 ? 'md:col-span-2 aspect-[4/3] sm:aspect-[16/9] md:aspect-[21/9]' : 'aspect-square sm:aspect-[4/5]'
               }`}
             >
               {/* Image */}
@@ -110,28 +110,28 @@ export const PortfolioView: React.FC = () => {
               />
               
               {/* Overlay Gradient */}
-              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent opacity-80 group-hover:opacity-90 transition-opacity duration-500" />
+              <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-transparent opacity-90 group-hover:opacity-95 transition-opacity duration-500" />
 
               {/* Content */}
-              <div className="absolute inset-0 p-8 sm:p-12 flex flex-col justify-end">
-                <div className="transform translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
-                  <div className="flex flex-wrap gap-2 mb-4">
+              <div className="absolute inset-0 p-5 sm:p-8 md:p-12 flex flex-col justify-end">
+                <div className="transform translate-y-2 sm:translate-y-4 group-hover:translate-y-0 transition-transform duration-500">
+                  <div className="flex flex-wrap gap-1.5 sm:gap-2 mb-2 sm:mb-4">
                     {item.tags.map(tag => (
-                      <span key={tag} className="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[10px] font-bold tracking-wider uppercase">
+                      <span key={tag} className="px-2.5 py-0.5 sm:px-3 sm:py-1 bg-white/20 backdrop-blur-md rounded-full text-white text-[9px] sm:text-[10px] font-bold tracking-wider uppercase">
                         {tag}
                       </span>
                     ))}
                   </div>
-                  <h3 className="font-serif text-3xl sm:text-4xl text-white font-bold mb-2">
+                  <h3 className="font-serif text-xl sm:text-3xl md:text-4xl text-white font-bold mb-1 sm:mb-2">
                     {item.title}
                   </h3>
-                  <div className="flex items-center justify-between text-white/80 border-t border-white/20 pt-4 mt-4">
+                  <div className="flex items-center justify-between text-white/80 border-t border-white/20 pt-3 sm:pt-4 mt-2 sm:mt-4">
                     <div>
-                      <p className="text-sm font-semibold">{item.client}</p>
-                      <p className="text-xs">{item.location}</p>
+                      <p className="text-xs sm:text-sm font-semibold">{item.client}</p>
+                      <p className="text-[10px] sm:text-xs text-white/70">{item.location}</p>
                     </div>
-                    <div className="w-10 h-10 rounded-full bg-white text-emerald-950 flex items-center justify-center scale-0 group-hover:scale-100 transition-transform duration-500 delay-100">
-                      <ArrowUpRight className="w-5 h-5" />
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-white text-emerald-950 flex items-center justify-center scale-90 sm:scale-0 group-hover:scale-100 transition-transform duration-500 shrink-0">
+                      <ArrowUpRight className="w-4 h-4 sm:w-5 sm:h-5" />
                     </div>
                   </div>
                 </div>

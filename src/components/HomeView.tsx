@@ -211,7 +211,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <Compass className="w-3.5 h-3.5 text-champagne-600" />
                   1. Tipe Area Lokasi Acara
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {[
                     { id: 'semi', label: 'Semi-Outdoor Tenda VIP', desc: 'Halaman luas / Rumah' },
                     { id: 'outdoor', label: 'Outdoor Botanical', desc: 'Taman rumput / Kebun' },
@@ -220,14 +220,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <button
                       key={item.id}
                       onClick={() => setSelectedLocation(item.id as any)}
-                      className={`p-3.5 rounded-2xl text-left border transition-all text-xs cursor-pointer ${
+                      className={`p-3.5 sm:p-4 rounded-2xl text-left border transition-all text-xs cursor-pointer ${
                         selectedLocation === item.id 
                           ? 'border-emerald-950 bg-emerald-950 text-white shadow-md' 
-                          : 'border-gray-200 bg-gray-50/50 hover:border-gray-400 text-emerald-950'
+                          : 'border-gray-200 bg-gray-50/70 hover:border-gray-400 text-emerald-950'
                       }`}
                     >
-                      <span className="font-bold block mb-1">{item.label}</span>
-                      <span className={`text-[10px] ${selectedLocation === item.id ? 'text-white/70' : 'text-gray-400'}`}>
+                      <span className="font-bold block mb-0.5 sm:mb-1">{item.label}</span>
+                      <span className={`text-[10px] ${selectedLocation === item.id ? 'text-white/70' : 'text-gray-500'}`}>
                         {item.desc}
                       </span>
                     </button>
@@ -241,7 +241,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <Palette className="w-3.5 h-3.5 text-champagne-600" />
                   2. Palet Nuansa & Estetika
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {[
                     { id: 'royal', label: 'Royal Gold & Velvet', desc: 'Keanggunan adat & mewah' },
                     { id: 'botanical', label: 'Botanical Warm White', desc: 'Kaca, dedaunan & fairy light' },
@@ -250,14 +250,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <button
                       key={item.id}
                       onClick={() => setSelectedColor(item.id as any)}
-                      className={`p-3.5 rounded-2xl text-left border transition-all text-xs cursor-pointer ${
+                      className={`p-3.5 sm:p-4 rounded-2xl text-left border transition-all text-xs cursor-pointer ${
                         selectedColor === item.id 
                           ? 'border-emerald-950 bg-emerald-950 text-white shadow-md' 
-                          : 'border-gray-200 bg-gray-50/50 hover:border-gray-400 text-emerald-950'
+                          : 'border-gray-200 bg-gray-50/70 hover:border-gray-400 text-emerald-950'
                       }`}
                     >
-                      <span className="font-bold block mb-1">{item.label}</span>
-                      <span className={`text-[10px] ${selectedColor === item.id ? 'text-white/70' : 'text-gray-400'}`}>
+                      <span className="font-bold block mb-0.5 sm:mb-1">{item.label}</span>
+                      <span className={`text-[10px] ${selectedColor === item.id ? 'text-white/70' : 'text-gray-500'}`}>
                         {item.desc}
                       </span>
                     </button>
@@ -271,7 +271,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <Users className="w-3.5 h-3.5 text-champagne-600" />
                   3. Skala Tamu Undangan
                 </label>
-                <div className="grid grid-cols-3 gap-3">
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2.5 sm:gap-3">
                   {[
                     { id: 'intimate', label: 'Intimate Gathering', desc: 'Hingga 300 Tamu' },
                     { id: 'medium', label: 'Celebration Medium', desc: '500 - 800 Tamu' },
@@ -280,14 +280,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <button
                       key={item.id}
                       onClick={() => setSelectedScale(item.id as any)}
-                      className={`p-3.5 rounded-2xl text-left border transition-all text-xs cursor-pointer ${
+                      className={`p-3.5 sm:p-4 rounded-2xl text-left border transition-all text-xs cursor-pointer ${
                         selectedScale === item.id 
                           ? 'border-emerald-950 bg-emerald-950 text-white shadow-md' 
-                          : 'border-gray-200 bg-gray-50/50 hover:border-gray-400 text-emerald-950'
+                          : 'border-gray-200 bg-gray-50/70 hover:border-gray-400 text-emerald-950'
                       }`}
                     >
-                      <span className="font-bold block mb-1">{item.label}</span>
-                      <span className={`text-[10px] ${selectedScale === item.id ? 'text-white/70' : 'text-gray-400'}`}>
+                      <span className="font-bold block mb-0.5 sm:mb-1">{item.label}</span>
+                      <span className={`text-[10px] ${selectedScale === item.id ? 'text-white/70' : 'text-gray-500'}`}>
                         {item.desc}
                       </span>
                     </button>
@@ -319,7 +319,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     <span className="text-[10px] font-bold text-champagne-300 uppercase tracking-wider block">
                       {styleResult.categoryTag}
                     </span>
-                    <h4 className="font-serif text-lg font-bold text-white leading-tight">
+                    <h4 className="font-serif text-base sm:text-lg font-bold text-white leading-tight">
                       {styleResult.title}
                     </h4>
                   </div>
@@ -343,7 +343,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
               <button 
                 onClick={onNavigateToCatalog}
-                className="w-full bg-champagne-400 hover:bg-champagne-300 text-emerald-950 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
+                className="w-full bg-champagne-400 hover:bg-champagne-300 text-emerald-950 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer active:scale-98"
               >
                 Lihat Koleksi Terkait di Katalog <ArrowRight className="w-4 h-4" />
               </button>
@@ -353,37 +353,37 @@ export const HomeView: React.FC<HomeViewProps> = ({
       </section>
 
       {/* 4. PROMO SIGNATURE PACKAGES */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-24">
+      <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16 sm:mb-24">
         <div className="flex flex-col sm:flex-row sm:items-end justify-between mb-8">
           <div>
             <span className="text-xs uppercase tracking-widest font-bold text-champagne-700 block mb-1">
               Pilihan Khusus Musim Ini
             </span>
-            <h2 className="font-serif text-3xl sm:text-4xl font-bold text-emerald-950">
+            <h2 className="font-serif text-2xl sm:text-4xl font-bold text-emerald-950">
               Paket Kurasi Unggulan
             </h2>
           </div>
           <button 
             onClick={onNavigateToCatalog}
-            className="text-xs font-bold text-emerald-950 hover:text-champagne-600 flex items-center gap-1.5 transition-colors mt-2 sm:mt-0"
+            className="text-xs font-bold text-emerald-950 hover:text-champagne-600 flex items-center gap-1.5 transition-colors mt-2 sm:mt-0 cursor-pointer"
           >
             Lihat Semua Layanan <ChevronRight className="w-4 h-4" />
           </button>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-5 sm:gap-6">
           <div 
             onClick={onNavigateToCatalog}
-            className="bg-[#E6F0EA] rounded-[2rem] p-8 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 min-h-[300px] flex flex-col justify-between"
+            className="bg-[#E6F0EA] rounded-[2rem] p-6 sm:p-8 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 min-h-[260px] sm:min-h-[300px] flex flex-col justify-between"
           >
-            <div className="relative z-10 w-3/4">
+            <div className="relative z-10 w-full sm:w-3/4">
               <span className="inline-block px-3 py-1 bg-emerald-900 text-sand rounded-full text-[10px] font-bold uppercase tracking-wider mb-3">
                 Koleksi Baru
               </span>
-              <h3 className="font-serif text-2xl font-bold text-emerald-950 leading-tight mb-2">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-emerald-950 leading-tight mb-2">
                 Tenda Transparan Klasik & Fairy Lights
               </h3>
-              <p className="text-xs text-emerald-950/70 mb-4">
+              <p className="text-xs text-emerald-950/70 mb-4 max-w-xs sm:max-w-none">
                 Konsep ballroom kaca outdoor dengan pencahayaan mewah untuk resepsi malam hari.
               </p>
               <span className="text-xs font-bold text-emerald-950 flex items-center gap-1 group-hover:gap-2 transition-all">
@@ -393,22 +393,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <img 
               src="https://images.unsplash.com/photo-1511795409834-ef04bbd61622?auto=format&fit=crop&w=800&q=80" 
               alt="Tenda Transparan" 
-              className="absolute right-0 bottom-0 w-1/2 h-full object-cover rounded-tl-[3.5rem] opacity-80 group-hover:scale-105 transition-transform duration-500" 
+              className="absolute right-0 bottom-0 w-2/5 sm:w-1/2 h-full object-cover rounded-tl-[3rem] opacity-40 sm:opacity-80 group-hover:scale-105 transition-transform duration-500 pointer-events-none" 
             />
           </div>
 
           <div 
             onClick={onNavigateToCatalog}
-            className="bg-[#F8EBE6] rounded-[2rem] p-8 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 min-h-[300px] flex flex-col justify-between"
+            className="bg-[#F8EBE6] rounded-[2rem] p-6 sm:p-8 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 min-h-[260px] sm:min-h-[300px] flex flex-col justify-between"
           >
-            <div className="relative z-10 w-3/4">
+            <div className="relative z-10 w-full sm:w-3/4">
               <span className="inline-block px-3 py-1 bg-amber-900 text-sand rounded-full text-[10px] font-bold uppercase tracking-wider mb-3">
                 Paket Spesial
               </span>
-              <h3 className="font-serif text-2xl font-bold text-amber-950 leading-tight mb-2">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-amber-950 leading-tight mb-2">
                 Prasmanan VIP Nusantara & Western
               </h3>
-              <p className="text-xs text-amber-950/70 mb-4">
+              <p className="text-xs text-amber-950/70 mb-4 max-w-xs sm:max-w-none">
                 Olahan menu chef berstandar bintang lima lengkap dengan dessert bar & pondokan favorit.
               </p>
               <span className="text-xs font-bold text-amber-950 flex items-center gap-1 group-hover:gap-2 transition-all">
@@ -418,22 +418,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <img 
               src="https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=80" 
               alt="Catering VIP" 
-              className="absolute right-0 bottom-0 w-1/2 h-full object-cover rounded-tl-[3.5rem] opacity-80 group-hover:scale-105 transition-transform duration-500" 
+              className="absolute right-0 bottom-0 w-2/5 sm:w-1/2 h-full object-cover rounded-tl-[3rem] opacity-40 sm:opacity-80 group-hover:scale-105 transition-transform duration-500 pointer-events-none" 
             />
           </div>
 
           <div 
             onClick={onNavigateToCatalog}
-            className="bg-[#E6EEF4] rounded-[2rem] p-8 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 min-h-[300px] flex flex-col justify-between"
+            className="bg-[#E6EEF4] rounded-[2rem] p-6 sm:p-8 relative overflow-hidden group cursor-pointer shadow-sm hover:shadow-xl transition-all duration-300 min-h-[260px] sm:min-h-[300px] flex flex-col justify-between"
           >
-            <div className="relative z-10 w-3/4">
+            <div className="relative z-10 w-full sm:w-3/4">
               <span className="inline-block px-3 py-1 bg-sky-900 text-sand rounded-full text-[10px] font-bold uppercase tracking-wider mb-3">
                 Dokumentasi
               </span>
-              <h3 className="font-serif text-2xl font-bold text-sky-950 leading-tight mb-2">
+              <h3 className="font-serif text-xl sm:text-2xl font-bold text-sky-950 leading-tight mb-2">
                 Sinematik Film & Aerial Drone 4K
               </h3>
-              <p className="text-xs text-sky-950/70 mb-4">
+              <p className="text-xs text-sky-950/70 mb-4 max-w-xs sm:max-w-none">
                 Abadikan setiap detik emosional dengan lensa sinema dan audio rekaman multi-channel.
               </p>
               <span className="text-xs font-bold text-sky-950 flex items-center gap-1 group-hover:gap-2 transition-all">
@@ -443,7 +443,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <img 
               src="https://images.unsplash.com/photo-1537633552985-df8429e8048b?auto=format&fit=crop&w=800&q=80" 
               alt="Dokumentasi 4K" 
-              className="absolute right-0 bottom-0 w-1/2 h-full object-cover rounded-tl-[3.5rem] opacity-80 group-hover:scale-105 transition-transform duration-500" 
+              className="absolute right-0 bottom-0 w-2/5 sm:w-1/2 h-full object-cover rounded-tl-[3rem] opacity-40 sm:opacity-80 group-hover:scale-105 transition-transform duration-500 pointer-events-none" 
             />
           </div>
         </div>

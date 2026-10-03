@@ -362,11 +362,11 @@ export const ProfileDetailView: React.FC<ProfileDetailViewProps> = ({
                 </div>
 
                 {/* Simulated Phone Device Frame */}
-                <div className="flex justify-center p-4 sm:p-6 bg-[#1a221b] rounded-3xl border border-champagne-400/20">
-                  <div className="w-full max-w-[380px] h-[650px] rounded-[2.5rem] border-4 border-[#334235] shadow-2xl overflow-hidden relative bg-black flex flex-col">
+                <div className="flex justify-center p-2 sm:p-6 bg-[#1a221b] rounded-3xl border border-champagne-400/20">
+                  <div className="w-full max-w-[340px] sm:max-w-[380px] h-[480px] sm:h-[650px] rounded-[2rem] sm:rounded-[2.5rem] border-4 border-[#334235] shadow-2xl overflow-hidden relative bg-black flex flex-col">
                     {/* Phone speaker notch */}
-                    <div className="w-28 h-4 bg-[#334235] rounded-b-xl mx-auto absolute top-0 inset-x-0 z-30 flex items-center justify-center">
-                      <div className="w-8 h-1 bg-black/40 rounded-full" />
+                    <div className="w-24 sm:w-28 h-3.5 sm:h-4 bg-[#334235] rounded-b-xl mx-auto absolute top-0 inset-x-0 z-30 flex items-center justify-center">
+                      <div className="w-7 sm:w-8 h-1 bg-black/40 rounded-full" />
                     </div>
                     
                     {/* Live Iframe */}
@@ -380,7 +380,7 @@ export const ProfileDetailView: React.FC<ProfileDetailViewProps> = ({
                 </div>
 
                 <div className="mt-4 flex flex-wrap items-center justify-between gap-2 text-[11px] text-gray-500">
-                  <span>💡 Tip: Anda bisa klik tombol "Buka Undangan" di atas untuk mencoba alur buka amplop dan memutar lagu.</span>
+                  <span>💡 Tip: Anda bisa klik tombol "Buka Layar Penuh" di atas untuk mencoba alur buka amplop dan memutar lagu.</span>
                   <a href={product.liveDemoUrl} target="_blank" rel="noreferrer" className="font-bold text-emerald-950 underline hover:text-champagne-700">
                     Buka URL Langsung ↗
                   </a>
@@ -535,7 +535,7 @@ export const ProfileDetailView: React.FC<ProfileDetailViewProps> = ({
           </div>
 
           {/* RIGHT COLUMN: STICKY BOOKING CARD & PRICING */}
-          <div className="w-full lg:w-5/12 xl:w-4/12 sticky top-28 self-start space-y-6">
+          <div className="w-full lg:w-5/12 xl:w-4/12 static lg:sticky top-28 self-start space-y-6">
             
             <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 border border-emerald-950/15 shadow-xl relative overflow-hidden">
               
