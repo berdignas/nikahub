@@ -126,8 +126,6 @@ app.post(['/api/auth/send-verification-email', '/auth/send-verification-email'],
   const siteUrl = process.env.FRONTEND_URL || `${protocol}://${host}`;
   const verifyLink = `${siteUrl}/?verify_email=${encodeURIComponent(cleanEmail)}&code=${verifyCode}`;
 
-  const transporter = createTransporter();
-
   const htmlTemplate = `
     <div style="font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; max-width: 580px; margin: 0 auto; padding: 24px; border: 1px solid #e2e8f0; border-radius: 20px; background-color: #FAF9F5; color: #064e3b;">
       <div style="text-align: center; padding-bottom: 20px; border-bottom: 2px solid #064e3b;">
@@ -206,9 +204,11 @@ app.post(['/api/auth/register', '/auth/register'], (req, res) => {
     email: cleanEmail,
     name: name || cleanEmail.split('@')[0],
     phone: phone || '',
+    password: req.body.password || '',
     eventDate: eventDate || '',
     guestEstimate: guestEstimate || '500 Pax',
     preferredStyle: preferredStyle || 'Tenda VIP & Katering Atelier',
+    isVerified: false,
     createdAt: new Date().toISOString()
   };
 
@@ -232,9 +232,25 @@ app.post(['/api/auth/register', '/auth/register'], (req, res) => {
   });
 });
 
-// 2. Login dengan Email Saja
-app.post(['/api/auth/login', '/auth/login'], (req, res) => {
+// 1b. Konfirmasi Verifikasi Email
+app.post(['/api/auth/verify', '/auth/verify'], (req, res) => {
   const { email } = req.body;
+  if (!email || !email.includes('@')) {
+    return res.status(400).json({ success: false, message: 'Alamat Email tidak valid!' });
+  }
+
+  const cleanEmail = email.trim().toLowerCase();
+  let user = usersDB.get(cleanEmail);
+  if (user) {
+    user.isVerified = true;
+    usersDB.set(cleanEmail, user);
+  }
+  return res.json({ success: true, message: `Email ${cleanEmail} berhasil diverifikasi!` });
+});
+
+// 2. Login dengan Email & Password
+app.post(['/api/auth/login', '/auth/login'], (req, res) => {
+  const { email, password } = req.body;
 
   if (!email || !email.includes('@')) {
     return res.status(400).json({ success: false, message: 'Silakan masukkan alamat Email yang valid!' });
@@ -249,11 +265,22 @@ app.post(['/api/auth/login', '/auth/login'], (req, res) => {
       email: cleanEmail,
       name: cleanEmail.split('@')[0].replace(/[._-]/g, ' ').replace(/\b\w/g, l => l.toUpperCase()),
       phone: '',
+      password: password || '',
+      isVerified: true,
       eventDate: '',
       guestEstimate: '500 Pax',
       createdAt: new Date().toISOString()
     };
     usersDB.set(cleanEmail, user);
+  } else {
+    // If user has a password set, verify it matches
+    if (user.password && password && user.password !== password) {
+      return res.status(401).json({
+        success: false,
+        message: 'Kata sandi salah. Silakan coba lagi.'
+      });
+    }
+    user.isVerified = true;
   }
 
   return res.json({

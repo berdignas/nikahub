@@ -61,7 +61,7 @@ export function App() {
   // User Email Auth State
   const [user, setUser] = useState<User | null>(() => {
     try {
-      const stored = localStorage.getItem('nikahub_user');
+      const stored = localStorage.getItem('nikahub_user') || localStorage.getItem('nikahub_active_user');
       return stored ? JSON.parse(stored) : null;
     } catch {
       return null;
@@ -71,7 +71,7 @@ export function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [pendingAuthAction, setPendingAuthAction] = useState<(() => void) | null>(null);
   const [authPromptMsg, setAuthPromptMsg] = useState<string | null>(null);
-  const [modalInitialMode, setModalInitialMode] = useState<'register' | 'login' | 'verify_pending' | 'verify_success'>('register');
+  const [modalInitialMode, setModalInitialMode] = useState<'register' | 'login' | 'verify_pending' | 'verify_success'>('login');
   const [modalInitialEmail, setModalInitialEmail] = useState<string>('');
 
   const [cartItems, setCartItems] = useState<BookingItem[]>([]);
@@ -168,11 +168,22 @@ export function App() {
           // ignore
         }
 
+        // Notify server of verification
+        fetch('/api/auth/verify', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: cleanEmail })
+        }).catch(() => null);
+
         confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
         setModalInitialEmail(cleanEmail);
-        setModalInitialMode('verify_success');
+        setModalInitialMode('login');
+        setAuthPromptMsg(`✨ Email ${cleanEmail} berhasil diverifikasi! Masukkan kata sandi Anda untuk langsung masuk ke Dashboard.`);
         setIsLoginModalOpen(true);
-        window.history.replaceState({ ...window.history.state, isLoginModalOpen: true }, document.title, window.location.pathname);
+
+        // Clean query parameter from URL without page reload
+        const cleanUrl = window.location.origin + window.location.pathname + window.location.hash;
+        window.history.replaceState({ ...window.history.state, isLoginModalOpen: false }, document.title, cleanUrl);
       }
     } catch {
       // ignore
@@ -181,25 +192,18 @@ export function App() {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state;
 
-      // If user is currently on dashboard ('home') and presses back -> RELOAD PAGE!
-      if (currentPageRef.current === 'home') {
-        window.location.reload();
-        return;
-      }
+      // Close open modals/drawers cleanly on back button
+      setIsLoginModalOpen(false);
+      setIsCartOpen(false);
 
       if (state && state.page) {
         if (state.page === 'home' || state.page === 'home_base' || state.page === 'home_guard') {
           setCurrentPage('home');
           setSelectedProduct(null);
-          setIsCartOpen(false);
-          setIsLoginModalOpen(false);
           return;
         }
 
         setCurrentPage(state.page);
-        setIsCartOpen(!!state.isCartOpen);
-        setIsLoginModalOpen(!!state.isLoginModalOpen);
-
         if (state.selectedProductId) {
           const found = products.find(p => p.id === state.selectedProductId) || WEDDING_PRODUCTS.find(p => p.id === state.selectedProductId);
           if (found) {
@@ -208,9 +212,6 @@ export function App() {
         } else {
           setSelectedProduct(null);
         }
-      } else {
-        // Fallback: Reload dashboard page to prevent closing tab
-        window.location.reload();
       }
     };
 
@@ -301,13 +302,14 @@ export function App() {
     }
   };
 
-  const openLoginModalWithPrompt = (msg?: string, action?: () => void, pushToHistory = true) => {
+  const openLoginModalWithPrompt = (msg?: string, action?: () => void, pushToHistory = false) => {
     setAuthPromptMsg(msg || 'Silakan masuk dengan email Anda terlebih dahulu.');
     if (action) {
       setPendingAuthAction(() => action);
     } else {
       setPendingAuthAction(null);
     }
+    setModalInitialMode('login');
     setIsLoginModalOpen(true);
     if (pushToHistory) {
       pushNavState(currentPage, selectedProduct?.id || null, isCartOpen, true);
@@ -315,10 +317,9 @@ export function App() {
   };
 
   const handleCloseLoginModal = () => {
+    setIsLoginModalOpen(false);
     if (window.history.state?.isLoginModalOpen) {
-      window.history.back();
-    } else {
-      setIsLoginModalOpen(false);
+      window.history.replaceState({ ...window.history.state, isLoginModalOpen: false }, document.title, window.location.href);
     }
   };
 
@@ -334,6 +335,7 @@ export function App() {
     setUser(newUser);
     try {
       localStorage.setItem('nikahub_user', JSON.stringify(newUser));
+      localStorage.setItem('nikahub_active_user', JSON.stringify(newUser));
     } catch (e) {
       console.error('Failed to store user session:', e);
     }
@@ -344,7 +346,7 @@ export function App() {
       setPendingAuthAction(null);
       setTimeout(() => {
         action();
-      }, 300);
+      }, 200);
     }
   };
 

@@ -50,6 +50,20 @@ export const LoginModal: React.FC<LoginModalProps> = ({
     }
   }, [resendCooldown]);
 
+  // Synchronize mode and email whenever props or modal visibility change
+  useEffect(() => {
+    if (initialMode) {
+      setMode(initialMode);
+    }
+  }, [initialMode, isOpen]);
+
+  useEffect(() => {
+    if (initialEmail) {
+      setEmail(initialEmail);
+      setPendingEmail(initialEmail);
+    }
+  }, [initialEmail, isOpen]);
+
   if (!isOpen) return null;
 
   // Helper: Save user to local storage db
@@ -213,12 +227,27 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         isVerified: true
       };
 
-      // Mark verified
-      saveUserToLocalStorage({ ...user, isVerified: true });
+      // Mark verified & preserve password
+      saveUserToLocalStorage({
+        ...user,
+        password: existingUser?.password || password,
+        isVerified: true
+      });
+
+      // Synchronize with server in background
+      try {
+        fetch('/api/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email: trimmedEmail, password })
+        }).catch(() => null);
+      } catch {
+        // ignore
+      }
 
       confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
       onLogin(user);
-    }, 500);
+    }, 400);
   };
 
   // Confirm verification process
@@ -242,9 +271,18 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
       saveUserToLocalStorage(updatedUser);
 
+      // Notify backend of verification
+      fetch('/api/auth/verify', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: target })
+      }).catch(() => null);
+
       confetti({ particleCount: 75, spread: 70, origin: { y: 0.6 } });
-      setMode('verify_success');
-    }, 600);
+      setEmail(target);
+      setMode('login');
+      setInfoMsg(`✨ Email ${target} berhasil diverifikasi! Masukkan kata sandi Anda untuk langsung masuk ke Dashboard.`);
+    }, 400);
   };
 
   const handleResendEmail = async () => {
@@ -689,6 +727,22 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                     </span>
                   </button>
                 </div>
+
+                {/* Direct switch to Login if already confirmed in another tab/device */}
+                <div className="pt-2 text-center border-t border-gray-100">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setEmail(pendingEmail || email);
+                      setMode('login');
+                      setError('');
+                      setInfoMsg(`Silakan masukkan kata sandi akun Anda untuk masuk.`);
+                    }}
+                    className="w-full py-2.5 rounded-xl bg-champagne-400 hover:bg-champagne-300 text-emerald-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-xs"
+                  >
+                    <span>Sudah Klik Tautan di Email? Masuk Sekarang →</span>
+                  </button>
+                </div>
               </div>
             )}
 
@@ -715,10 +769,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                 <button
                   type="button"
                   onClick={() => {
-                    setEmail(pendingEmail);
+                    const target = pendingEmail || initialEmail || email;
+                    setEmail(target);
                     setMode('login');
                     setError('');
-                    setInfoMsg('Email Anda terverifikasi! Masuk sekarang dengan menekan tombol di bawah.');
+                    setInfoMsg('Email Anda terverifikasi! Masukkan kata sandi untuk masuk.');
                   }}
                   className="w-full py-3.5 rounded-full bg-emerald-950 text-sand hover:bg-emerald-900 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all active:scale-95 cursor-pointer mt-3"
                 >
