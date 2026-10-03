@@ -474,7 +474,7 @@ export function App() {
         {currentPage === 'admin-login' && (
           <AdminLoginView 
             onLoginSuccess={() => setCurrentPage('admin-dashboard')}
-            onGoHome={() => handleBackNavigation('home')}
+            onGoHome={() => handleNavigate('home')}
           />
         )}
 
@@ -489,7 +489,6 @@ export function App() {
               sessionStorage.removeItem('nikahub_admin_session');
               handleNavigate('home');
             }}
-            onGoHome={() => handleBackNavigation('home')}
           />
         )}
       </main>
@@ -528,3 +527,5 @@ export function App() {
 }
 
 export default App;
+
+

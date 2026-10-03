@@ -78,7 +78,6 @@ interface AdminDashboardViewProps {
   onUpdateProduct: (product: WeddingProduct) => void;
   onDeleteProduct: (productId: string) => void;
   onLogoutAdmin: () => void;
-  onGoHome: () => void;
 }
 
 export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
@@ -87,7 +86,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   onUpdateProduct,
   onDeleteProduct,
   onLogoutAdmin,
-  onGoHome,
 }) => {
   const [activeTab, setActiveTab] = useState<'catalog' | 'orders' | 'clients'>('catalog');
   const [searchQuery, setSearchQuery] = useState('');
@@ -392,12 +390,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
         <div className="flex items-center gap-2.5 relative z-10 w-full sm:w-auto">
           <button
-            onClick={onGoHome}
-            className="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-white/10 hover:bg-white/20 text-sand font-semibold text-xs transition-colors cursor-pointer"
-          >
-            Lihat Web Frontend
-          </button>
-          <button
             onClick={onLogoutAdmin}
             className="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md"
           >
@@ -407,53 +399,54 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
       </div>
 
-      {/* Navigation Tabs */}
-      <div className="flex items-center justify-between border-b border-emerald-950/10 pb-4 overflow-x-auto gap-4">
-        <div className="flex items-center gap-2">
+      {/* Navigation Tabs (Mobile Optimized Segmented Control) */}
+      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 border-b border-emerald-950/10 pb-5">
+        
+        <div className="flex bg-gray-100 p-1.5 rounded-2xl w-full sm:w-auto">
           <button
             onClick={() => setActiveTab('catalog')}
-            className={`px-5 py-2.5 rounded-full font-serif font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'catalog' 
-                ? 'bg-emerald-950 text-sand shadow-md' 
-                : 'bg-white hover:bg-sand text-emerald-950/70 border border-emerald-950/10'
+                ? 'bg-white text-emerald-950 shadow-sm' 
+                : 'text-gray-500 hover:text-emerald-950'
             }`}
           >
-            <Store className="w-4 h-4 text-champagne-400" />
-            <span>Katalog Layanan ({products.length})</span>
+            <Store className={`w-4 h-4 ${activeTab === 'catalog' ? 'text-champagne-600' : ''}`} />
+            <span>Katalog</span>
           </button>
 
           <button
             onClick={() => setActiveTab('orders')}
-            className={`px-5 py-2.5 rounded-full font-serif font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'orders' 
-                ? 'bg-emerald-950 text-sand shadow-md' 
-                : 'bg-white hover:bg-sand text-emerald-950/70 border border-emerald-950/10'
+                ? 'bg-white text-emerald-950 shadow-sm' 
+                : 'text-gray-500 hover:text-emerald-950'
             }`}
           >
-            <ShoppingBag className="w-4 h-4 text-champagne-400" />
-            <span>Daftar Pesanan ({orders.length})</span>
+            <ShoppingBag className={`w-4 h-4 ${activeTab === 'orders' ? 'text-champagne-600' : ''}`} />
+            <span>Pesanan</span>
           </button>
 
           <button
             onClick={() => setActiveTab('clients')}
-            className={`px-5 py-2.5 rounded-full font-serif font-bold text-xs flex items-center gap-2 transition-all cursor-pointer ${
+            className={`flex-1 sm:flex-none px-4 py-2.5 rounded-xl text-[10px] sm:text-xs font-bold transition-all flex flex-col sm:flex-row items-center justify-center gap-1.5 cursor-pointer ${
               activeTab === 'clients' 
-                ? 'bg-emerald-950 text-sand shadow-md' 
-                : 'bg-white hover:bg-sand text-emerald-950/70 border border-emerald-950/10'
+                ? 'bg-white text-emerald-950 shadow-sm' 
+                : 'text-gray-500 hover:text-emerald-950'
             }`}
           >
-            <Users className="w-4 h-4 text-champagne-400" />
-            <span>Database Klien ({clients.length})</span>
+            <Users className={`w-4 h-4 ${activeTab === 'clients' ? 'text-champagne-600' : ''}`} />
+            <span>Klien</span>
           </button>
         </div>
 
         {activeTab === 'catalog' && (
           <button
             onClick={openAddModal}
-            className="px-5 py-2.5 rounded-full bg-champagne-400 hover:bg-champagne-300 text-emerald-950 font-bold text-xs flex items-center gap-2 shadow-lg transition-transform active:scale-95 cursor-pointer shrink-0"
+            className="w-full sm:w-auto px-5 py-3 rounded-xl bg-emerald-950 hover:bg-emerald-900 text-sand font-bold text-xs flex items-center justify-center gap-2 shadow-md transition-transform active:scale-95 cursor-pointer shrink-0"
           >
-            <Plus className="w-4 h-4" />
-            <span>Tambah Layanan / Produk Baru</span>
+            <Plus className="w-4 h-4 text-champagne-400" />
+            <span>Tambah Layanan Baru</span>
           </button>
         )}
       </div>
@@ -591,56 +584,57 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
             <span className="text-xs text-gray-500 font-medium">Total: {orders.length} Pesanan</span>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-emerald-950">
-              <thead className="bg-sand/60 text-emerald-950 uppercase font-bold text-[10px]">
-                <tr>
-                  <th className="p-3.5 rounded-l-xl">ID Pesanan</th>
-                  <th className="p-3.5">Nama & Kontak Client</th>
-                  <th className="p-3.5">Paket Layanan</th>
-                  <th className="p-3.5">Tanggal & Lokasi</th>
-                  <th className="p-3.5">Total Biaya</th>
-                  <th className="p-3.5">Status SPK</th>
-                  <th className="p-3.5 rounded-r-xl">Aksi</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-100">
-                {orders.map((ord) => (
-                  <tr key={ord.id} className="hover:bg-sand/20 transition-colors">
-                    <td className="p-3.5 font-mono font-bold text-emerald-900">{ord.id}</td>
-                    <td className="p-3.5">
-                      <strong className="block font-bold text-emerald-950">{ord.clientName}</strong>
-                      <span className="text-[10px] text-gray-500 block">{ord.clientEmail} • {ord.clientPhone}</span>
-                    </td>
-                    <td className="p-3.5 max-w-xs truncate font-medium">{ord.productName}</td>
-                    <td className="p-3.5">
-                      <span className="block font-semibold">{ord.eventDate}</span>
-                      <span className="text-[10px] text-gray-500">{ord.eventCity}</span>
-                    </td>
-                    <td className="p-3.5 font-bold font-serif text-sm">{formatRupiah(ord.totalPrice)}</td>
-                    <td className="p-3.5">
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold ${
-                        ord.status === 'Disetujui SPK' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
-                      }`}>
-                        {ord.status}
-                      </span>
-                    </td>
-                    <td className="p-3.5">
-                      <select
-                        value={ord.status}
-                        onChange={(e) => handleChangeOrderStatus(ord.id, e.target.value)}
-                        className="px-2 py-1 rounded-lg border border-gray-200 text-[11px] bg-white cursor-pointer"
-                      >
-                        <option value="Menunggu Konfirmasi">Menunggu Konfirmasi</option>
-                        <option value="Disetujui SPK">Disetujui SPK</option>
-                        <option value="Gladi Resik">Gladi Resik</option>
-                        <option value="Selesai">Selesai</option>
-                      </select>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
+            {orders.map((ord) => (
+              <div key={ord.id} className="p-4 rounded-2xl border border-gray-200 bg-gray-50 hover:bg-white hover:shadow-md transition-all space-y-4">
+                <div className="flex items-center justify-between border-b border-gray-200 pb-3">
+                  <div>
+                    <span className="text-[10px] text-gray-500 font-medium uppercase tracking-wider block">ID Pesanan</span>
+                    <span className="font-mono font-bold text-emerald-900 text-sm">{ord.id}</span>
+                  </div>
+                  <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold shadow-sm ${
+                    ord.status === 'Selesai' ? 'bg-emerald-100 text-emerald-800' :
+                    ord.status === 'Disetujui SPK' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 
+                    'bg-amber-100 text-amber-800 border border-amber-300'
+                  }`}>
+                    {ord.status}
+                  </span>
+                </div>
+
+                <div className="space-y-2.5 text-xs">
+                  <div>
+                    <strong className="block font-bold text-emerald-950 text-sm">{ord.clientName}</strong>
+                    <span className="text-gray-500">{ord.clientEmail} • {ord.clientPhone}</span>
+                  </div>
+                  <div>
+                    <span className="block text-gray-500 text-[10px] uppercase">Paket Layanan:</span>
+                    <span className="font-medium text-emerald-950">{ord.productName}</span>
+                  </div>
+                  <div>
+                    <span className="block text-gray-500 text-[10px] uppercase">Tanggal & Lokasi:</span>
+                    <span className="font-semibold text-emerald-950">{ord.eventDate} <span className="font-normal text-gray-600">• {ord.eventCity}</span></span>
+                  </div>
+                  <div className="pt-2">
+                    <span className="block text-gray-500 text-[10px] uppercase mb-0.5">Total Biaya:</span>
+                    <span className="font-serif font-bold text-base text-emerald-950">{formatRupiah(ord.totalPrice)}</span>
+                  </div>
+                </div>
+
+                <div className="pt-3 border-t border-gray-200">
+                  <label className="block text-[10px] font-bold text-emerald-950 mb-1.5 uppercase tracking-wider">Update Status SPK</label>
+                  <select
+                    value={ord.status}
+                    onChange={(e) => handleChangeOrderStatus(ord.id, e.target.value)}
+                    className="w-full px-3 py-2 rounded-xl border border-gray-300 text-xs bg-white focus:ring-2 focus:ring-emerald-950 outline-none cursor-pointer font-medium"
+                  >
+                    <option value="Menunggu Konfirmasi">⏳ Menunggu Konfirmasi</option>
+                    <option value="Disetujui SPK">✅ Disetujui SPK</option>
+                    <option value="Gladi Resik">🎤 Gladi Resik</option>
+                    <option value="Selesai">🎉 Selesai</option>
+                  </select>
+                </div>
+              </div>
+            ))}
           </div>
         </div>
       )}
@@ -1076,3 +1070,4 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     </div>
   );
 };
+
