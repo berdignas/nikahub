@@ -619,46 +619,32 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               </form>
             )}
 
-            {/* VERIFY PENDING MODE (CLEAN 1-CLICK VERIFICATION) */}
+            {/* VERIFY PENDING MODE (VERIFICATION VIA EMAIL BUTTON) */}
             {mode === 'verify_pending' && (
               <div className="space-y-4 text-xs">
-                {/* Instant Verification Action Card */}
-                <div className="border border-emerald-900/15 bg-emerald-50/50 rounded-2xl p-5 text-center space-y-4">
-                  <div className="w-12 h-12 rounded-2xl bg-emerald-950 text-champagne-400 flex items-center justify-center mx-auto shadow-md">
-                    <Mail className="w-6 h-6 animate-pulse" />
+                {/* Email Sent Notice Card */}
+                <div className="border border-emerald-900/15 bg-emerald-50/50 rounded-2xl p-6 text-center space-y-3">
+                  <div className="w-14 h-14 rounded-2xl bg-emerald-950 text-champagne-400 flex items-center justify-center mx-auto shadow-md">
+                    <Mail className="w-7 h-7 animate-bounce" />
                   </div>
 
-                  <div className="space-y-1">
+                  <div className="space-y-1.5">
+                    <h4 className="font-serif text-base font-bold text-emerald-950">
+                      Cek Kotak Masuk Email Anda
+                    </h4>
                     <p className="text-xs text-emerald-950/80 leading-relaxed">
-                      Email verifikasi telah dikirimkan ke <strong className="text-emerald-950 font-bold">{pendingEmail}</strong>.
+                      Surat verifikasi resmi telah dikirim ke <strong className="text-emerald-950 font-bold">{pendingEmail}</strong>.
                     </p>
-                    <p className="text-[11px] text-gray-500">
-                      Silakan periksa inbox email Anda, atau tekan tombol di bawah untuk verifikasi langsung.
+                    <p className="text-[11px] text-gray-500 max-w-xs mx-auto leading-relaxed pt-1">
+                      Buka email Anda dan klik tombol <strong>"Verifikasi Email Saya Sekarang"</strong> di dalam surat untuk mengaktifkan akun secara otomatis.
                     </p>
                   </div>
-
-                  {/* Primary 1-Click Direct Verification Button */}
-                  <button
-                    type="button"
-                    onClick={() => executeEmailVerification(pendingEmail)}
-                    disabled={isLoading}
-                    className="w-full py-3.5 rounded-full bg-emerald-950 hover:bg-emerald-900 text-sand font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-lg transition-all cursor-pointer active:scale-95 disabled:opacity-50"
-                  >
-                    {isLoading ? (
-                      <span>Memverifikasi Email...</span>
-                    ) : (
-                      <>
-                        <CheckCircle2 className="w-4.5 h-4.5 text-champagne-400" />
-                        <span>Verifikasi Email Sekarang</span>
-                      </>
-                    )}
-                  </button>
                 </div>
 
                 {/* Optional 6-Digit Code Input */}
                 <form onSubmit={handleCodeVerificationSubmit} className="pt-2 border-t border-gray-100 space-y-2">
                   <label className="block text-[11px] font-bold text-emerald-950 text-center">
-                    Atau Masukkan Kode Verifikasi (6-Digit):
+                    Atau Masukkan Kode 6-Digit dari Email:
                   </label>
                   <div className="flex gap-2">
                     <div className="relative flex-1">

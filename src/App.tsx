@@ -142,13 +142,35 @@ export function App() {
       window.history.pushState({ ...baseState, page: initialPage === 'home' ? 'home_guard' : initialPage, isRoot: false }, '', window.location.href);
     }
 
-    // Check if URL has ?verify_email=
+    // Check if URL has ?verify_email= (From email button link)
     try {
       const searchParams = new URLSearchParams(window.location.search);
       const emailToVerify = searchParams.get('verify_email');
       if (emailToVerify) {
-        setModalInitialEmail(emailToVerify);
-        setModalInitialMode('verify_pending');
+        const cleanEmail = emailToVerify.trim().toLowerCase();
+        
+        // Auto-verify user in localStorage
+        try {
+          const storedStr = localStorage.getItem('nikahub_users');
+          const usersMap = storedStr ? JSON.parse(storedStr) : {};
+          if (usersMap[cleanEmail]) {
+            usersMap[cleanEmail].isVerified = true;
+          } else {
+            usersMap[cleanEmail] = {
+              email: cleanEmail,
+              name: cleanEmail.split('@')[0],
+              createdAt: new Date().toISOString(),
+              isVerified: true
+            };
+          }
+          localStorage.setItem('nikahub_users', JSON.stringify(usersMap));
+        } catch {
+          // ignore
+        }
+
+        confetti({ particleCount: 80, spread: 70, origin: { y: 0.6 } });
+        setModalInitialEmail(cleanEmail);
+        setModalInitialMode('verify_success');
         setIsLoginModalOpen(true);
         window.history.replaceState({ ...window.history.state, isLoginModalOpen: true }, document.title, window.location.pathname);
       }

@@ -85,7 +85,9 @@ app.post(['/api/auth/send-verification-email', '/auth/send-verification-email'],
   const cleanEmail = email.trim().toLowerCase();
   const verifyCode = code || Math.floor(100000 + Math.random() * 900000).toString();
   const userName = name || cleanEmail.split('@')[0];
-  const siteUrl = process.env.FRONTEND_URL || 'http://localhost:5173';
+  const host = req.get('host') || 'nikahhub.my.id';
+  const protocol = req.protocol === 'https' || req.get('x-forwarded-proto') === 'https' ? 'https' : (host.includes('localhost') ? 'http' : 'https');
+  const siteUrl = process.env.FRONTEND_URL || `${protocol}://${host}`;
   const verifyLink = `${siteUrl}/?verify_email=${encodeURIComponent(cleanEmail)}&code=${verifyCode}`;
 
   const transporter = createTransporter();
