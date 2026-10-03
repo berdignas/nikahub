@@ -45,12 +45,14 @@ export function App() {
   const [isLoginModalOpen, setIsLoginModalOpen] = useState(false);
   const [pendingAuthAction, setPendingAuthAction] = useState<(() => void) | null>(null);
   const [authPromptMsg, setAuthPromptMsg] = useState<string | null>(null);
+  const [modalInitialMode, setModalInitialMode] = useState<'register' | 'login' | 'verify_pending' | 'verify_success'>('register');
+  const [modalInitialEmail, setModalInitialEmail] = useState<string>('');
 
   const [cartItems, setCartItems] = useState<BookingItem[]>([]);
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Secret URL Route Detector (/login-berdignas-nikahub)
+  // Secret URL Route Detector (/login-berdignas-nikahub) & Email Verification URL query
   useEffect(() => {
     const checkSecretRoute = () => {
       const path = window.location.pathname;
@@ -70,6 +72,21 @@ export function App() {
     checkSecretRoute();
     window.addEventListener('hashchange', checkSecretRoute);
     window.addEventListener('popstate', checkSecretRoute);
+
+    // Check if URL has ?verify_email=
+    try {
+      const searchParams = new URLSearchParams(window.location.search);
+      const emailToVerify = searchParams.get('verify_email');
+      if (emailToVerify) {
+        setModalInitialEmail(emailToVerify);
+        setModalInitialMode('verify_pending');
+        setIsLoginModalOpen(true);
+        window.history.replaceState({}, document.title, window.location.pathname);
+      }
+    } catch {
+      // ignore
+    }
+
     return () => {
       window.removeEventListener('hashchange', checkSecretRoute);
       window.removeEventListener('popstate', checkSecretRoute);
@@ -318,6 +335,8 @@ export function App() {
         onClose={() => setIsLoginModalOpen(false)}
         onLogin={handleLoginSuccess}
         promptMessage={authPromptMsg}
+        initialMode={modalInitialMode}
+        initialEmail={modalInitialEmail}
       />
 
     </div>

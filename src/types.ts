@@ -85,6 +85,7 @@ export interface User {
   phone?: string;
   avatar?: string;
   createdAt?: string;
+  isVerified?: boolean;
 }
 
 export interface ChatMessage {
