@@ -181,14 +181,32 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   // Clients State loaded dynamically from localStorage & API
   const [clients, setClients] = useState<any[]>([]);
 
-  const refreshClientsList = () => {
+  const refreshClientsList = async () => {
+    let localUsers: any[] = [];
     try {
       const storedStr = localStorage.getItem('nikahub_users');
-      let usersList: any[] = storedStr ? Object.values(JSON.parse(storedStr)) : [];
-      setClients(usersList);
+      localUsers = storedStr ? Object.values(JSON.parse(storedStr)) : [];
     } catch {
-      setClients([]);
+      localUsers = [];
     }
+
+    try {
+      const res = await fetch('/api/auth/users').catch(() => null);
+      if (res && res.ok) {
+        const data = await res.json();
+        if (data.success && Array.isArray(data.users)) {
+          const userMap = new Map();
+          localUsers.forEach(u => userMap.set(u.email.toLowerCase(), u));
+          data.users.forEach((u: any) => userMap.set(u.email.toLowerCase(), { ...userMap.get(u.email.toLowerCase()), ...u }));
+          setClients(Array.from(userMap.values()));
+          return;
+        }
+      }
+    } catch {
+      // ignore
+    }
+
+    setClients(localUsers);
   };
 
   React.useEffect(() => {
@@ -215,7 +233,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
     // 2. Delete from Backend API if connected
     try {
-      await fetch(`http://localhost:5000/api/auth/users/${encodeURIComponent(userEmail)}`, {
+      await fetch(`/api/auth/users/${encodeURIComponent(userEmail)}`, {
         method: 'DELETE'
       }).catch(() => null);
     } catch {

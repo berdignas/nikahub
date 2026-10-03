@@ -9,9 +9,9 @@
     "dev": "node --watch server.js"
   },
   "dependencies": {
-    "express": "^4.21.2",
     "cors": "^2.8.5",
     "dotenv": "^16.4.7",
-    "nodemailer": "^6.9.16"
+    "express": "^4.21.2",
+    "nodemailer": "^6.10.1"
   }
 }
