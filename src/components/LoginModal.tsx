@@ -141,33 +141,26 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       isVerified: false
     };
 
-    // Try API backend endpoint if available
-    try {
-      await fetch('/api/auth/register', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newUserRecord)
-      }).catch(() => null);
+    // Call backend endpoints asynchronously in background (never blocks the UI!)
+    fetch('/api/auth/register', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(newUserRecord)
+    }).catch(() => null);
 
-      // Send verification email via backend Nodemailer
-      await fetch('/api/auth/send-verification-email', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email: trimmedEmail, name: userName })
-      }).catch(() => null);
-    } catch {
-      // ignore offline backend
-    }
+    fetch('/api/auth/send-verification-email', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: trimmedEmail, name: userName })
+    }).catch(() => null);
 
     // Save locally
     saveUserToLocalStorage(newUserRecord);
 
-    setTimeout(() => {
-      setIsLoading(false);
-      setPendingEmail(trimmedEmail);
-      setResendCooldown(120); // 2 Menit cooldown
-      setMode('verify_pending');
-    }, 600);
+    setIsLoading(false);
+    setPendingEmail(trimmedEmail);
+    setResendCooldown(120); // 2 Menit cooldown
+    setMode('verify_pending');
   };
 
   const handleLoginSubmit = async (e: React.FormEvent) => {

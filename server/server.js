@@ -37,9 +37,22 @@ const sendEmailWithFallback = async ({ from, to, subject, html }) => {
 
   // List of fallback configurations to attempt:
   // 1. Port 587 STARTTLS (IPv4 forced)
-  // 2. Port 465 SSL/TLS (IPv4 forced)
+  // 1. Port 465 SSL/TLS (Direct SSL, IPv4 forced)
+  // 2. Port 587 STARTTLS (IPv4 forced)
   // 3. Service: 'gmail' (IPv4 forced)
   const configs = [
+    {
+      name: 'smtp.gmail.com:465 (SSL, IPv4)',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: { user, pass },
+      family: 4,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000,
+      tls: { rejectUnauthorized: false }
+    },
     {
       name: 'smtp.gmail.com:587 (TLS, IPv4)',
       host: 'smtp.gmail.com',
@@ -48,21 +61,9 @@ const sendEmailWithFallback = async ({ from, to, subject, html }) => {
       requireTLS: true,
       auth: { user, pass },
       family: 4,
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 10000,
-      tls: { rejectUnauthorized: false }
-    },
-    {
-      name: 'smtp.gmail.com:465 (SSL, IPv4)',
-      host: 'smtp.gmail.com',
-      port: 465,
-      secure: true,
-      auth: { user, pass },
-      family: 4,
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 10000,
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000,
       tls: { rejectUnauthorized: false }
     },
     {
@@ -70,9 +71,9 @@ const sendEmailWithFallback = async ({ from, to, subject, html }) => {
       service: 'gmail',
       auth: { user, pass },
       family: 4,
-      connectionTimeout: 8000,
-      greetingTimeout: 8000,
-      socketTimeout: 10000
+      connectionTimeout: 5000,
+      greetingTimeout: 5000,
+      socketTimeout: 8000
     }
   ];
 
