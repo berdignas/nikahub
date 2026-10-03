@@ -168,9 +168,18 @@ export function App() {
       }
     };
 
+    const handleHashChange = () => {
+      if (window.location.hash.includes('login-berdignas-nikahub') || window.location.hash.includes('admin')) {
+        const isAdminAuth = sessionStorage.getItem('nikahub_admin_session') === 'authenticated';
+        setCurrentPage(isAdminAuth ? 'admin-dashboard' : 'admin-login');
+      }
+    };
+
     window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handleHashChange);
     return () => {
       window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handleHashChange);
     };
   }, [products]);
 
