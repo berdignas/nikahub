@@ -26,36 +26,71 @@ const usersDB = new Map();
 const ordersDB = [];
 const chatMessagesDB = new Map();
 
-// Helper: Setup Nodemailer Transporter for sending real emails
-const createTransporter = () => {
+// Helper: Send Real Email with Multiple Fallbacks (Forces IPv4 to prevent Linux IPv6 routing timeouts)
+const sendEmailWithFallback = async ({ from, to, subject, html }) => {
   const user = process.env.SMTP_USER || process.env.GMAIL_USER;
   const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
 
-  if (!user || !pass) return null;
-
-  // If using Gmail credentials, nodemailer's built-in 'service: gmail' handles host/port/tls automatically
-  if (user.includes('@gmail.com') || process.env.GMAIL_USER) {
-    return nodemailer.createTransport({
-      service: 'gmail',
-      auth: { user, pass },
-      connectionTimeout: 10000,
-      greetingTimeout: 10000,
-      socketTimeout: 15000
-    });
+  if (!user || !pass) {
+    throw new Error('Kredensial GMAIL_USER atau GMAIL_PASS belum dikonfigurasi di server/.env');
   }
 
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '465');
+  // List of fallback configurations to attempt:
+  // 1. Port 587 STARTTLS (IPv4 forced)
+  // 2. Port 465 SSL/TLS (IPv4 forced)
+  // 3. Service: 'gmail' (IPv4 forced)
+  const configs = [
+    {
+      name: 'smtp.gmail.com:587 (TLS, IPv4)',
+      host: 'smtp.gmail.com',
+      port: 587,
+      secure: false,
+      requireTLS: true,
+      auth: { user, pass },
+      family: 4,
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 10000,
+      tls: { rejectUnauthorized: false }
+    },
+    {
+      name: 'smtp.gmail.com:465 (SSL, IPv4)',
+      host: 'smtp.gmail.com',
+      port: 465,
+      secure: true,
+      auth: { user, pass },
+      family: 4,
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 10000,
+      tls: { rejectUnauthorized: false }
+    },
+    {
+      name: 'service:gmail (IPv4)',
+      service: 'gmail',
+      auth: { user, pass },
+      family: 4,
+      connectionTimeout: 8000,
+      greetingTimeout: 8000,
+      socketTimeout: 10000
+    }
+  ];
 
-  return nodemailer.createTransport({
-    host,
-    port,
-    secure: port === 465,
-    auth: { user, pass },
-    connectionTimeout: 10000,
-    greetingTimeout: 10000,
-    socketTimeout: 15000
-  });
+  let lastError = null;
+  for (const cfg of configs) {
+    try {
+      console.log(`📡 Mencoba mengirim email via ${cfg.name}...`);
+      const transporter = nodemailer.createTransport(cfg);
+      const result = await transporter.sendMail({ from, to, subject, html });
+      console.log(`✅ Sukses mengirim email via ${cfg.name}! MessageId: ${result.messageId}`);
+      return { success: true, via: cfg.name, result };
+    } catch (err) {
+      console.warn(`⚠️ Percobaan via ${cfg.name} gagal (${err.message}). Mencoba metode berikutnya...`);
+      lastError = err;
+    }
+  }
+
+  throw lastError;
 };
 
 // ==========================================
@@ -119,19 +154,22 @@ app.post(['/api/auth/send-verification-email', '/auth/send-verification-email'],
     </div>
   `;
 
-  if (transporter) {
+  const senderUser = process.env.SMTP_USER || process.env.GMAIL_USER;
+
+  if (senderUser) {
     try {
-      await transporter.sendMail({
-        from: process.env.SMTP_FROM || `"NikaHub Atelier" <${process.env.SMTP_USER || process.env.GMAIL_USER}>`,
+      const emailResult = await sendEmailWithFallback({
+        from: process.env.SMTP_FROM || `"Berdikari Wedding" <${senderUser}>`,
         to: cleanEmail,
-        subject: `[NikaHub Atelier] Kode Verifikasi Email Anda: ${verifyCode}`,
+        subject: `[Berdikari Wedding] Kode Verifikasi Email Anda: ${verifyCode}`,
         html: htmlTemplate
       });
 
-      console.log(`✅ Real Email sent successfully via SMTP to ${cleanEmail}`);
+      console.log(`✅ Real Email sent successfully to ${cleanEmail} via ${emailResult.via}`);
       return res.json({
         success: true,
         sentRealEmail: true,
+        via: emailResult.via,
         code: verifyCode,
         message: `Email verifikasi asli telah berhasil dikirim ke ${cleanEmail}!`
       });
@@ -141,12 +179,12 @@ app.post(['/api/auth/send-verification-email', '/auth/send-verification-email'],
         success: true,
         sentRealEmail: false,
         code: verifyCode,
-        message: `Email verifikasi siap dikirim. Set SMTP_USER & SMTP_PASS di server/.env untuk pengiriman asli via Gmail.`,
+        message: `Email verifikasi gagal dikirim via SMTP: ${err.message}`,
         error: err.message
       });
     }
   } else {
-    console.log(`\n📧 [SIMULASI EMAIL TERKIRIM KE ${cleanEmail}]: Kode Verifikasi: ${verifyCode}\nLink: ${verifyLink}\n(Set SMTP_USER & SMTP_PASS di server/.env untuk kirim email nyata via Gmail)\n`);
+    console.log(`\n📧 [SIMULASI EMAIL TERKIRIM KE ${cleanEmail}]: Kode Verifikasi: ${verifyCode}\nLink: ${verifyLink}\n(Set GMAIL_USER & GMAIL_PASS di server/.env)\n`);
     return res.json({
       success: true,
       sentRealEmail: false,
