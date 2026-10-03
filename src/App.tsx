@@ -52,7 +52,24 @@ export function App() {
   const [wishlistIds, setWishlistIds] = useState<string[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
 
-  // Secret URL Route Detector (/login-berdignas-nikahub) & Email Verification URL query
+  // Push Nav State helper to sync browser history stack with SPA state
+  const pushNavState = (
+    page: ActivePage,
+    productId: string | null = selectedProduct?.id || null,
+    cartOpen: boolean = isCartOpen,
+    loginOpen: boolean = isLoginModalOpen
+  ) => {
+    const state = {
+      page,
+      selectedProductId: productId,
+      isCartOpen: cartOpen,
+      isLoginModalOpen: loginOpen,
+      timestamp: Date.now()
+    };
+    window.history.pushState(state, '', window.location.href);
+  };
+
+  // Secret URL Route Detector (/login-berdignas-nikahub) & Mobile Hardware Back Navigation
   useEffect(() => {
     const checkSecretRoute = () => {
       const path = window.location.pathname;
@@ -60,18 +77,26 @@ export function App() {
 
       if (path.includes('login-berdignas-nikahub') || hash.includes('login-berdignas-nikahub')) {
         const isAdminAuth = sessionStorage.getItem('nikahub_admin_session') === 'authenticated';
-        if (isAdminAuth) {
-          setCurrentPage('admin-dashboard');
-        } else {
-          setCurrentPage('admin-login');
-        }
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+        return isAdminAuth ? ('admin-dashboard' as ActivePage) : ('admin-login' as ActivePage);
       }
+      return 'home' as ActivePage;
     };
 
-    checkSecretRoute();
-    window.addEventListener('hashchange', checkSecretRoute);
-    window.addEventListener('popstate', checkSecretRoute);
+    const initialPage = checkSecretRoute();
+
+    // Initialize root history state to prevent exiting browser on initial back press
+    if (!window.history.state || !window.history.state.page) {
+      const initialState = {
+        page: initialPage,
+        selectedProductId: null,
+        isCartOpen: false,
+        isLoginModalOpen: false,
+        isRoot: true,
+        timestamp: Date.now()
+      };
+      window.history.replaceState(initialState, '', window.location.href);
+      window.history.pushState(initialState, '', window.location.href);
+    }
 
     // Check if URL has ?verify_email=
     try {
@@ -81,17 +106,53 @@ export function App() {
         setModalInitialEmail(emailToVerify);
         setModalInitialMode('verify_pending');
         setIsLoginModalOpen(true);
-        window.history.replaceState({}, document.title, window.location.pathname);
+        window.history.replaceState({ ...window.history.state, isLoginModalOpen: true }, document.title, window.location.pathname);
       }
     } catch {
       // ignore
     }
 
-    return () => {
-      window.removeEventListener('hashchange', checkSecretRoute);
-      window.removeEventListener('popstate', checkSecretRoute);
+    const handlePopState = (e: PopStateEvent) => {
+      const state = e.state;
+
+      if (state && state.page) {
+        setCurrentPage(state.page);
+        setIsCartOpen(!!state.isCartOpen);
+        setIsLoginModalOpen(!!state.isLoginModalOpen);
+
+        if (state.selectedProductId) {
+          const found = products.find(p => p.id === state.selectedProductId) || WEDDING_PRODUCTS.find(p => p.id === state.selectedProductId);
+          if (found) {
+            setSelectedProduct(found);
+          }
+        } else {
+          setSelectedProduct(null);
+        }
+      } else {
+        // Reached root of history: Keep user on home dashboard without exiting site
+        setCurrentPage('home');
+        setSelectedProduct(null);
+        setIsCartOpen(false);
+        setIsLoginModalOpen(false);
+
+        const homeState = {
+          page: 'home' as ActivePage,
+          selectedProductId: null,
+          isCartOpen: false,
+          isLoginModalOpen: false,
+          isRoot: true,
+          timestamp: Date.now()
+        };
+        window.history.replaceState(homeState, '', window.location.href);
+        window.history.pushState(homeState, '', window.location.href);
+      }
     };
-  }, []);
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, [products]);
 
   // Save Products changes to localStorage
   const saveProductsToStorage = (newProds: WeddingProduct[]) => {
@@ -119,18 +180,53 @@ export function App() {
     saveProductsToStorage(updated);
   };
 
-  const handleNavigate = (page: ActivePage) => {
+  const handleNavigate = (page: ActivePage, pushToHistory = true) => {
     setCurrentPage(page);
+    setIsCartOpen(false);
+    setIsLoginModalOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (pushToHistory) {
+      pushNavState(page, null, false, false);
+    }
   };
 
-  const handleSelectProduct = (product: WeddingProduct) => {
+  const handleSelectProduct = (product: WeddingProduct, pushToHistory = true) => {
     setSelectedProduct(product);
     setCurrentPage('profile');
+    setIsCartOpen(false);
+    setIsLoginModalOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
+
+    if (pushToHistory) {
+      pushNavState('profile', product.id, false, false);
+    }
   };
 
-  const openLoginModalWithPrompt = (msg?: string, action?: () => void) => {
+  const handleBackNavigation = (fallbackPage: ActivePage = 'home') => {
+    if (window.history.state && !window.history.state.isRoot) {
+      window.history.back();
+    } else {
+      handleNavigate(fallbackPage);
+    }
+  };
+
+  const handleOpenCart = (pushToHistory = true) => {
+    setIsCartOpen(true);
+    if (pushToHistory) {
+      pushNavState(currentPage, selectedProduct?.id || null, true, isLoginModalOpen);
+    }
+  };
+
+  const handleCloseCart = () => {
+    if (window.history.state?.isCartOpen) {
+      window.history.back();
+    } else {
+      setIsCartOpen(false);
+    }
+  };
+
+  const openLoginModalWithPrompt = (msg?: string, action?: () => void, pushToHistory = true) => {
     setAuthPromptMsg(msg || 'Silakan masuk dengan email Anda terlebih dahulu.');
     if (action) {
       setPendingAuthAction(() => action);
@@ -138,6 +234,17 @@ export function App() {
       setPendingAuthAction(null);
     }
     setIsLoginModalOpen(true);
+    if (pushToHistory) {
+      pushNavState(currentPage, selectedProduct?.id || null, isCartOpen, true);
+    }
+  };
+
+  const handleCloseLoginModal = () => {
+    if (window.history.state?.isLoginModalOpen) {
+      window.history.back();
+    } else {
+      setIsLoginModalOpen(false);
+    }
   };
 
   const requireAuth = (action: () => void, promptMsg?: string) => {
@@ -155,7 +262,7 @@ export function App() {
     } catch (e) {
       console.error('Failed to store user session:', e);
     }
-    setIsLoginModalOpen(false);
+    handleCloseLoginModal();
 
     if (pendingAuthAction) {
       const action = pendingAuthAction;
@@ -191,7 +298,7 @@ export function App() {
         origin: { y: 0.8 }
       });
 
-      setIsCartOpen(true);
+      handleOpenCart();
     }, `Silakan login dengan Email Anda terlebih dahulu untuk memesan paket ${product.title}.`);
   };
 
@@ -214,10 +321,10 @@ export function App() {
       {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
         <Navbar 
           currentPage={currentPage}
-          onPageChange={handleNavigate}
+          onPageChange={(page) => handleNavigate(page)}
           cartCount={cartItems.length}
           wishlistCount={wishlistIds.length}
-          onOpenCart={() => setIsCartOpen(true)}
+          onOpenCart={() => handleOpenCart()}
           user={user}
           onOpenLogin={() => openLoginModalWithPrompt('Masuk dengan email aktif Anda untuk reservasi & konsultasi chat.')}
           onLogout={handleLogout}
@@ -250,7 +357,7 @@ export function App() {
         {currentPage === 'profile' && selectedProduct && (
           <ProfileDetailView 
             product={selectedProduct}
-            onBack={() => handleNavigate('catalog')}
+            onBack={() => handleBackNavigation('catalog')}
             onAddToCart={handleAddToCart}
             onSelectOtherProduct={handleSelectProduct}
             allProducts={products}
@@ -267,7 +374,7 @@ export function App() {
           <ChatView 
             user={user}
             onNavigateToCatalog={() => handleNavigate('catalog')}
-            onOpenCart={() => setIsCartOpen(true)}
+            onOpenCart={() => handleOpenCart()}
             onRequestLogin={() => openLoginModalWithPrompt('Silakan login dengan Email untuk memulai live chat concierge NikaHub.')}
           />
         )}
@@ -278,7 +385,7 @@ export function App() {
             onRemoveItem={handleRemoveFromCart}
             user={user}
             onRequestLogin={(msg) => openLoginModalWithPrompt(msg)}
-            onNavigateToCatalog={() => handleNavigate('catalog')}
+            onNavigateToCatalog={() => handleBackNavigation('catalog')}
           />
         )}
 
@@ -290,7 +397,7 @@ export function App() {
         {currentPage === 'admin-login' && (
           <AdminLoginView 
             onLoginSuccess={() => setCurrentPage('admin-dashboard')}
-            onGoHome={() => handleNavigate('home')}
+            onGoHome={() => handleBackNavigation('home')}
           />
         )}
 
@@ -305,7 +412,7 @@ export function App() {
               sessionStorage.removeItem('nikahub_admin_session');
               handleNavigate('home');
             }}
-            onGoHome={() => handleNavigate('home')}
+            onGoHome={() => handleBackNavigation('home')}
           />
         )}
       </main>
@@ -318,7 +425,7 @@ export function App() {
       {/* Reservation Cart Slide-over Drawer (Menu CO) */}
       <CartDrawer 
         isOpen={isCartOpen}
-        onClose={() => setIsCartOpen(false)}
+        onClose={handleCloseCart}
         items={cartItems}
         onRemoveItem={handleRemoveFromCart}
         user={user}
@@ -332,7 +439,7 @@ export function App() {
       {/* Email Login Modal */}
       <LoginModal 
         isOpen={isLoginModalOpen}
-        onClose={() => setIsLoginModalOpen(false)}
+        onClose={handleCloseLoginModal}
         onLogin={handleLoginSuccess}
         promptMessage={authPromptMsg}
         initialMode={modalInitialMode}

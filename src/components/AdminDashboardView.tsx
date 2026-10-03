@@ -105,6 +105,21 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [imagePosition, setImagePosition] = useState<'center' | 'top' | 'bottom'>('center');
   const [isCropperOpen, setIsCropperOpen] = useState<boolean>(false);
 
+  // Close admin modals when phone back button is pressed
+  React.useEffect(() => {
+    if (isAddModalOpen || isCropperOpen) {
+      window.history.pushState({ ...window.history.state, adminModalOpen: true }, '');
+      const handlePop = () => {
+        setIsAddModalOpen(false);
+        setIsCropperOpen(false);
+      };
+      window.addEventListener('popstate', handlePop, { once: true });
+      return () => {
+        window.removeEventListener('popstate', handlePop);
+      };
+    }
+  }, [isAddModalOpen, isCropperOpen]);
+
   const handleImageFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;

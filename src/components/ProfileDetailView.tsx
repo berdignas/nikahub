@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WeddingProduct } from '../types';
 import { 
@@ -45,6 +45,20 @@ export const ProfileDetailView: React.FC<ProfileDetailViewProps> = ({
   const [selectedDate, setSelectedDate] = useState<string>('');
   const [activePortfolioFilter, setActivePortfolioFilter] = useState<string>('all');
   const [lightboxImage, setLightboxImage] = useState<{ url: string; title: string; caption?: string } | null>(null);
+
+  // Close lightbox modal on phone back button press
+  useEffect(() => {
+    if (lightboxImage) {
+      window.history.pushState({ ...window.history.state, lightboxOpen: true }, '');
+      const handlePop = () => {
+        setLightboxImage(null);
+      };
+      window.addEventListener('popstate', handlePop, { once: true });
+      return () => {
+        window.removeEventListener('popstate', handlePop);
+      };
+    }
+  }, [lightboxImage]);
 
   // Digital Invitation Add-ons with Custom Flexible Pricing
   const isDigitalProduct = product.category === 'undangan_digital' || product.category === 'undangan' || product.category === 'bukutamu_digital';

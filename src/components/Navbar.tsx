@@ -55,6 +55,20 @@ export const Navbar: React.FC<NavbarProps> = ({
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
   const [notificationDropdownOpen, setNotificationDropdownOpen] = useState(false);
 
+  // Close mobile drawer when phone back button is pressed
+  useEffect(() => {
+    if (mobileMenuOpen) {
+      window.history.pushState({ ...window.history.state, mobileNavOpen: true }, '');
+      const handlePop = () => {
+        setMobileMenuOpen(false);
+      };
+      window.addEventListener('popstate', handlePop, { once: true });
+      return () => {
+        window.removeEventListener('popstate', handlePop);
+      };
+    }
+  }, [mobileMenuOpen]);
+
   // Dynamic Notifications State (Empty by default, populates only when user is logged in)
   const [notifications, setNotifications] = useState<Array<{
     id: string;
