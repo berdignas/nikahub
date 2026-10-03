@@ -16,8 +16,29 @@ import { WEDDING_PRODUCTS } from './data/mockData';
 import { WeddingProduct, ProductCategory, BookingItem, User } from './types';
 import confetti from 'canvas-confetti';
 
+const getSecretRoutePage = (): ActivePage => {
+  try {
+    const path = window.location.pathname;
+    const hash = window.location.hash;
+    const search = window.location.search;
+
+    if (
+      path.includes('login-berdignas-nikahub') ||
+      hash.includes('login-berdignas-nikahub') ||
+      search.includes('login-berdignas-nikahub') ||
+      search.includes('admin')
+    ) {
+      const isAdminAuth = sessionStorage.getItem('nikahub_admin_session') === 'authenticated';
+      return isAdminAuth ? 'admin-dashboard' : 'admin-login';
+    }
+  } catch {
+    // ignore
+  }
+  return 'home';
+};
+
 export function App() {
-  const [currentPage, setCurrentPage] = useState<ActivePage>('home');
+  const [currentPage, setCurrentPage] = useState<ActivePage>(getSecretRoutePage);
   const currentPageRef = useRef<ActivePage>(currentPage);
 
   useEffect(() => {
@@ -103,6 +124,9 @@ export function App() {
     };
 
     const initialPage = checkSecretRoute();
+    if (initialPage !== 'home') {
+      setCurrentPage(initialPage);
+    }
 
     // Initialize root history state to prevent exiting browser on initial back press
     if (!window.history.state || !window.history.state.page) {
