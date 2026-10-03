@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Navbar, ActivePage } from './components/Navbar';
 import { HomeView } from './components/HomeView';
 import { CatalogView } from './components/CatalogView';
@@ -18,6 +18,11 @@ import confetti from 'canvas-confetti';
 
 export function App() {
   const [currentPage, setCurrentPage] = useState<ActivePage>('home');
+  const currentPageRef = useRef<ActivePage>(currentPage);
+
+  useEffect(() => {
+    currentPageRef.current = currentPage;
+  }, [currentPage]);
   
   // Dynamic Products State managed by Admin CRUD (Default clean empty)
   const [products, setProducts] = useState<WeddingProduct[]>(() => {
@@ -86,16 +91,16 @@ export function App() {
 
     // Initialize root history state to prevent exiting browser on initial back press
     if (!window.history.state || !window.history.state.page) {
-      const initialState = {
-        page: initialPage,
+      const baseState = {
+        page: 'home_base',
         selectedProductId: null,
         isCartOpen: false,
         isLoginModalOpen: false,
         isRoot: true,
         timestamp: Date.now()
       };
-      window.history.replaceState(initialState, '', window.location.href);
-      window.history.pushState(initialState, '', window.location.href);
+      window.history.replaceState(baseState, '', window.location.href);
+      window.history.pushState({ ...baseState, page: initialPage, isRoot: false }, '', window.location.href);
     }
 
     // Check if URL has ?verify_email=
@@ -115,7 +120,13 @@ export function App() {
     const handlePopState = (e: PopStateEvent) => {
       const state = e.state;
 
-      if (state && state.page) {
+      // If user is currently on dashboard ('home') and presses back (or pops to root), refresh the page instead of exiting tab!
+      if (currentPageRef.current === 'home' && (!state || state.isRoot || state.page === 'home_base')) {
+        window.location.reload();
+        return;
+      }
+
+      if (state && state.page && state.page !== 'home_base') {
         setCurrentPage(state.page);
         setIsCartOpen(!!state.isCartOpen);
         setIsLoginModalOpen(!!state.isLoginModalOpen);
@@ -129,22 +140,8 @@ export function App() {
           setSelectedProduct(null);
         }
       } else {
-        // Reached root of history: Keep user on home dashboard without exiting site
-        setCurrentPage('home');
-        setSelectedProduct(null);
-        setIsCartOpen(false);
-        setIsLoginModalOpen(false);
-
-        const homeState = {
-          page: 'home' as ActivePage,
-          selectedProductId: null,
-          isCartOpen: false,
-          isLoginModalOpen: false,
-          isRoot: true,
-          timestamp: Date.now()
-        };
-        window.history.replaceState(homeState, '', window.location.href);
-        window.history.pushState(homeState, '', window.location.href);
+        // Fallback: Refresh dashboard page to prevent closing tab
+        window.location.reload();
       }
     };
 
