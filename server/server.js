@@ -157,41 +157,30 @@ app.post(['/api/auth/send-verification-email', '/auth/send-verification-email'],
 
   const senderUser = process.env.SMTP_USER || process.env.GMAIL_USER;
 
-  if (senderUser) {
-    try {
-      const emailResult = await sendEmailWithFallback({
-        from: process.env.SMTP_FROM || `"Berdikari Wedding" <${senderUser}>`,
-        to: cleanEmail,
-        subject: `[Berdikari Wedding] Kode Verifikasi Email Anda: ${verifyCode}`,
-        html: htmlTemplate
-      });
+  // Return HTTP response immediately to prevent Nginx 504 Gateway Timeout
+  res.json({
+    success: true,
+    sentRealEmail: !!senderUser,
+    code: verifyCode,
+    verifyLink,
+    message: `Permintaan verifikasi untuk ${cleanEmail} telah diproses.`
+  });
 
-      console.log(`✅ Real Email sent successfully to ${cleanEmail} via ${emailResult.via}`);
-      return res.json({
-        success: true,
-        sentRealEmail: true,
-        via: emailResult.via,
-        code: verifyCode,
-        message: `Email verifikasi asli telah berhasil dikirim ke ${cleanEmail}!`
+  if (senderUser) {
+    sendEmailWithFallback({
+      from: process.env.SMTP_FROM || `"Berdikari Wedding" <${senderUser}>`,
+      to: cleanEmail,
+      subject: `[Berdikari Wedding] Kode Verifikasi Email Anda: ${verifyCode}`,
+      html: htmlTemplate
+    })
+      .then(emailResult => {
+        console.log(`✅ Real Email sent successfully to ${cleanEmail} via ${emailResult.via}`);
+      })
+      .catch(err => {
+        console.error(`⚠️ SMTP Mail error for ${cleanEmail}:`, err.message);
       });
-    } catch (err) {
-      console.error('⚠️ SMTP Mail error:', err.message);
-      return res.json({
-        success: true,
-        sentRealEmail: false,
-        code: verifyCode,
-        message: `Email verifikasi gagal dikirim via SMTP: ${err.message}`,
-        error: err.message
-      });
-    }
   } else {
-    console.log(`\n📧 [SIMULASI EMAIL TERKIRIM KE ${cleanEmail}]: Kode Verifikasi: ${verifyCode}\nLink: ${verifyLink}\n(Set GMAIL_USER & GMAIL_PASS di server/.env)\n`);
-    return res.json({
-      success: true,
-      sentRealEmail: false,
-      code: verifyCode,
-      message: `Kode verifikasi ${verifyCode} dibuat untuk ${cleanEmail}.`
-    });
+    console.log(`\n📧 [SIMULASI EMAIL]: Kode: ${verifyCode}\nLink: ${verifyLink}\n(Set GMAIL_USER & GMAIL_PASS di server/.env)\n`);
   }
 });
 
