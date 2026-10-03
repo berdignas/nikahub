@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { X, Mail, Sparkles, Lock, ArrowRight, ShieldCheck, Phone, CheckCircle2, RefreshCw, Send, KeyRound, Check } from 'lucide-react';
+import { X, Mail, Sparkles, Lock, ArrowRight, ShieldCheck, Phone, CheckCircle2, RefreshCw, Send, KeyRound, Check, Eye, EyeOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { User } from '../types';
 
@@ -27,6 +27,10 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [email, setEmail] = useState(initialEmail);
   const [name, setName] = useState('');
   const [phone, setPhone] = useState('');
+  const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [eventDate, setEventDate] = useState('');
   const [guestEstimate, setGuestEstimate] = useState('');
   const [verificationCodeInput, setVerificationCodeInput] = useState('');
@@ -49,7 +53,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   if (!isOpen) return null;
 
   // Helper: Save user to local storage db
-  const saveUserToLocalStorage = (userObj: User & { isVerified?: boolean; phone?: string; eventDate?: string; guestEstimate?: string }) => {
+  const saveUserToLocalStorage = (userObj: User & { isVerified?: boolean; phone?: string; password?: string; eventDate?: string; guestEstimate?: string }) => {
     try {
       const storedStr = localStorage.getItem('nikahub_users');
       const usersMap = storedStr ? JSON.parse(storedStr) : {};
@@ -98,6 +102,21 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       return;
     }
 
+    if (!password) {
+      setError('Silakan buat kata sandi untuk akun Anda.');
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Kata sandi minimal 6 karakter.');
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      setError('Kata sandi dan konfirmasi kata sandi tidak cocok!');
+      return;
+    }
+
     setIsLoading(true);
 
     const userName = name.trim();
@@ -105,6 +124,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       email: trimmedEmail,
       name: userName,
       phone: phone.trim(),
+      password: password,
       eventDate: eventDate || '',
       guestEstimate: guestEstimate.trim() || '500 Pax',
       createdAt: new Date().toISOString(),
@@ -149,6 +169,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       return;
     }
 
+    if (!password) {
+      setError('Silakan masukkan kata sandi akun Anda.');
+      return;
+    }
+
     setIsLoading(true);
 
     // Check if user exists locally
@@ -156,6 +181,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
 
     setTimeout(() => {
       setIsLoading(false);
+
+      if (existingUser && existingUser.password && existingUser.password !== password) {
+        setError('Kata sandi yang Anda masukkan salah. Silakan coba lagi.');
+        return;
+      }
 
       if (existingUser && existingUser.isVerified === false) {
         setError(`Email ${trimmedEmail} belum diverifikasi! Silakan verifikasi email Anda terlebih dahulu.`);
@@ -195,6 +225,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         email: target,
         name: existing?.name || name || target.split('@')[0],
         phone: existing?.phone || phone || undefined,
+        password: existing?.password || password,
         createdAt: existing?.createdAt || new Date().toISOString(),
         isVerified: true
       };
@@ -352,6 +383,58 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   </div>
                 </div>
 
+                {/* Password Input */}
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">
+                    Buat Kata Sandi / Password *
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-emerald-950/40 absolute left-3.5 top-3 pointer-events-none" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Minimal 6 karakter"
+                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-200 text-xs text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50 focus:bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-3 text-emerald-950/40 hover:text-emerald-950 transition-colors cursor-pointer"
+                      title={showPassword ? 'Sembunyikan Kata Sandi' : 'Tampilkan Kata Sandi'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
+                {/* Confirm Password Input */}
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">
+                    Konfirmasi Kata Sandi *
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-emerald-950/40 absolute left-3.5 top-3 pointer-events-none" />
+                    <input
+                      type={showConfirmPassword ? 'text' : 'password'}
+                      required
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      placeholder="Ulangi kata sandi Anda"
+                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-200 text-xs text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50 focus:bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                      className="absolute right-3.5 top-3 text-emerald-950/40 hover:text-emerald-950 transition-colors cursor-pointer"
+                      title={showConfirmPassword ? 'Sembunyikan Kata Sandi' : 'Tampilkan Kata Sandi'}
+                    >
+                      {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                </div>
+
                 <div className="grid grid-cols-2 gap-3">
                   <div>
                     <label className="block font-bold text-emerald-950 mb-1">
@@ -433,6 +516,31 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                       placeholder="nama@email.com"
                       className="w-full pl-10 pr-4 py-2.5 rounded-xl border border-gray-200 text-xs text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50 focus:bg-white"
                     />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-emerald-950 mb-1">
+                    Kata Sandi / Password *
+                  </label>
+                  <div className="relative">
+                    <Lock className="w-4 h-4 text-emerald-950/40 absolute left-3.5 top-3 pointer-events-none" />
+                    <input
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Masukkan kata sandi Anda"
+                      className="w-full pl-10 pr-10 py-2.5 rounded-xl border border-gray-200 text-xs text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50 focus:bg-white"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-3 text-emerald-950/40 hover:text-emerald-950 transition-colors cursor-pointer"
+                      title={showPassword ? 'Sembunyikan Kata Sandi' : 'Tampilkan Kata Sandi'}
+                    >
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
                   </div>
                 </div>
 
