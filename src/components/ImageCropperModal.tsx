@@ -16,7 +16,7 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
   onCropComplete
 }) => {
   const [zoom, setZoom] = useState<number>(1);
-  const [aspectRatio, setAspectRatio] = useState<'16:9' | '4:3' | '1:1' | 'free'>('16:9');
+  const [aspectRatio, setAspectRatio] = useState<'16:9' | '9:16' | '4:3' | '3:4' | '1:1' | 'free'>('free');
   const [rotation, setRotation] = useState<number>(0);
   const [offsetX, setOffsetX] = useState<number>(0);
   const [offsetY, setOffsetY] = useState<number>(0);
@@ -65,6 +65,12 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
     if (aspectRatio === '4:3') {
       targetWidth = 800;
       targetHeight = 600;
+    } else if (aspectRatio === '3:4') {
+      targetWidth = 600;
+      targetHeight = 800;
+    } else if (aspectRatio === '9:16') {
+      targetWidth = 450;
+      targetHeight = 800;
     } else if (aspectRatio === '1:1') {
       targetWidth = 600;
       targetHeight = 600;
@@ -185,7 +191,7 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
               <div className="flex flex-wrap items-center justify-between gap-3">
                 <div className="flex items-center gap-2">
                   <span className="font-bold text-emerald-950">Rasio Potongan:</span>
-                  {(['16:9', '4:3', '1:1', 'free'] as const).map((ratio) => (
+                  {(['free', '1:1', '4:3', '3:4', '16:9', '9:16'] as const).map((ratio) => (
                     <button
                       key={ratio}
                       type="button"
@@ -196,9 +202,11 @@ export const ImageCropperModal: React.FC<ImageCropperModalProps> = ({
                           : 'bg-white text-emerald-950 border border-gray-200 hover:bg-gray-50'
                       }`}
                     >
-                      {ratio === '16:9' ? '📐 16:9 (Banner)' :
-                       ratio === '4:3' ? '🖼️ 4:3 (Standar)' :
-                       ratio === '1:1' ? '🔲 1:1 (Persegi)' : '🔓 Bebas'}
+                      {ratio === '16:9' ? '📐 16:9' :
+                       ratio === '9:16' ? '📱 9:16' :
+                       ratio === '4:3' ? '🖼️ 4:3' :
+                       ratio === '3:4' ? '📄 3:4' :
+                       ratio === '1:1' ? '🔲 1:1' : '🔓 Bebas'}
                     </button>
                   ))}
                 </div>

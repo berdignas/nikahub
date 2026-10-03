@@ -101,8 +101,6 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const fileInputRef = React.useRef<HTMLInputElement>(null);
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
-  const [imageFit, setImageFit] = useState<'cover' | 'contain'>('cover');
-  const [imagePosition, setImagePosition] = useState<'center' | 'top' | 'bottom'>('center');
   const [isCropperOpen, setIsCropperOpen] = useState<boolean>(false);
 
   // Close admin modals when phone back button is pressed
@@ -926,14 +924,13 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </div>
                 )}
 
-                {/* IMAGE UPLOADER WITH INTERACTIVE CLICK & ALIGNMENT ADJUSTMENT */}
+                {/* IMAGE UPLOADER WITH PREVIEW BUTTON */}
                 <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-950/10 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block font-bold text-emerald-950 text-xs flex items-center gap-1.5">
                       <ImageIcon className="w-4 h-4 text-champagne-600" />
-                      Gambar Sampul Produk (Klik foto untuk ganti & sesuaikan) *
+                      Masukkan Foto Sampul Produk *
                     </label>
-                    <span className="text-[10px] text-gray-500 font-medium">PNG / JPG / WEBP</span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -974,92 +971,17 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                     </p>
                   )}
 
-                  {/* Clickable & Adjustable Live Image Preview */}
+                  {/* Single Preview & Edit Button */}
                   {formData.image && (
-                    <div className="space-y-2 pt-1">
-                      <div
-                        onClick={() => fileInputRef.current?.click()}
-                        title="Klik foto untuk mengganti gambar baru"
-                        className="relative h-44 rounded-2xl overflow-hidden border-2 border-emerald-950/20 bg-gray-900 group cursor-pointer shadow-inner"
+                    <div className="pt-2">
+                      <button
+                        type="button"
+                        onClick={() => setIsCropperOpen(true)}
+                        className="w-full py-3 rounded-xl font-bold bg-white text-emerald-950 border-2 border-emerald-950 hover:bg-emerald-50 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm"
                       >
-                        <img
-                          src={formData.image}
-                          alt="Preview Sampul"
-                          className={`w-full h-full transition-all duration-300 ${
-                            imageFit === 'contain' ? 'object-contain' : 'object-cover'
-                          } ${
-                            imagePosition === 'top' ? 'object-top' :
-                            imagePosition === 'bottom' ? 'object-bottom' : 'object-center'
-                          }`}
-                        />
-
-                        {/* Hover Overlay */}
-                        <div className="absolute inset-0 bg-emerald-950/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center text-sand gap-1.5 p-4 text-center">
-                          <Upload className="w-6 h-6 text-champagne-300" />
-                          <span className="font-bold text-xs">Klik Foto Ini untuk Mengganti Gambar</span>
-                          <span className="text-[10px] text-sand/80">Gambar akan otomatis dikompresi</span>
-                        </div>
-
-                        <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-md bg-emerald-950/80 backdrop-blur-md text-sand text-[10px] font-bold pointer-events-none">
-                          Pratinjau Sampul (Fokus: {imagePosition.toUpperCase()} • Mode: {imageFit.toUpperCase()})
-                        </div>
-                      </div>
-
-                      {/* Image Position & Fit Controls */}
-                      <div className="p-2.5 rounded-xl bg-white border border-emerald-950/10 flex flex-wrap items-center justify-between gap-2 text-[11px]">
-                        <span className="font-bold text-emerald-950">Atur Fokus & Tampilan:</span>
-
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-gray-500 font-medium">Posisi:</span>
-                          <button
-                            type="button"
-                            onClick={() => setImagePosition('top')}
-                            className={`px-2 py-0.5 rounded-md font-bold transition-colors cursor-pointer ${
-                              imagePosition === 'top' ? 'bg-emerald-950 text-sand' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            ⬆️ Atas
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setImagePosition('center')}
-                            className={`px-2 py-0.5 rounded-md font-bold transition-colors cursor-pointer ${
-                              imagePosition === 'center' ? 'bg-emerald-950 text-sand' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            🎯 Tengah
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => setImagePosition('bottom')}
-                            className={`px-2 py-0.5 rounded-md font-bold transition-colors cursor-pointer ${
-                              imagePosition === 'bottom' ? 'bg-emerald-950 text-sand' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                            }`}
-                          >
-                            ⬇️ Bawah
-                          </button>
-                        </div>
-
-                        <div className="flex items-center gap-1.5">
-                          <span className="text-gray-500 font-medium">Skala & Potong:</span>
-                          <button
-                            type="button"
-                            onClick={() => setImageFit(imageFit === 'cover' ? 'contain' : 'cover')}
-                            className="px-2 py-0.5 rounded-md font-bold bg-amber-100 text-amber-900 border border-amber-300 hover:bg-amber-200 transition-colors cursor-pointer"
-                          >
-                            {imageFit === 'cover' ? '🖼️ Potong Pas' : '🔲 Tampil Utuh'}
-                          </button>
-                          
-                          <button
-                            type="button"
-                            onClick={() => setIsCropperOpen(true)}
-                            className="px-2.5 py-0.5 rounded-md font-bold bg-emerald-950 text-sand border border-emerald-800 hover:bg-emerald-900 transition-colors cursor-pointer flex items-center gap-1 shadow-sm"
-                          >
-                            <Crop className="w-3 h-3 text-champagne-400" />
-                            <span>✂️ Buka Crop Tool Visual</span>
-                          </button>
-                        </div>
-                      </div>
+                        <Crop className="w-5 h-5 text-emerald-700" />
+                        <span>Lihat & Sesuaikan Foto (Preview)</span>
+                      </button>
                     </div>
                   )}
                 </div>
