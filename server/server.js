@@ -28,20 +28,34 @@ const chatMessagesDB = new Map();
 
 // Helper: Setup Nodemailer Transporter for sending real emails
 const createTransporter = () => {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = parseInt(process.env.SMTP_PORT || '587');
   const user = process.env.SMTP_USER || process.env.GMAIL_USER;
   const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS;
 
-  if (user && pass) {
+  if (!user || !pass) return null;
+
+  // If using Gmail credentials, nodemailer's built-in 'service: gmail' handles host/port/tls automatically
+  if (user.includes('@gmail.com') || process.env.GMAIL_USER) {
     return nodemailer.createTransport({
-      host,
-      port,
-      secure: port === 465,
-      auth: { user, pass }
+      service: 'gmail',
+      auth: { user, pass },
+      connectionTimeout: 10000,
+      greetingTimeout: 10000,
+      socketTimeout: 15000
     });
   }
-  return null;
+
+  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
+  const port = parseInt(process.env.SMTP_PORT || '465');
+
+  return nodemailer.createTransport({
+    host,
+    port,
+    secure: port === 465,
+    auth: { user, pass },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000
+  });
 };
 
 // ==========================================
