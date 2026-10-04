@@ -3,8 +3,8 @@ import { INITIAL_ALBUMS, INITIAL_PHOTOS } from '../data/initialPhotos';
 import { compressVisuallyLossless } from './imageCompressor';
 
 const DEVICE_ID_KEY = 'fb_device_id_maulidiyah_alfarisyi';
-const PHOTOS_STORAGE_KEY = 'fb_photos_v1_maulidiyah_alfarisyi';
-const ALBUMS_STORAGE_KEY = 'fb_albums_v2_maulidiyah_alfarisyi';
+const PHOTOS_STORAGE_KEY = 'fb_photos_v2_clean_maulidiyah_alfarisyi';
+const ALBUMS_STORAGE_KEY = 'fb_albums_v3_clean_maulidiyah_alfarisyi';
 
 export const MAX_PHOTO_PER_DEVICE = 5;
 
@@ -22,23 +22,25 @@ export function getOrCreateDeviceId(): string {
   }
 }
 
-// Retrieve guest albums from local storage
+// Retrieve guest albums from local storage (clean without dummy samples)
 export function getStoredAlbums(): GuestAlbum[] {
   try {
     const raw = localStorage.getItem(ALBUMS_STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(INITIAL_ALBUMS));
-      return INITIAL_ALBUMS;
+      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify([]));
+      return [];
     }
     const parsed: GuestAlbum[] = JSON.parse(raw);
-    if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(INITIAL_ALBUMS));
-      return INITIAL_ALBUMS;
+    if (!Array.isArray(parsed)) {
+      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify([]));
+      return [];
     }
-    return parsed;
+    // Filter out any legacy dummy samples if present
+    const cleanAlbums = parsed.filter((a) => !a.isInitialSample);
+    return cleanAlbums;
   } catch (e) {
     console.error('Error reading stored albums:', e);
-    return INITIAL_ALBUMS;
+    return [];
   }
 }
 
