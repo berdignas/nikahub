@@ -65,30 +65,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
   return (
     <div className="pt-20 sm:pt-24 pb-20 bg-[#FAF9F5] text-emerald-950 overflow-hidden font-sans">
       
-      {/* 1. LIVE SOCIAL PROOF TICKER */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
-        <div className="bg-white/80 border border-emerald-950/10 rounded-full px-4 sm:px-6 py-2 flex items-center justify-between shadow-xs backdrop-blur-md">
-          <div className="flex items-center gap-3 overflow-hidden text-xs font-medium">
-            <span className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-950 text-sand text-[10px] font-bold tracking-wider uppercase shrink-0">
-              <span className="w-1.5 h-1.5 rounded-full bg-champagne-400 animate-pulse"></span>
-              Live Update
-            </span>
-            <div className="truncate text-emerald-950/80 text-[11px] sm:text-xs">
-              <span className="font-bold text-emerald-950">12m lalu:</span> Klien mengunci Paket Royal Pavilion untuk pernikahan Nov 2026.
-            </div>
-          </div>
-          <div className="hidden md:flex items-center gap-4 text-xs font-semibold text-emerald-950/70 shrink-0">
-            <span className="flex items-center gap-1">
-              <Star className="w-3.5 h-3.5 text-amber-500 fill-current" /> 4.9/5 dari 480+ Pernikahan
-            </span>
-            <span>•</span>
-            <span className="text-emerald-900 flex items-center gap-1">
-              <ShieldCheck className="w-3.5 h-3.5" /> 100% Tanggung Jawab Tunggal NikaHub
-            </span>
-          </div>
-        </div>
-      </div>
-
       {/* 2. HERO LUXURY SECTION */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16">
         <div className="relative rounded-3xl sm:rounded-[2.5rem] overflow-hidden bg-emerald-950 min-h-[460px] sm:min-h-[540px] flex items-center shadow-xl">
@@ -497,46 +473,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* 9. 3 PILAR KOMITMEN NIKAHUB (DISESUAIKAN UNTUK MARKET MENENGAH) */}
-      <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4 hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-emerald-950/5 flex items-center justify-center text-emerald-950 shrink-0 mt-0.5">
-              <MessageSquare className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">Konsultasi Bebas Pusing</h3>
-              <p className="text-[11px] sm:text-xs text-emerald-950/70 leading-relaxed">
-                Tanya-tanya dulu soal tenda dan katering gratis! Tim kami siap merancang anggaran yang pas dengan budget Anda.
-              </p>
-            </div>
-          </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4 hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-emerald-950/5 flex items-center justify-center text-emerald-950 shrink-0 mt-0.5">
-              <ShieldCheck className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">Harga Transparan</h3>
-              <p className="text-[11px] sm:text-xs text-emerald-950/70 leading-relaxed">
-                Tidak ada biaya dadakan di akhir acara. Spesifikasi paket fleksibel bisa dinegosiasikan sesuai kebutuhan.
-              </p>
-            </div>
-          </div>
-
-          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4 hover:shadow-md transition-shadow">
-            <div className="w-10 h-10 rounded-xl bg-emerald-950/5 flex items-center justify-center text-emerald-950 shrink-0 mt-0.5">
-              <Clock className="w-5 h-5" />
-            </div>
-            <div>
-              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">Garansi Siap H-1</h3>
-              <p className="text-[11px] sm:text-xs text-emerald-950/70 leading-relaxed">
-                Seluruh panggung, dekorasi & tenda siap 100% pada H-1 siang. Anda tinggal tenang beristirahat menyambut tamu.
-              </p>
-            </div>
-          </div>
-        </div>
-      </section>
 
     </div>
   );
