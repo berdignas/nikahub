@@ -61,9 +61,9 @@ export function App() {
         const parsed = JSON.parse(stored);
         if (parsed.length > 0) return parsed;
       }
-      return WEDDING_PRODUCTS;
+      return [];
     } catch {
-      return WEDDING_PRODUCTS;
+      return [];
     }
   });
 
@@ -75,23 +75,7 @@ export function App() {
       try {
         const dbProducts = await fetchProductsFromSupabase();
         if (isMounted) {
-          if (dbProducts && dbProducts.length > 0) {
-            setProducts(dbProducts);
-          } else {
-            // Check if there are local products to migrate
-            const stored = localStorage.getItem('nikahub_products_data');
-            if (stored) {
-              const localProds = JSON.parse(stored);
-              if (localProds.length > 0) {
-                setProducts(localProds);
-                syncLocalProductsToSupabase().then(() => {
-                  fetchProductsFromSupabase().then(res => {
-                    if (isMounted && res.length > 0) setProducts(res);
-                  });
-                });
-              }
-            }
-          }
+          setProducts(dbProducts || []);
         }
       } catch (err) {
         console.error('Error loading products from Supabase:', err);
