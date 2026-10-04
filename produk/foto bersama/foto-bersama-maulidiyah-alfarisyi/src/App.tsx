@@ -16,6 +16,7 @@ import {
   getOrCreateDeviceId,
   MAX_PHOTO_PER_DEVICE,
 } from './utils/deviceStorage';
+import { supabase, insertAlbumToDatabase, updateAlbumInDatabase, fetchAlbumsFromDatabase } from './utils/supabaseClient';
 import { Heart, Camera, QrCode } from 'lucide-react';
 
 export function App() {
@@ -31,12 +32,48 @@ export function App() {
   const [isCouplePhotoOpen, setIsCouplePhotoOpen] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<GuestAlbum | null>(null);
 
-  // Initialize data on mount
+  // Initialize data on mount and fetch remote albums from Supabase Database
   useEffect(() => {
     const devId = getOrCreateDeviceId();
     setDeviceId(devId);
-    const stored = getStoredAlbums();
-    setAlbums(stored);
+
+    // 1. Instant rendering from local storage
+    const local = getStoredAlbums();
+    setAlbums(local);
+
+    // 2. Sync remote albums from Supabase so all devices see uploads from other HP/devices!
+    fetchAlbumsFromDatabase().then((remoteAlbums) => {
+      if (remoteAlbums && remoteAlbums.length > 0) {
+        // Merge remote and local albums (remote takes priority)
+        const albumMap = new Map<string, GuestAlbum>();
+        local.forEach((a) => albumMap.set(a.id, a));
+        remoteAlbums.forEach((a) => albumMap.set(a.id, a));
+
+        const merged = Array.from(albumMap.values()).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        setAlbums(merged);
+        saveAlbums(merged);
+      }
+    });
+
+    // 3. Setup Supabase Realtime channel so when device A uploads, device B updates instantly!
+    const channel = supabase
+      .channel('public:wedding_albums')
+      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+        fetchAlbumsFromDatabase().then((remoteAlbums) => {
+          if (remoteAlbums && remoteAlbums.length > 0) {
+            setAlbums(remoteAlbums);
+            saveAlbums(remoteAlbums);
+          }
+        });
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
   }, []);
 
   // Save whenever albums change
@@ -45,24 +82,22 @@ export function App() {
     saveAlbums(newAlbums);
   };
 
-  // Upload new album handler (with 1 to 5 photos)
+  // Upload new album handler (with 1 to 5 photos) + database sync
   const handleAlbumCreated = (newAlbum: GuestAlbum) => {
     const updated = [newAlbum, ...albums];
     updateAlbums(updated);
 
-    // Also auto-select the newly created album for immediate preview!
+    // Auto-select the newly created album for immediate preview
     setSelectedAlbum(newAlbum);
 
-    // Async background sync to Supabase PostgreSQL database
-    import('./utils/supabaseClient').then(({ insertPhotoToDatabase }) => {
-      newAlbum.photos.forEach((photo) => {
-        insertPhotoToDatabase(photo);
-      });
-    });
+    // Sync album record & photos to Supabase database for global visibility on all devices
+    insertAlbumToDatabase(newAlbum);
   };
 
-  // Like toggle handler for guest album
+  // Like toggle handler for guest album + database sync
   const handleLikeToggle = (albumId: string) => {
+    let targetAlbum: GuestAlbum | null = null;
+
     const updated = albums.map((alb) => {
       if (alb.id !== albumId) return alb;
       const isLiked = alb.likedByDevices?.includes(deviceId);
@@ -80,13 +115,18 @@ export function App() {
         setSelectedAlbum(updatedAlbum);
       }
 
+      targetAlbum = updatedAlbum;
       return updatedAlbum;
     });
 
     updateAlbums(updated);
+
+    if (targetAlbum) {
+      updateAlbumInDatabase(targetAlbum);
+    }
   };
 
-  // Add comment handler to guest album
+  // Add comment handler to guest album + database sync
   const handleAddComment = (albumId: string, senderName: string, commentText: string) => {
     const newComment: CommentItem = {
       id: 'comm_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
@@ -94,6 +134,8 @@ export function App() {
       commentText,
       createdAt: new Date().toISOString(),
     };
+
+    let targetAlbum: GuestAlbum | null = null;
 
     const updated = albums.map((alb) => {
       if (alb.id !== albumId) return alb;
@@ -106,10 +148,15 @@ export function App() {
         setSelectedAlbum(updatedAlbum);
       }
 
+      targetAlbum = updatedAlbum;
       return updatedAlbum;
     });
 
     updateAlbums(updated);
+
+    if (targetAlbum) {
+      updateAlbumInDatabase(targetAlbum);
+    }
   };
 
   // Delete entire album handler (refunds all upload slots!)
