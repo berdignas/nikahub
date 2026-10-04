@@ -168,8 +168,6 @@ export function App() {
       {/* Hero Header with FOTO UTAMA MEMPELAI on top */}
       <Header
         uploadedCount={uploadedCount}
-        onOpenUpload={() => setIsUploadOpen(true)}
-        onOpenQr={() => setIsQrOpen(true)}
         onOpenCouplePhoto={() => setIsCouplePhotoOpen(true)}
       />
 

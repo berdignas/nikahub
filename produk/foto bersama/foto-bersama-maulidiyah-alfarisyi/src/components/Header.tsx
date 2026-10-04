@@ -1,19 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Camera, QrCode, ShieldCheck, Heart, Sparkles, Maximize2, Calendar, MapPin, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
+import { ShieldCheck, Sparkles, Maximize2, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
 import { MAX_PHOTO_PER_DEVICE } from '../utils/deviceStorage';
 import { EVENT_INFO } from '../data/initialPhotos';
 
 interface HeaderProps {
   uploadedCount: number;
-  onOpenUpload: () => void;
-  onOpenQr: () => void;
   onOpenCouplePhoto: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   uploadedCount,
-  onOpenUpload,
-  onOpenQr,
   onOpenCouplePhoto,
 }) => {
   const remaining = Math.max(0, MAX_PHOTO_PER_DEVICE - uploadedCount);
@@ -48,7 +44,7 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden pt-8 pb-12 sm:pt-12 sm:pb-16 border-b border-[#E6CA92]/30 bg-gradient-to-b from-white via-[#FAF9F5] to-[#F5F2E9]">
+    <div className="relative overflow-hidden pt-8 pb-8 sm:pt-12 sm:pb-12 border-b border-[#E6CA92]/30 bg-gradient-to-b from-white via-[#FAF9F5] to-[#F5F2E9]">
       {/* Decorative ambient gold glow */}
       <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[380px] bg-gradient-to-b from-[#E6CA92]/20 via-[#D4AF37]/10 to-transparent blur-3xl pointer-events-none rounded-full" />
 
@@ -73,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
         {/* FOTO UTAMA MEMPELAI (Automatic Auto-Sliding Carousel) */}
         <div 
           onClick={onOpenCouplePhoto}
-          className="group relative max-w-4xl mx-auto rounded-3xl sm:rounded-[32px] overflow-hidden shadow-2xl border border-[#E6CA92]/50 bg-[#121915] cursor-pointer mb-10 transition-all duration-500 hover:shadow-3xl hover:border-[#C5A880]"
+          className="group relative max-w-4xl mx-auto rounded-3xl sm:rounded-[32px] overflow-hidden shadow-2xl border border-[#E6CA92]/50 bg-[#121915] cursor-pointer mb-8 transition-all duration-500 hover:shadow-3xl hover:border-[#C5A880]"
         >
           {/* Main Hero Photo Aspect Ratio */}
           <div className="relative w-full h-[290px] sm:h-[430px] md:h-[500px] overflow-hidden">
@@ -183,7 +179,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
 
         {/* Quota Indicator Bar (Maksimal 5 Foto Per Tamu) */}
-        <div className="max-w-md mx-auto mb-8 p-4 sm:p-5 rounded-3xl bg-white border border-[#E6CA92]/50 shadow-xl text-left">
+        <div className="max-w-md mx-auto p-4 sm:p-5 rounded-3xl bg-white border border-[#E6CA92]/50 shadow-xl text-left">
           <div className="flex items-center justify-between text-xs font-sans mb-2.5">
             <div className="flex items-center gap-2">
               <ShieldCheck className="w-4 h-4 text-[#C5A880]" />
@@ -221,25 +217,6 @@ export const Header: React.FC<HeaderProps> = ({
             </span>
             <span className="text-[10px] text-gray-400 font-medium">Batas 5 foto/tamu</span>
           </div>
-        </div>
-
-        {/* Primary Buttons */}
-        <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
-          <button
-            onClick={onOpenUpload}
-            className="flex items-center gap-2.5 px-7 py-3.5 rounded-full bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] font-sans font-bold text-xs uppercase tracking-wider hover:scale-105 active:scale-95 transition-all shadow-xl hover:shadow-2xl cursor-pointer"
-          >
-            <Camera className="w-4 h-4 text-[#E6CA92]" />
-            <span>{isFull ? 'Lihat Folder Anda' : 'Unggah Foto Tamu (1-5 Foto)'}</span>
-          </button>
-
-          <button
-            onClick={onOpenQr}
-            className="flex items-center gap-2 px-6 py-3.5 rounded-full bg-white border border-[#D4AF37]/40 text-[#0A261D] font-sans font-bold text-xs uppercase tracking-wider hover:border-[#0A261D] hover:bg-[#FAF9F5] hover:scale-105 active:scale-95 transition-all shadow-md cursor-pointer"
-          >
-            <QrCode className="w-4 h-4 text-[#C5A880]" />
-            <span>Scan QR Meja</span>
-          </button>
         </div>
       </div>
     </div>
