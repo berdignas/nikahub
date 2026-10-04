@@ -14,68 +14,64 @@ export const MAIN_CATEGORY_GROUPS: CategoryGroup[] = [
     label: 'Semua Layanan',
     iconName: 'Sparkles',
     description: 'Seluruh koleksi perlengkapan, konsumsi, dan talenta profesional NikaHub',
-    subCategories: [
-      { id: 'all', label: 'Semua Koleksi' },
-      { id: 'featured', label: 'Koleksi Unggulan' },
-    ]
+    subCategories: [ { id: 'all', label: 'Semua Koleksi' }, { id: 'featured', label: 'Koleksi Unggulan' } ]
   },
   {
-    id: 'fotografer',
-    label: 'Fotografer',
-    iconName: 'Camera',
-    description: 'Profil fotografer & videografer profesional beserta galeri hasil karya nyata',
-    subCategories: [
-      { id: 'all', label: 'Semua Fotografer' },
-      { id: 'hari_h', label: 'Foto & Sinema Hari H' },
-      { id: 'prewed_drone', label: 'Pre-Wedding & Drone 4K' },
-    ]
+    id: 'tenda',
+    label: 'Tenda & Pelaminan',
+    iconName: 'Tent',
+    description: 'Konstruksi tenda VIP dan dekorasi pelaminan mewah',
+    subCategories: [ { id: 'all', label: 'Semua Tenda' } ]
+  },
+  {
+    id: 'catering',
+    label: 'Katering VIP',
+    iconName: 'UtensilsCrossed',
+    description: 'Sajian hidangan istimewa prasmanan eksekutif dan gubukan',
+    subCategories: [ { id: 'all', label: 'Semua Jamuan' } ]
   },
   {
     id: 'mua',
     label: 'MUA & Gaun',
     iconName: 'Crown',
-    description: 'Profil Makeup Artist & desainer gaun pengantin dengan lookbook riasan',
-    subCategories: [
-      { id: 'all', label: 'Semua MUA' },
-      { id: 'rias_pengantin', label: 'Rias Pengantin (Akad & Resepsi)' },
-      { id: 'gaun_kebaya', label: 'Gaun Couture & Kebaya Adat' },
-    ]
+    description: 'Profil Makeup Artist & desainer gaun pengantin',
+    subCategories: [ { id: 'all', label: 'Semua MUA & Gaun' } ]
+  },
+  {
+    id: 'fotografer',
+    label: 'Fotografer & Video',
+    iconName: 'Camera',
+    description: 'Dokumentasi foto & sinematik pernikahan',
+    subCategories: [ { id: 'all', label: 'Semua Fotografer' } ]
+  },
+  {
+    id: 'venue',
+    label: 'Gedung Venue',
+    iconName: 'Building2',
+    description: 'Rekomendasi gedung dan lokasi pernikahan',
+    subCategories: [ { id: 'all', label: 'Semua Venue' } ]
+  },
+  {
+    id: 'hiburan',
+    label: 'MC & Hiburan',
+    iconName: 'Music',
+    description: 'Talenta Master of Ceremony dan band pengiring',
+    subCategories: [ { id: 'all', label: 'Semua Hiburan' } ]
   },
   {
     id: 'alat',
-    label: 'Tenda & Alat Pesta',
+    label: 'Alat Pesta & Sound',
     iconName: 'Tent',
-    description: 'Peralatan fisik: konstruksi tenda VIP, dekorasi pelaminan, panggung & sound',
-    subCategories: [
-      { id: 'all', label: 'Semua Alat' },
-      { id: 'tenda_vip', label: 'Tenda & Pelaminan VIP' },
-      { id: 'venue_gedung', label: 'Venue & Glasshouse' },
-      { id: 'sound_panggung', label: 'Sound, Panggung & Orkestra' },
-    ]
+    description: 'Penyewaan sound system, genset, dan alat pesta lainnya',
+    subCategories: [ { id: 'all', label: 'Semua Alat Pesta' } ]
   },
   {
-    id: 'catering',
-    label: 'Katering & Jamuan',
-    iconName: 'UtensilsCrossed',
-    description: 'Sajian hidangan istimewa prasmanan eksekutif dan gubukan favorit',
-    subCategories: [
-      { id: 'all', label: 'Semua Jamuan' },
-      { id: 'buffet_vip', label: 'Prasmanan / Buffet VIP' },
-      { id: 'pondokan', label: 'Gubukan / Food Stalls' },
-    ]
-  },
-  {
-    id: 'undangan',
-    label: 'Undangan & Tech',
+    id: 'undangan_digital',
+    label: 'Undangan Web',
     iconName: 'Smartphone',
-    description: 'Undangan website digital interaktif, kartu cetak mewah & QR scanner',
-    subCategories: [
-      { id: 'all', label: 'Semua Tech' },
-      { id: 'digital_web', label: 'Undangan Digital Website' },
-      { id: 'cetak_fisik', label: 'Undangan Cetak Foil Velvet' },
-      { id: 'qr_bukutamu', label: 'Buku Tamu QR Scanner' },
-    ]
-  },
+    description: 'Pembuatan undangan digital interaktif',
+    subCategories: [ { id: 'all', label: 'Semua Undangan' } ]
+  }
 ];
 
 // Clean Empty Catalog & Orders (Admin inputs products dynamically)

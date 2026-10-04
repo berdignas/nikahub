@@ -91,26 +91,14 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   // Product counts by category group
   const getProductCount = (groupId: string) => {
     if (groupId === 'all') return products.length;
-    return products.filter(p => {
-      if (groupId === 'fotografer') return p.category === 'fotografer' || p.category === 'fotografi';
-      if (groupId === 'mua') return p.category === 'mua';
-      if (groupId === 'alat') return p.category === 'alat' || p.category === 'tenda' || p.category === 'venue' || p.category === 'hiburan';
-      if (groupId === 'catering') return p.category === 'catering';
-      if (groupId === 'undangan') return p.category === 'undangan' || p.category === 'undangan_fisik' || p.category === 'undangan_digital' || p.category === 'bukutamu_digital';
-      return p.category === groupId;
-    }).length;
+    return products.filter(p => p.category === groupId).length;
   };
 
   // Filter and sort products
   const filteredProducts = products
     .filter(p => {
       // Category group match
-      const matchesCat = 
-        activeCategory === 'all' || 
-        p.category === activeCategory || 
-        (activeCategory === 'alat' && (p.category === 'tenda' || p.category === 'venue' || p.category === 'hiburan')) ||
-        (activeCategory === 'fotografer' && p.category === 'fotografi') ||
-        (activeCategory === 'undangan' && (p.category === 'undangan_fisik' || p.category === 'undangan_digital' || p.category === 'bukutamu_digital'));
+      const matchesCat = activeCategory === 'all' || p.category === activeCategory;
 
       // Sub-category match
       const matchesSub = 

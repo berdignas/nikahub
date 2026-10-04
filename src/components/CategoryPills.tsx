@@ -19,13 +19,14 @@ interface CategoryPillsProps {
 
 const CATEGORY_ITEMS: { id: ProductCategory; label: string; icon: React.ElementType }[] = [
   { id: 'all', label: 'Semua Kategori', icon: Sparkles },
-  { id: 'tenda', label: 'Tenda & Dekor', icon: Tent },
-  { id: 'catering', label: 'Catering VIP', icon: UtensilsCrossed },
+  { id: 'tenda', label: 'Tenda & Pelaminan', icon: Tent },
+  { id: 'catering', label: 'Katering VIP', icon: UtensilsCrossed },
   { id: 'mua', label: 'MUA & Gaun', icon: Crown },
-  { id: 'fotografi', label: 'Fotografi 4K', icon: Camera },
+  { id: 'fotografer', label: 'Fotografer & Video', icon: Camera },
   { id: 'venue', label: 'Gedung Venue', icon: Building2 },
   { id: 'hiburan', label: 'MC & Hiburan', icon: Music },
-  { id: 'souvenir', label: 'Souvenir', icon: Gift },
+  { id: 'alat', label: 'Alat Pesta', icon: Tent },
+  { id: 'undangan_digital', label: 'Undangan Web', icon: Gift },
 ];
 
 export const CategoryPills: React.FC<CategoryPillsProps> = ({
