@@ -71,6 +71,13 @@ export const MAIN_CATEGORY_GROUPS: CategoryGroup[] = [
     iconName: 'Smartphone',
     description: 'Pembuatan undangan digital interaktif',
     subCategories: [ { id: 'all', label: 'Semua Undangan' } ]
+  },
+  {
+    id: 'bukutamu_digital',
+    label: 'Foto Bersama & QR',
+    iconName: 'Camera',
+    description: 'Galeri foto bersama live & buku tamu QR code untuk tamu acara',
+    subCategories: [ { id: 'all', label: 'Semua Layanan' } ]
   }
 ];
 
