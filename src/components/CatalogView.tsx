@@ -108,11 +108,13 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
 
       // Search query match
       const query = searchQuery.toLowerCase();
-      const matchesSearch = 
-        p.title.toLowerCase().includes(query) ||
-        (p.talentName && p.talentName.toLowerCase().includes(query)) ||
-        p.vendorName.toLowerCase().includes(query) ||
-        p.tagline.toLowerCase().includes(query);
+      const matchesSearch = !query || [
+        p.title,
+        p.talentName,
+        p.vendorName,
+        p.tagline,
+        p.description
+      ].some(field => field && field.toLowerCase().includes(query));
 
       return matchesCat && matchesSub && matchesSearch;
     })
