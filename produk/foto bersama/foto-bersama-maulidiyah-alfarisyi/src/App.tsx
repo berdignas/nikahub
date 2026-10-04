@@ -160,7 +160,6 @@ export function App() {
       {/* Top Navigation */}
       <Navbar
         uploadedCount={uploadedCount}
-        onOpenUpload={() => setIsUploadOpen(true)}
         onOpenQr={() => setIsQrOpen(true)}
         onOpenTv={() => setIsTvOpen(true)}
         onOpenDownloadAll={() => setIsDownloadAllOpen(true)}
@@ -216,7 +215,7 @@ export function App() {
             <Heart className="w-3.5 h-3.5 fill-[#C5A880]" />
           </div>
           <h4 className="font-serif font-bold text-xl text-[#0A261D]">
-            Maulidiyah & Alfarisyi
+            Alfarisyi & Maulidiyah
           </h4>
           <p className="font-serif italic text-xs text-gray-600 leading-relaxed">
             "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri..."

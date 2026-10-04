@@ -156,7 +156,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
       const deviceId = getOrCreateDeviceId();
       const albumId = 'album_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6);
       const guestName = senderName.trim() || 'Tamu Undangan';
-      const guestCaption = caption.trim() || 'Momen bahagia bersama Maulidiyah & Alfarisyi ✨';
+      const guestCaption = caption.trim() || 'Momen bahagia bersama Alfarisyi & Maulidiyah ✨';
 
       const photoMoments: PhotoMoment[] = selectedImages.map((imgUrl, i) => ({
         id: `photo_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 5)}`,
@@ -245,7 +245,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                 Kuota Foto Lengkap (5/5)
               </h4>
               <p className="text-xs text-gray-600 leading-relaxed max-w-sm mx-auto">
-                Terima kasih banyak telah membagikan 5 momen kebersamaan Anda bersama <strong className="text-[#0A261D]">Maulidiyah & Alfarisyi</strong>.
+                Terima kasih banyak telah membagikan 5 momen kebersamaan Anda bersama <strong className="text-[#0A261D]">Alfarisyi & Maulidiyah</strong>.
                 <br /><br />
                 Batasan <strong>5 foto per perangkat</strong> diterapkan agar seluruh tamu undangan mendapatkan ruang yang setara untuk berbagi foto.
               </p>

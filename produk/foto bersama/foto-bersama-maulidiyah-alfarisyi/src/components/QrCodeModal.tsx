@@ -42,7 +42,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
             <span className="font-semibold uppercase tracking-wider text-[10px]">Kartu Akses QR Meja Tamu</span>
           </div>
           <h3 className="font-serif font-bold text-2xl text-[#0A261D]">
-            Maulidiyah & Alfarisyi
+            Alfarisyi & Maulidiyah
           </h3>
           <p className="font-serif italic text-xs text-gray-500 mt-1">
             Scan untuk mengunggah foto bersama (Maks. 5 Foto per Tamu)

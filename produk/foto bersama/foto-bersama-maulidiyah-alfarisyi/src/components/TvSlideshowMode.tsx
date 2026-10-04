@@ -56,7 +56,7 @@ export const TvSlideshowMode: React.FC<TvSlideshowModeProps> = ({
       <div className="absolute top-0 left-0 right-0 z-20 px-8 py-5 flex items-center justify-between bg-gradient-to-b from-black/90 via-[#06140F]/60 to-transparent">
         <div className="flex items-center gap-3">
           <div className="w-10 h-10 rounded-full bg-gradient-to-br from-[#FAF9F5] to-[#E6CA92] flex items-center justify-center shadow-lg border border-[#C5A880]">
-            <span className="font-cinzel text-xs font-bold text-[#0A261D]">M&A</span>
+            <span className="font-cinzel text-xs font-bold text-[#0A261D]">A&M</span>
           </div>
           <div>
             <h2 className="font-serif text-2xl sm:text-3xl text-white font-bold leading-none drop-shadow-md">

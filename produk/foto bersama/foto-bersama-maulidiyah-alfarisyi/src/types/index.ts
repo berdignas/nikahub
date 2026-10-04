@@ -38,6 +38,7 @@ export interface EventInfo {
   venueName: string;
   maxPerDeviceLimit: number;
   coverImage: string;
+  galleryImages?: string[];
   qrCodeUrl: string;
 }
 
