@@ -9,7 +9,7 @@ import {
   Clock, 
   Sparkles, 
   Sliders, 
-  ChevronRight, 
+  ChevronRight, ChevronLeft, 
   MessageSquare,
   Compass,
   Palette,
@@ -353,50 +353,92 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
-      {/* 7. REAL BRIDE TESTIMONIALS (JEJERKAN RAPI DALAM 1 BARIS RAPI) */}
+      {/* 7. REAL BRIDE TESTIMONIALS (HORIZONTAL SCROLL) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16 sm:mb-20">
         <div className="text-center max-w-xl mx-auto mb-10">
-          <span className="text-xs uppercase tracking-widest font-bold text-champagne-700 block mb-1">
-            Kisah Kebahagiaan Pengantin
-          </span>
-          <h2 className="font-serif text-2xl sm:text-3xl font-bold text-emerald-950">
-            Dipercaya 480+ Pasangan Bahagia
+          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-emerald-950 mb-2">
+            Inspiring Client Experiences
           </h2>
+          <span className="text-sm text-emerald-950/70 block">
+            Join us and become our next success story
+          </span>
         </div>
 
-        {/* Neatly Aligned Row of Testimonials */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        {/* Horizontal Scroll Container */}
+        <div 
+          id="testimonial-scroll" 
+          className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth"
+        >
+          {/* Summary Rating Card (Yellow) */}
+          <div className="bg-[#fcd34d] rounded-3xl p-6 sm:p-8 flex flex-col justify-between shrink-0 snap-center w-[85vw] sm:w-[320px] shadow-sm">
+            <div>
+              <div className="flex items-center gap-1 mb-3">
+                {[1, 2, 3, 4, 5].map((_, idx) => (
+                  <Star key={idx} className="w-5 h-5 fill-emerald-950 text-emerald-950" />
+                ))}
+              </div>
+              <div className="font-serif text-4xl font-bold text-emerald-950">4.9 Rating</div>
+            </div>
+            
+            <div className="flex items-center gap-4 mt-12">
+              <div className="flex -space-x-3">
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="User 1" className="w-10 h-10 rounded-full border-2 border-[#fcd34d] object-cover" />
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80" alt="User 2" className="w-10 h-10 rounded-full border-2 border-[#fcd34d] object-cover" />
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="User 3" className="w-10 h-10 rounded-full border-2 border-[#fcd34d] object-cover" />
+              </div>
+              <div className="leading-tight">
+                <div className="font-bold text-emerald-950 text-lg">15k+</div>
+                <div className="text-[11px] text-emerald-950/80 font-medium">Trusted User</div>
+              </div>
+            </div>
+          </div>
+
+          {/* Testimonial Cards */}
           {TESTIMONIALS.map((t, i) => (
             <div 
               key={i}
-              className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex flex-col justify-between hover:shadow-md transition-shadow"
+              className="bg-white p-6 sm:p-8 rounded-3xl border border-emerald-950/5 shadow-sm flex flex-col justify-between shrink-0 snap-center w-[85vw] sm:w-[350px]"
             >
               <div>
-                <div className="flex items-center justify-between mb-3">
-                  <div className="flex items-center gap-1 text-amber-500">
-                    {[...Array(t.rating)].map((_, idx) => (
-                      <Star key={idx} className="w-3.5 h-3.5 fill-current" />
-                    ))}
-                  </div>
-                  <span className="text-xs">{t.badge}</span>
-                </div>
-
-                <p className="text-xs text-emerald-950/80 leading-relaxed italic mb-5">
-                  "{t.text}"
+                <span className="font-serif text-5xl text-[#fcd34d] leading-none h-8 block">"</span>
+                <p className="text-sm text-emerald-950/80 leading-relaxed mt-2">
+                  {t.text}
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 pt-3 border-t border-gray-100">
-                <div className="w-8 h-8 rounded-full bg-emerald-950 text-champagne-300 flex items-center justify-center font-bold text-xs shrink-0">
-                  {t.couple.charAt(0)}
+              <div className="flex items-center gap-3 pt-6 mt-6 border-t border-gray-50">
+                <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0">
+                  <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.couple)}&background=022c22&color=fcd34d`} alt={t.couple} className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-serif font-bold text-xs text-emerald-950 truncate">{t.couple}</h4>
-                  <span className="text-[10px] text-emerald-950/60 block truncate">{t.location}</span>
+                  <h4 className="font-bold text-sm text-emerald-950 truncate">{t.couple}</h4>
+                  <span className="text-xs text-gray-500 block truncate">{t.location}</span>
                 </div>
               </div>
             </div>
           ))}
+        </div>
+
+        {/* Navigation Arrows */}
+        <div className="flex items-center justify-center gap-4 mt-2">
+          <button 
+            onClick={() => {
+              const el = document.getElementById('testimonial-scroll');
+              if(el) el.scrollBy({ left: -350, behavior: 'smooth' });
+            }}
+            className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-emerald-950 hover:bg-gray-50 shadow-sm transition-colors active:scale-95 cursor-pointer"
+          >
+            <ChevronLeft className="w-5 h-5" />
+          </button>
+          <button 
+            onClick={() => {
+              const el = document.getElementById('testimonial-scroll');
+              if(el) el.scrollBy({ left: 350, behavior: 'smooth' });
+            }}
+            className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-emerald-950 hover:bg-gray-50 shadow-sm transition-colors active:scale-95 cursor-pointer"
+          >
+            <ChevronRight className="w-5 h-5" />
+          </button>
         </div>
       </section>
 
