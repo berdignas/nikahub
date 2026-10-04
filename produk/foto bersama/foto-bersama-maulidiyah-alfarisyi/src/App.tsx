@@ -8,6 +8,7 @@ import { CouplePhotoModal } from './components/CouplePhotoModal';
 import { TvSlideshowMode } from './components/TvSlideshowMode';
 import { QrCodeModal } from './components/QrCodeModal';
 import { DownloadAllModal } from './components/DownloadAllModal';
+import { AdminPinModal } from './components/AdminPinModal';
 import { EVENT_INFO } from './data/initialPhotos';
 import { GuestAlbum, PhotoMoment, FilterTab, CommentItem } from './types';
 import {
@@ -24,12 +25,22 @@ import {
   deleteAlbumFromDatabase,
   deletePhotoFromDatabase,
 } from './utils/supabaseClient';
-import { Heart, Camera, QrCode } from 'lucide-react';
+import { Heart, Camera, QrCode, KeyRound, ShieldCheck } from 'lucide-react';
 
 export function App() {
   const [albums, setAlbums] = useState<GuestAlbum[]>([]);
   const [deviceId, setDeviceId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
+
+  // Moderator / Admin Mode (unlocked with 4-digit PIN)
+  const [isAdminModerator, setIsAdminModerator] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem('wedding_is_admin_mode') === 'true';
+    } catch {
+      return false;
+    }
+  });
+  const [isPinModalOpen, setIsPinModalOpen] = useState(false);
 
   // Modals state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -89,6 +100,21 @@ export function App() {
     saveAlbums(newAlbums);
   };
 
+  // Admin PIN Unlock / Lock Handlers
+  const handleUnlockAdmin = () => {
+    setIsAdminModerator(true);
+    try {
+      localStorage.setItem('wedding_is_admin_mode', 'true');
+    } catch {}
+  };
+
+  const handleLockAdmin = () => {
+    setIsAdminModerator(false);
+    try {
+      localStorage.removeItem('wedding_is_admin_mode');
+    } catch {}
+  };
+
   // Upload new album handler (with 1 to 5 photos) + database sync
   const handleAlbumCreated = (newAlbum: GuestAlbum) => {
     const updated = [newAlbum, ...albums];
@@ -101,21 +127,32 @@ export function App() {
     insertAlbumToDatabase(newAlbum);
   };
 
-  // Like toggle handler for guest album + database sync
+  // Like toggle for album
   const handleLikeToggle = (albumId: string) => {
-    let targetAlbum: GuestAlbum | null = null;
+    let targetAlbum: GuestAlbum | undefined;
 
     const updated = albums.map((alb) => {
       if (alb.id !== albumId) return alb;
-      const isLiked = alb.likedByDevices?.includes(deviceId);
-      const newLikedBy = isLiked
-        ? (alb.likedByDevices || []).filter((id) => id !== deviceId)
-        : [...(alb.likedByDevices || []), deviceId];
+
+      const currentLikes = alb.likesCount || 0;
+      const deviceLiked = alb.likedByDevices || [];
+      const alreadyLiked = deviceLiked.includes(deviceId);
+
+      let newLikedBy: string[];
+      let newCount: number;
+
+      if (alreadyLiked) {
+        newLikedBy = deviceLiked.filter((id) => id !== deviceId);
+        newCount = Math.max(0, currentLikes - 1);
+      } else {
+        newLikedBy = [...deviceLiked, deviceId];
+        newCount = currentLikes + 1;
+      }
 
       const updatedAlbum: GuestAlbum = {
         ...alb,
+        likesCount: newCount,
         likedByDevices: newLikedBy,
-        likesCount: Math.max(0, (alb.likesCount || 0) + (isLiked ? -1 : 1)),
       };
 
       if (selectedAlbum && selectedAlbum.id === albumId) {
@@ -133,19 +170,20 @@ export function App() {
     }
   };
 
-  // Add comment handler to guest album + database sync
+  // Add Comment to album
   const handleAddComment = (albumId: string, senderName: string, commentText: string) => {
     const newComment: CommentItem = {
-      id: 'comm_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      id: 'cmt-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
       senderName,
       commentText,
       createdAt: new Date().toISOString(),
     };
 
-    let targetAlbum: GuestAlbum | null = null;
+    let targetAlbum: GuestAlbum | undefined;
 
     const updated = albums.map((alb) => {
       if (alb.id !== albumId) return alb;
+
       const updatedAlbum: GuestAlbum = {
         ...alb,
         comments: [...(alb.comments || []), newComment],
@@ -218,10 +256,10 @@ export function App() {
     <div className="min-h-screen bg-[#FAF9F5] text-[#0A261D] flex flex-col font-sans selection:bg-[#E6CA92]/40 selection:text-[#0A261D]">
       {/* Top Navigation */}
       <Navbar
-        uploadedCount={uploadedCount}
-        onOpenQr={() => setIsQrOpen(true)}
         onOpenTv={() => setIsTvOpen(true)}
-        onOpenDownloadAll={() => setIsDownloadAllOpen(true)}
+        isAdminModerator={isAdminModerator}
+        onOpenPinModal={() => setIsPinModalOpen(true)}
+        onExitAdminMode={handleLockAdmin}
       />
 
       {/* Hero Header with FOTO UTAMA MEMPELAI on top */}
@@ -235,6 +273,8 @@ export function App() {
         <PhotoGrid
           albums={albums}
           currentDeviceId={deviceId}
+          isAdminModerator={isAdminModerator}
+          onExitAdminMode={handleLockAdmin}
           activeTab={activeTab}
           onChangeTab={setActiveTab}
           onLikeToggle={handleLikeToggle}
@@ -247,13 +287,23 @@ export function App() {
       {/* Floating Bottom Bar for Mobile Visitors */}
       <div className="sm:hidden fixed bottom-4 left-4 right-4 z-30">
         <div className="p-2.5 rounded-3xl bg-white/95 border border-[#D4AF37]/40 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-2.5">
-          <button
-            onClick={() => setIsQrOpen(true)}
-            className="flex-1 py-3 px-3 rounded-2xl bg-[#FAF9F5] border border-gray-200 text-[#0A261D] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-          >
-            <QrCode className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>QR Acara</span>
-          </button>
+          {isAdminModerator ? (
+            <button
+              onClick={handleLockAdmin}
+              className="flex-1 py-3 px-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Admin Aktif</span>
+            </button>
+          ) : (
+            <button
+              onClick={() => setIsPinModalOpen(true)}
+              className="flex-1 py-3 px-3 rounded-2xl bg-[#FAF9F5] border border-gray-200 text-[#0A261D] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-[#C5A880]" />
+              <span>PIN Pengantin</span>
+            </button>
+          )}
 
           <button
             onClick={() => setIsUploadOpen(true)}
@@ -294,14 +344,16 @@ export function App() {
         }}
       />
 
-      {/* Guest Album Folder Modal: Displays all 5 photos with carousel, thumbs, greetings, likes, live comments */}
+      {/* Guest Album Folder Modal: Displays all 5 photos with carousel, thumbs, greetings, likes, live comments, & delete */}
       <GuestAlbumModal
         album={selectedAlbum}
         currentDeviceId={deviceId}
+        isAdminModerator={isAdminModerator}
         onClose={() => setSelectedAlbum(null)}
         onLikeToggle={handleLikeToggle}
         onAddComment={handleAddComment}
         onDeletePhoto={handleDeletePhotoFromAlbum}
+        onDeleteAlbum={handleDeleteAlbum}
       />
 
       {/* Couple Official Portrait Modal */}
@@ -330,6 +382,13 @@ export function App() {
         isOpen={isDownloadAllOpen}
         onClose={() => setIsDownloadAllOpen(false)}
         photos={allPhotos}
+      />
+
+      {/* Admin 4-Digit PIN Modal */}
+      <AdminPinModal
+        isOpen={isPinModalOpen}
+        onClose={() => setIsPinModalOpen(false)}
+        onSuccess={handleUnlockAdmin}
       />
     </div>
   );

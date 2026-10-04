@@ -1,23 +1,27 @@
 import React, { useState } from 'react';
-import { X, Heart, MessageSquare, Download, ChevronLeft, ChevronRight, User, Send, Sparkles, FolderArchive, Trash2, Calendar, Check } from 'lucide-react';
+import { X, Heart, MessageSquare, Download, ChevronLeft, ChevronRight, User, Send, Sparkles, FolderArchive, Trash2, Calendar, Check, ShieldAlert } from 'lucide-react';
 import { GuestAlbum, CommentItem } from '../types';
 
 interface GuestAlbumModalProps {
   album: GuestAlbum | null;
   currentDeviceId: string;
+  isAdminModerator?: boolean;
   onClose: () => void;
   onLikeToggle: (albumId: string) => void;
   onAddComment: (albumId: string, senderName: string, commentText: string) => void;
   onDeletePhoto?: (albumId: string, photoId: string) => void;
+  onDeleteAlbum?: (albumId: string) => void;
 }
 
 export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
   album,
   currentDeviceId,
+  isAdminModerator = false,
   onClose,
   onLikeToggle,
   onAddComment,
   onDeletePhoto,
+  onDeleteAlbum,
 }) => {
   const [currentPhotoIndex, setCurrentPhotoIndex] = useState(0);
   const [commentName, setCommentName] = useState('');
@@ -27,9 +31,11 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
   if (!album) return null;
 
   const photos = album.photos || [];
-  const currentPhoto = photos[currentPhotoIndex] || photos[0];
+  const safeIndex = Math.min(currentPhotoIndex, Math.max(0, photos.length - 1));
+  const currentPhoto = photos[safeIndex] || photos[0];
   const isLiked = album.likedByDevices?.includes(currentDeviceId);
   const isMine = album.deviceId === currentDeviceId && !album.isInitialSample;
+  const canDelete = isMine || isAdminModerator;
 
   const handlePrev = () => {
     setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
@@ -43,7 +49,7 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
     if (!currentPhoto) return;
     const link = document.createElement('a');
     link.href = currentPhoto.imageUrl;
-    link.download = `foto-${album.senderName.replace(/\s+/g, '-').toLowerCase()}-${currentPhotoIndex + 1}.jpg`;
+    link.download = `foto-${album.senderName.replace(/\s+/g, '-').toLowerCase()}-${safeIndex + 1}.jpg`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -59,6 +65,36 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
       link.click();
       document.body.removeChild(link);
       await new Promise((r) => setTimeout(r, 350));
+    }
+  };
+
+  const handleDeleteCurrentPhoto = () => {
+    if (!currentPhoto || !onDeletePhoto) return;
+
+    const confirmMsg = isMine
+      ? `Hapus foto ${safeIndex + 1} dari folder Anda? Kuota 1 foto Anda akan dikembalikan.`
+      : `👑 [Mode Pengantin] Hapus foto ${safeIndex + 1} milik "${album.senderName}" secara permanen dari server?`;
+
+    if (window.confirm(confirmMsg)) {
+      if (photos.length <= 1) {
+        onClose();
+      } else {
+        setCurrentPhotoIndex((prev) => Math.max(0, prev - 1));
+      }
+      onDeletePhoto(album.id, currentPhoto.id);
+    }
+  };
+
+  const handleDeleteEntireAlbum = () => {
+    if (!onDeleteAlbum) return;
+
+    const confirmMsg = isMine
+      ? `Hapus seluruh folder Anda "${album.senderName}" (${photos.length} foto)? Kuota upload Anda akan dikembalikan.`
+      : `👑 [Mode Pengantin] Hapus seluruh folder tamu "${album.senderName}" (${photos.length} foto) secara permanen dari database server?`;
+
+    if (window.confirm(confirmMsg)) {
+      onClose();
+      onDeleteAlbum(album.id);
     }
   };
 
@@ -95,13 +131,25 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
           <div className="relative flex-1 flex items-center justify-center overflow-hidden">
             {currentPhoto ? (
               <img
-                key={currentPhoto.id || currentPhotoIndex}
+                key={currentPhoto.id || safeIndex}
                 src={currentPhoto.imageUrl}
                 alt={currentPhoto.caption || album.senderName}
                 className="max-w-full max-h-[55vh] object-contain rounded-xl shadow-2xl transition-all duration-300"
               />
             ) : (
               <div className="text-gray-400 text-xs">Foto tidak tersedia</div>
+            )}
+
+            {/* Top Right Action on Photo: Delete this single photo */}
+            {canDelete && currentPhoto && (
+              <button
+                onClick={handleDeleteCurrentPhoto}
+                className="absolute top-3 right-3 z-20 px-3 py-1.5 rounded-full bg-red-600/90 hover:bg-red-700 text-white text-xs font-sans font-bold flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-all active:scale-95 cursor-pointer"
+                title="Hapus foto ini saja"
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+                <span>Hapus Foto Ini</span>
+              </button>
             )}
 
             {/* Navigation Arrows (if more than 1 photo) */}
@@ -127,7 +175,7 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
             {/* Photo Counter Pill */}
             <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#E6CA92]/40 text-[#FAF9F5] text-[11px] font-sans font-bold flex items-center gap-1.5 shadow-md">
               <FolderArchive className="w-3.5 h-3.5 text-[#E6CA92]" />
-              <span>Foto {currentPhotoIndex + 1} dari {photos.length}</span>
+              <span>Foto {safeIndex + 1} dari {photos.length}</span>
             </div>
           </div>
 
@@ -139,7 +187,7 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                   key={p.id || idx}
                   onClick={() => setCurrentPhotoIndex(idx)}
                   className={`relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
-                    currentPhotoIndex === idx
+                    safeIndex === idx
                       ? 'border-[#E6CA92] scale-105 shadow-md ring-2 ring-[#E6CA92]/40'
                       : 'border-white/20 opacity-50 hover:opacity-100'
                   }`}
@@ -168,11 +216,15 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                   <Sparkles className="w-3 h-3 text-[#C5A880]" />
                   <span>Folder Tamu • {photos.length} Foto</span>
                 </div>
-                {isMine && (
+                {isMine ? (
                   <span className="text-[10px] bg-emerald-100 text-emerald-800 font-bold px-2 py-0.5 rounded-full">
-                    Milik Anda
+                    Folder Anda
                   </span>
-                )}
+                ) : isAdminModerator ? (
+                  <span className="text-[10px] bg-amber-100 text-amber-900 font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                    👑 Akses Pengantin
+                  </span>
+                ) : null}
               </div>
               <h3 className="font-serif font-bold text-2xl text-[#0A261D] leading-tight">
                 {album.senderName}
@@ -206,7 +258,7 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
               <div className="flex items-center gap-1.5">
                 <button
                   onClick={handleDownloadSingle}
-                  className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#0A261D] text-xs font-medium transition-all"
+                  className="p-2 rounded-xl bg-gray-100 hover:bg-gray-200 text-[#0A261D] text-xs font-medium transition-all cursor-pointer"
                   title="Unduh Foto yang Tampil"
                 >
                   <Download className="w-4 h-4 text-[#0A261D]" />
@@ -214,7 +266,7 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                 {photos.length > 1 && (
                   <button
                     onClick={handleDownloadAllInAlbum}
-                    className="px-3 py-2 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#E6CA92] text-[11px] font-sans font-bold transition-all shadow-xs"
+                    className="px-3 py-2 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#E6CA92] text-[11px] font-sans font-bold transition-all shadow-xs cursor-pointer"
                     title="Unduh Seluruh Foto dalam Folder Ini"
                   >
                     Unduh Semua ({photos.length})
@@ -223,8 +275,21 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
               </div>
             </div>
 
+            {/* Delete entire folder action if permitted */}
+            {canDelete && (
+              <div className="pt-1">
+                <button
+                  onClick={handleDeleteEntireAlbum}
+                  className="w-full py-2 px-3 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-sans font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                  <span>Hapus Seluruh Folder Ini ({photos.length} Foto)</span>
+                </button>
+              </div>
+            )}
+
             {/* Live Comments Section */}
-            <div className="space-y-3">
+            <div className="space-y-3 pt-2">
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-1.5 text-xs font-bold text-[#0A261D] font-sans">
                   <MessageSquare className="w-3.5 h-3.5 text-[#C5A880]" />
@@ -233,7 +298,7 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
               </div>
 
               {/* Comments List */}
-              <div className="space-y-2.5 max-h-48 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-40 overflow-y-auto pr-1">
                 {album.comments && album.comments.length > 0 ? (
                   album.comments.map((c) => (
                     <div key={c.id} className="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-1">

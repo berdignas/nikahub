@@ -1,10 +1,11 @@
 import React from 'react';
-import { Heart, User, Clock, Trash2, FolderArchive, MessageSquare, ArrowRight } from 'lucide-react';
+import { Heart, User, Clock, Trash2, FolderArchive, MessageSquare, ArrowRight, ShieldAlert } from 'lucide-react';
 import { GuestAlbum } from '../types';
 
 interface PhotoCardProps {
   album: GuestAlbum;
   currentDeviceId: string;
+  isAdminModerator?: boolean;
   onLikeToggle: (albumId: string) => void;
   onDeleteAlbum?: (albumId: string) => void;
   onOpenDetail: (album: GuestAlbum) => void;
@@ -13,11 +14,13 @@ interface PhotoCardProps {
 export const PhotoCard: React.FC<PhotoCardProps> = ({
   album,
   currentDeviceId,
+  isAdminModerator = false,
   onLikeToggle,
   onDeleteAlbum,
   onOpenDetail,
 }) => {
   const isMine = album.deviceId === currentDeviceId && !album.isInitialSample;
+  const canDelete = isMine || isAdminModerator;
   const isLiked = album.likedByDevices?.includes(currentDeviceId);
   const photos = album.photos || [];
   const coverPhoto = photos[0];
@@ -31,6 +34,21 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
       return '';
     }
   })();
+
+  const handleDeleteClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!onDeleteAlbum) return;
+
+    if (isMine) {
+      if (window.confirm(`Hapus seluruh folder Anda "${album.senderName}"? Seluruh foto di dalamnya akan terhapus dan kuota upload Anda akan dikembalikan.`)) {
+        onDeleteAlbum(album.id);
+      }
+    } else if (isAdminModerator) {
+      if (window.confirm(`👑 [Mode Pengantin] Hapus folder tamu "${album.senderName}" (${photos.length} foto) secara permanen dari database server?`)) {
+        onDeleteAlbum(album.id);
+      }
+    }
+  };
 
   return (
     <div 
@@ -55,7 +73,7 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
         {/* Gradient Overlay for Editorial Legibility */}
         <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/30 to-black/10 opacity-85 group-hover:opacity-95 transition-opacity" />
 
-        {/* Top Badges: Photo Count & Ownership */}
+        {/* Top Badges: Photo Count, Ownership & Admin Delete Icon */}
         <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-10">
           {/* Photos Count Badge */}
           <div className="px-3 py-1 rounded-full bg-[#0A261D]/85 backdrop-blur-md border border-[#E6CA92]/40 text-[#E6CA92] text-[11px] font-sans font-bold flex items-center gap-1.5 shadow-md">
@@ -63,15 +81,28 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
             <span>{photos.length} Foto</span>
           </div>
 
-          {isMine ? (
-            <span className="px-3 py-1 rounded-full bg-[#E6CA92] text-[#0A261D] text-[10px] font-sans font-bold shadow-md">
-              ✨ Folder Anda
-            </span>
-          ) : (
-            <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md text-[10px] font-sans text-white/80">
-              Tamu Undangan
-            </span>
-          )}
+          <div className="flex items-center gap-1.5">
+            {isMine ? (
+              <span className="px-3 py-1 rounded-full bg-[#E6CA92] text-[#0A261D] text-[10px] font-sans font-bold shadow-md">
+                ✨ Folder Anda
+              </span>
+            ) : (
+              <span className="px-2.5 py-1 rounded-full bg-black/50 backdrop-blur-md text-[10px] font-sans text-white/80">
+                Tamu Undangan
+              </span>
+            )}
+
+            {/* Quick delete trash icon in top-right for quick moderation */}
+            {canDelete && (
+              <button
+                onClick={handleDeleteClick}
+                className="w-7 h-7 rounded-full bg-red-600/90 hover:bg-red-700 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-90 cursor-pointer"
+                title={isAdminModerator && !isMine ? "👑 Hapus folder ini (Akses Pengantin)" : "Hapus folder Anda"}
+              >
+                <Trash2 className="w-3.5 h-3.5" />
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Bottom Sender & Caption Overlay */}
@@ -110,7 +141,7 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
           <span className="text-xs font-semibold">{album.likesCount || 0}</span>
         </button>
 
-        {/* Comments Count Indicator */}
+        {/* Comments Count Indicator & Delete Button */}
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1 text-gray-500 text-xs font-medium">
             <MessageSquare className="w-3.5 h-3.5 text-gray-400" />
@@ -124,17 +155,12 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
             </div>
           )}
 
-          {/* Delete Button (Only for Current Device) */}
-          {isMine && onDeleteAlbum && (
+          {/* Bottom Delete Button */}
+          {canDelete && (
             <button
-              onClick={(e) => {
-                e.stopPropagation();
-                if (window.confirm(`Hapus seluruh folder "${album.senderName}"? Seluruh foto di dalamnya akan terhapus dan kuota upload Anda akan dikembalikan.`)) {
-                  onDeleteAlbum(album.id);
-                }
-              }}
+              onClick={handleDeleteClick}
               className="p-1 rounded-full text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
-              title="Hapus folder ini & kembalikan kuota upload"
+              title={isAdminModerator && !isMine ? "👑 Hapus folder ini (Akses Pengantin)" : "Hapus folder Anda & kembalikan kuota"}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>

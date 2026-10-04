@@ -1,11 +1,13 @@
 import React, { useState } from 'react';
-import { Sparkles, Heart, User, Search, Camera, FolderArchive } from 'lucide-react';
+import { Sparkles, Heart, User, Search, Camera, FolderArchive, ShieldCheck, Lock } from 'lucide-react';
 import { GuestAlbum, FilterTab } from '../types';
 import { PhotoCard } from './PhotoCard';
 
 interface PhotoGridProps {
   albums: GuestAlbum[];
   currentDeviceId: string;
+  isAdminModerator?: boolean;
+  onExitAdminMode?: () => void;
   activeTab: FilterTab;
   onChangeTab: (tab: FilterTab) => void;
   onLikeToggle: (albumId: string) => void;
@@ -17,6 +19,8 @@ interface PhotoGridProps {
 export const PhotoGrid: React.FC<PhotoGridProps> = ({
   albums,
   currentDeviceId,
+  isAdminModerator = false,
+  onExitAdminMode,
   activeTab,
   onChangeTab,
   onLikeToggle,
@@ -54,6 +58,35 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      {/* Admin Mode Banner if unlocked */}
+      {isAdminModerator && (
+        <div className="mb-6 p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-emerald-500/15 to-amber-500/15 border border-amber-400/50 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-xl bg-[#0A261D] text-[#E6CA92] flex items-center justify-center shrink-0 shadow-sm">
+              <ShieldCheck className="w-5 h-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-xs sm:text-sm text-[#0A261D]">
+                Mode Akses Pengantin / Moderator Aktif
+              </h4>
+              <p className="text-[11px] text-gray-600">
+                Ikon hapus (merah) aktif di seluruh folder tamu & foto. Anda bebas menghapus folder/foto yang tidak diinginkan.
+              </p>
+            </div>
+          </div>
+
+          {onExitAdminMode && (
+            <button
+              onClick={onExitAdminMode}
+              className="px-3.5 py-1.5 rounded-xl bg-white border border-gray-200 hover:bg-gray-50 text-xs font-bold text-gray-700 flex items-center gap-1.5 shadow-xs cursor-pointer"
+            >
+              <Lock className="w-3.5 h-3.5 text-gray-500" />
+              <span>Kunci Kembali</span>
+            </button>
+          )}
+        </div>
+      )}
+
       {/* Section Header */}
       <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E6CA92]/20 pb-4">
         <div>
@@ -137,6 +170,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
               key={album.id}
               album={album}
               currentDeviceId={currentDeviceId}
+              isAdminModerator={isAdminModerator}
               onLikeToggle={onLikeToggle}
               onDeleteAlbum={onDeleteAlbum}
               onOpenDetail={onOpenAlbum}

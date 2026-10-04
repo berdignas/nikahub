@@ -1,17 +1,18 @@
 import React from 'react';
-import { QrCode, Tv, Download } from 'lucide-react';
+import { Tv, KeyRound, ShieldCheck, Lock } from 'lucide-react';
 
 interface NavbarProps {
-  onOpenQr: () => void;
   onOpenTv: () => void;
-  onOpenDownloadAll: () => void;
-  uploadedCount: number;
+  isAdminModerator: boolean;
+  onOpenPinModal: () => void;
+  onExitAdminMode: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
-  onOpenQr,
   onOpenTv,
-  onOpenDownloadAll,
+  isAdminModerator,
+  onOpenPinModal,
+  onExitAdminMode,
 }) => {
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 border-b border-[#E6CA92]/30 transition-all shadow-xs">
@@ -31,18 +32,8 @@ export const Navbar: React.FC<NavbarProps> = ({
           </div>
         </div>
 
-        {/* Action Controls (Clean minimal header, upload button placed below in hero & floating bar) */}
+        {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-2.5">
-          {/* QR Code Action */}
-          <button
-            onClick={onOpenQr}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FAF9F5] hover:bg-white text-[#0A261D] border border-gray-200 hover:border-[#D4AF37]/50 text-xs font-sans transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
-            title="Tampilkan QR Code untuk Tamu"
-          >
-            <QrCode className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span className="hidden sm:inline font-semibold">QR Meja</span>
-          </button>
-
           {/* TV Projector Mode */}
           <button
             onClick={onOpenTv}
@@ -50,18 +41,32 @@ export const Navbar: React.FC<NavbarProps> = ({
             title="Buka Mode Layar TV / Proyektor"
           >
             <Tv className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span className="hidden md:inline font-semibold">Layar TV</span>
+            <span className="hidden sm:inline font-semibold">Layar TV</span>
           </button>
 
-          {/* Download All */}
-          <button
-            onClick={onOpenDownloadAll}
-            className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FAF9F5] hover:bg-white text-[#0A261D] border border-gray-200 hover:border-[#D4AF37]/50 text-xs font-sans transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer"
-            title="Download Semua Foto Acara"
-          >
-            <Download className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span className="hidden lg:inline font-semibold">Unduh Semua</span>
-          </button>
+          {/* PIN Mempelai / Moderator Mode Toggle */}
+          {isAdminModerator ? (
+            <div className="flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-sans shadow-xs">
+              <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
+              <span className="font-bold text-[11px] hidden sm:inline">Mode Pengantin Aktif</span>
+              <button
+                onClick={onExitAdminMode}
+                className="p-1 rounded-full hover:bg-emerald-200/60 text-emerald-800 transition-colors cursor-pointer"
+                title="Kunci / Keluar Mode Pengantin"
+              >
+                <Lock className="w-3 h-3" />
+              </button>
+            </div>
+          ) : (
+            <button
+              onClick={onOpenPinModal}
+              className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#FAF9F5] hover:bg-[#0A261D] text-[#0A261D] hover:text-[#FAF9F5] border border-gray-200 hover:border-[#0A261D] text-xs font-sans transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer group"
+              title="Masukkan PIN untuk menghapus foto tamu manapun"
+            >
+              <KeyRound className="w-3.5 h-3.5 text-[#C5A880] group-hover:text-[#E6CA92]" />
+              <span className="font-semibold">PIN Pengantin</span>
+            </button>
+          )}
         </div>
       </div>
     </header>
