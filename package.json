@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build",
+    "build": "tsc && vite build && cd \"produk/foto bersama/foto-bersama-maulidiyah-alfarisyi\" && npm install && npx vite build --outDir \"../../../dist/foto-maulidiyah-alfarisyi\" --emptyOutDir false",
     "preview": "vite preview"
   },
   "dependencies": {
