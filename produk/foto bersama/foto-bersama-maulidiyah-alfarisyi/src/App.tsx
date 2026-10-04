@@ -287,23 +287,14 @@ export function App() {
       {/* Floating Bottom Bar for Mobile Visitors */}
       <div className="sm:hidden fixed bottom-4 left-4 right-4 z-30">
         <div className="p-2.5 rounded-3xl bg-white/95 border border-[#D4AF37]/40 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-2.5">
-          {isAdminModerator ? (
-            <button
-              onClick={handleLockAdmin}
-              className="flex-1 py-3 px-3 rounded-2xl bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
-              <span>Admin Aktif</span>
-            </button>
-          ) : (
-            <button
-              onClick={() => setIsPinModalOpen(true)}
-              className="flex-1 py-3 px-3 rounded-2xl bg-[#FAF9F5] border border-gray-200 text-[#0A261D] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs"
-            >
-              <KeyRound className="w-3.5 h-3.5 text-[#C5A880]" />
-              <span>PIN Pengantin</span>
-            </button>
-          )}
+          <button
+            onClick={() => setIsQrOpen(true)}
+            className="flex-1 py-3 px-3 rounded-2xl bg-[#FAF9F5] border border-gray-200 text-[#0A261D] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
+            title="Buka QR Code Meja Acara"
+          >
+            <QrCode className="w-3.5 h-3.5 text-[#C5A880]" />
+            <span>QR Code</span>
+          </button>
 
           <button
             onClick={() => setIsUploadOpen(true)}
