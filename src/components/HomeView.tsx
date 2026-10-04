@@ -10,7 +10,7 @@ import {
   Sparkles, 
   Sliders, 
   ChevronRight, ChevronLeft, 
-  MessageSquare,
+  MessageSquare, Calendar,
   Compass,
   Palette,
   Users,
@@ -367,28 +367,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
         {/* Horizontal Scroll Container */}
         <div 
           id="testimonial-scroll" 
-          className="flex overflow-x-auto snap-x snap-mandatory gap-6 pb-6 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth"
+          className="flex overflow-x-auto snap-x snap-mandatory gap-4 pb-6 no-scrollbar -mx-4 px-4 sm:mx-0 sm:px-0 scroll-smooth"
         >
           {/* Summary Rating Card (Yellow) */}
-          <div className="bg-[#fcd34d] rounded-3xl p-6 sm:p-8 flex flex-col justify-between shrink-0 snap-center w-[85vw] sm:w-[320px] shadow-sm">
+          <div className="bg-[#fcd34d] rounded-3xl p-5 sm:p-6 flex flex-col justify-between shrink-0 snap-center w-[75vw] sm:w-[280px] shadow-sm">
             <div>
-              <div className="flex items-center gap-1 mb-3">
+              <div className="flex items-center gap-1 mb-2">
                 {[1, 2, 3, 4, 5].map((_, idx) => (
-                  <Star key={idx} className="w-5 h-5 fill-emerald-950 text-emerald-950" />
+                  <Star key={idx} className="w-4 h-4 fill-emerald-950 text-emerald-950" />
                 ))}
               </div>
-              <div className="font-serif text-4xl font-bold text-emerald-950">4.9 Rating</div>
+              <div className="font-serif text-3xl font-bold text-emerald-950">4.9 Rating</div>
             </div>
             
-            <div className="flex items-center gap-4 mt-12">
+            <div className="flex items-center gap-3 mt-8">
               <div className="flex -space-x-3">
-                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="User 1" className="w-10 h-10 rounded-full border-2 border-[#fcd34d] object-cover" />
-                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80" alt="User 2" className="w-10 h-10 rounded-full border-2 border-[#fcd34d] object-cover" />
-                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="User 3" className="w-10 h-10 rounded-full border-2 border-[#fcd34d] object-cover" />
+                <img src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=100&q=80" alt="User 1" className="w-8 h-8 rounded-full border-2 border-[#fcd34d] object-cover" />
+                <img src="https://images.unsplash.com/photo-1506794778202-cad84cf45f1d?auto=format&fit=crop&w=100&q=80" alt="User 2" className="w-8 h-8 rounded-full border-2 border-[#fcd34d] object-cover" />
+                <img src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&q=80" alt="User 3" className="w-8 h-8 rounded-full border-2 border-[#fcd34d] object-cover" />
               </div>
               <div className="leading-tight">
-                <div className="font-bold text-emerald-950 text-lg">15k+</div>
-                <div className="text-[11px] text-emerald-950/80 font-medium">Trusted User</div>
+                <div className="font-bold text-emerald-950 text-base">15k+</div>
+                <div className="text-[10px] text-emerald-950/80 font-medium">Trusted User</div>
               </div>
             </div>
           </div>
@@ -397,22 +397,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
           {TESTIMONIALS.map((t, i) => (
             <div 
               key={i}
-              className="bg-white p-6 sm:p-8 rounded-3xl border border-emerald-950/5 shadow-sm flex flex-col justify-between shrink-0 snap-center w-[85vw] sm:w-[350px]"
+              className="bg-white p-5 sm:p-6 rounded-3xl border border-emerald-950/5 shadow-sm flex flex-col justify-between shrink-0 snap-center w-[85vw] sm:w-[300px]"
             >
               <div>
-                <span className="font-serif text-5xl text-[#fcd34d] leading-none h-8 block">"</span>
-                <p className="text-sm text-emerald-950/80 leading-relaxed mt-2">
+                <span className="font-serif text-4xl text-[#fcd34d] leading-none h-6 block">"</span>
+                <p className="text-[13px] text-emerald-950/80 leading-relaxed mt-2">
                   {t.text}
                 </p>
               </div>
 
-              <div className="flex items-center gap-3 pt-6 mt-6 border-t border-gray-50">
-                <div className="w-10 h-10 rounded-full bg-gray-100 overflow-hidden shrink-0">
+              <div className="flex items-center gap-3 pt-4 mt-4 border-t border-gray-50">
+                <div className="w-8 h-8 rounded-full bg-gray-100 overflow-hidden shrink-0">
                   <img src={`https://ui-avatars.com/api/?name=${encodeURIComponent(t.couple)}&background=022c22&color=fcd34d`} alt={t.couple} className="w-full h-full object-cover" />
                 </div>
                 <div className="min-w-0">
-                  <h4 className="font-bold text-sm text-emerald-950 truncate">{t.couple}</h4>
-                  <span className="text-xs text-gray-500 block truncate">{t.location}</span>
+                  <h4 className="font-bold text-xs text-emerald-950 truncate">{t.couple}</h4>
+                  <span className="text-[10px] text-gray-500 block truncate">{t.location}</span>
                 </div>
               </div>
             </div>
@@ -420,100 +420,117 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         {/* Navigation Arrows */}
-        <div className="flex items-center justify-center gap-4 mt-2">
+        <div className="flex items-center justify-center gap-3 mt-2">
           <button 
             onClick={() => {
               const el = document.getElementById('testimonial-scroll');
-              if(el) el.scrollBy({ left: -350, behavior: 'smooth' });
+              if(el) el.scrollBy({ left: -300, behavior: 'smooth' });
             }}
-            className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-emerald-950 hover:bg-gray-50 shadow-sm transition-colors active:scale-95 cursor-pointer"
+            className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center text-emerald-950 hover:bg-gray-50 shadow-sm transition-colors active:scale-95 cursor-pointer"
           >
-            <ChevronLeft className="w-5 h-5" />
+            <ChevronLeft className="w-4 h-4" />
           </button>
           <button 
             onClick={() => {
               const el = document.getElementById('testimonial-scroll');
-              if(el) el.scrollBy({ left: 350, behavior: 'smooth' });
+              if(el) el.scrollBy({ left: 300, behavior: 'smooth' });
             }}
-            className="w-10 h-10 rounded-full bg-white border border-gray-200 flex items-center justify-center text-emerald-950 hover:bg-gray-50 shadow-sm transition-colors active:scale-95 cursor-pointer"
+            className="w-9 h-9 rounded-full bg-white border border-gray-200 flex items-center justify-center text-emerald-950 hover:bg-gray-50 shadow-sm transition-colors active:scale-95 cursor-pointer"
           >
             <ChevronRight className="w-5 h-5" />
           </button>
         </div>
       </section>
 
-      {/* 8. FAST INQUIRY BANNER */}
+      {/* 8. FAST INQUIRY BANNER (BEAUTIFIED & INTERACTIVE) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-16">
-        <div className="bg-emerald-950 text-white rounded-3xl p-6 sm:p-12 shadow-xl relative overflow-hidden">
-          <div className="max-w-2xl mx-auto text-center relative z-10 space-y-4">
-            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-champagne-400/20 text-champagne-300 text-[10px] font-bold uppercase tracking-widest">
-              <MessageSquare className="w-3.5 h-3.5" />
-              Layanan Cepat Tanggap
-            </span>
-            <h2 className="font-serif text-2xl sm:text-4xl font-bold leading-tight">
-              Punya Tanggal Pernikahan Idaman?
-            </h2>
-            <p className="text-white/70 text-xs sm:text-sm max-w-xl mx-auto">
-              Konsultasikan tanggal acara Anda langsung ke Tim Concierge NikaHub. Kami akan segera memverifikasi ketersediaan jadwal & survey lokasi.
-            </p>
+        <div className="relative bg-emerald-950 rounded-3xl overflow-hidden shadow-xl border border-champagne-400/20">
+          {/* Aesthetic Background Elements */}
+          <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1511285560929-80b456fea0bc?auto=format&fit=crop&w=2000&q=80')] bg-cover bg-center opacity-20 mix-blend-overlay"></div>
+          <div className="absolute -top-24 -right-24 w-64 h-64 bg-champagne-400/30 rounded-full blur-3xl pointer-events-none"></div>
+          <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-emerald-500/20 rounded-full blur-3xl pointer-events-none"></div>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center gap-3 pt-2">
-              <a
-                href="https://wa.me/qr/XCPMCWREYZVOM1"
-                target="_blank"
-                rel="noreferrer"
-                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-champagne-400 hover:bg-champagne-300 text-emerald-950 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-md transition-all cursor-pointer"
-              >
-                <MessageSquare className="w-4 h-4" />
-                <span>Konsultasi WA Direct</span>
-              </a>
+          <div className="relative z-10 p-6 sm:p-12 flex flex-col lg:flex-row items-center justify-between gap-10">
+            {/* Text Section */}
+            <div className="lg:w-1/2 text-center lg:text-left space-y-5">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-champagne-400/20 text-champagne-300 text-[10px] font-bold uppercase tracking-widest border border-champagne-400/20">
+                <Calendar className="w-3.5 h-3.5" />
+                Cek Ketersediaan Tanggal
+              </span>
+              <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white leading-tight">
+                Punya Tanggal Pernikahan Idaman?
+              </h2>
+              <p className="text-white/80 text-xs sm:text-sm leading-relaxed max-w-lg mx-auto lg:mx-0">
+                Jangan sampai tanggal bahagia Anda keduluan pasangan lain. Cek jadwal, ketersediaan tenda, dan klaim harga promo bulan ini sekarang juga!
+              </p>
+            </div>
 
-              <button
-                onClick={onNavigateToContact}
-                className="w-full sm:w-auto px-7 py-3.5 rounded-full bg-white/10 hover:bg-white/20 text-white border border-white/20 font-semibold text-xs transition-colors cursor-pointer"
-              >
-                Jadwalkan Food Tasting
-              </button>
+            {/* Interactive Form Card */}
+            <div className="lg:w-1/2 w-full max-w-md bg-white/10 backdrop-blur-md p-6 rounded-2xl border border-white/20 shadow-2xl">
+              <div className="space-y-4 text-left">
+                <div>
+                  <label className="block text-xs font-bold text-champagne-300 mb-1.5">Rencana Tanggal Acara</label>
+                  <input 
+                    type="date" 
+                    className="w-full bg-white/95 text-emerald-950 px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-champagne-400 text-sm font-semibold shadow-sm"
+                  />
+                </div>
+                <div>
+                  <label className="block text-xs font-bold text-champagne-300 mb-1.5">Lokasi Kota Acara</label>
+                  <input 
+                    type="text" 
+                    placeholder="Contoh: Jakarta Selatan"
+                    className="w-full bg-white/95 text-emerald-950 px-4 py-3 rounded-xl outline-none focus:ring-2 focus:ring-champagne-400 text-sm font-semibold shadow-sm"
+                  />
+                </div>
+                <button 
+                  onClick={() => window.open('https://wa.me/qr/XCPMCWREYZVOM1', '_blank')}
+                  className="w-full py-3.5 rounded-xl bg-champagne-400 hover:bg-champagne-300 text-emerald-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 mt-2"
+                >
+                  <MessageSquare className="w-4 h-4" />
+                  <span>Amankan Tanggal via WA</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 9. 3 PILAR KOMITMEN NIKAHUB (JEJERKAN RAPI DALAM 1 BARIS) */}
+      {/* 9. 3 PILAR KOMITMEN NIKAHUB (DISESUAIKAN UNTUK MARKET MENENGAH) */}
       <section className="max-w-7xl mx-auto px-4 sm:px-6 mb-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4">
+          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4 hover:shadow-md transition-shadow">
             <div className="w-10 h-10 rounded-xl bg-emerald-950/5 flex items-center justify-center text-emerald-950 shrink-0 mt-0.5">
-              <UserCheck className="w-5 h-5" />
+              <MessageSquare className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">1 Dedicated Project Director</h3>
-              <p className="text-xs text-emerald-950/70 leading-relaxed">
-                Seluruh koordinasi tenda, katering, dan hiburan dikendalikan oleh 1 penanggung jawab resmi NikaHub.
+              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">Konsultasi Bebas Pusing</h3>
+              <p className="text-[11px] sm:text-xs text-emerald-950/70 leading-relaxed">
+                Tanya-tanya dulu soal tenda dan katering gratis! Tim kami siap merancang anggaran yang pas dengan budget Anda.
               </p>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4">
+          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4 hover:shadow-md transition-shadow">
             <div className="w-10 h-10 rounded-xl bg-emerald-950/5 flex items-center justify-center text-emerald-950 shrink-0 mt-0.5">
               <ShieldCheck className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">Supervisi Kualitas Ketat</h3>
-              <p className="text-xs text-emerald-950/70 leading-relaxed">
-                Semua perlengkapan & sajian prasmanan diaudit langsung di lapangan sebelum diserahterimakan.
+              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">Harga Transparan</h3>
+              <p className="text-[11px] sm:text-xs text-emerald-950/70 leading-relaxed">
+                Tidak ada biaya dadakan di akhir acara. Spesifikasi paket fleksibel bisa dinegosiasikan sesuai kebutuhan.
               </p>
             </div>
           </div>
 
-          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4">
+          <div className="bg-white p-6 rounded-2xl border border-emerald-950/10 shadow-xs flex items-start gap-4 hover:shadow-md transition-shadow">
             <div className="w-10 h-10 rounded-xl bg-emerald-950/5 flex items-center justify-center text-emerald-950 shrink-0 mt-0.5">
               <Clock className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">Garansi Kesiapan H-1</h3>
-              <p className="text-xs text-emerald-950/70 leading-relaxed">
-                Seluruh panggung dan tenda siap 100% pada H-1 pukul 14.00 WIB untuk gladi resik keluarga.
+              <h3 className="font-serif font-bold text-sm mb-1 text-emerald-950">Garansi Siap H-1</h3>
+              <p className="text-[11px] sm:text-xs text-emerald-950/70 leading-relaxed">
+                Seluruh panggung, dekorasi & tenda siap 100% pada H-1 siang. Anda tinggal tenang beristirahat menyambut tamu.
               </p>
             </div>
           </div>
