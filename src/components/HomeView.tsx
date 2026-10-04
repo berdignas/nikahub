@@ -35,7 +35,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [sliderPosition, setSliderPosition] = useState<number>(50);
 
   // Top Picks
-  const topPicks = featuredProducts.filter(p => p.featured).slice(0, 4);
+  const featured = featuredProducts.filter(p => p.featured);
+  const topPicks = featured.length > 0 ? featured.slice(0, 4) : featuredProducts.slice(0, 4);
 
   const TESTIMONIALS = [
     {

@@ -163,6 +163,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     description: string;
     includesText: string;
     availability: 'ready' | 'limited' | 'booked';
+    featured: boolean;
   }>({
     title: '',
     category: 'tenda',
@@ -176,7 +177,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     liveDemoUrl: '',
     description: 'Fasilitas tenda dekorasi VIP lengkap dengan pendingin dan panggung.',
     includesText: 'Konstruksi Tenda Maroko, Dekorasi Bunga, AC 5PK, Panggung Utama 12x4m',
-    availability: 'ready'
+    availability: 'ready',
+    featured: true
   });
 
   // Orders State for Admin
@@ -278,7 +280,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       liveDemoUrl: '',
       description: 'Fasilitas komplit kelas VIP dari NikaHub Atelier.',
       includesText: 'Pemasangan H-1, Supervisi 1 Project Director, Lampu Kristal',
-      availability: 'ready'
+      availability: 'ready',
+      featured: true
     });
     setIsAddModalOpen(true);
   };
@@ -299,7 +302,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       liveDemoUrl: product.liveDemoUrl || '',
       description: product.description,
       includesText: product.includes.join(', '),
-      availability: product.availability
+      availability: product.availability,
+      featured: product.featured || false
     });
     setIsAddModalOpen(true);
   };
@@ -329,7 +333,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         liveDemoUrl: formData.liveDemoUrl?.trim() || undefined,
         description: formData.description,
         includes: includesArr.length ? includesArr : editingProduct.includes,
-        availability: formData.availability
+        availability: formData.availability,
+        featured: formData.featured
       };
       onUpdateProduct(updated);
     } else {
@@ -351,7 +356,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         liveDemoUrl: formData.liveDemoUrl?.trim() || undefined,
         includes: includesArr.length ? includesArr : ['Fitur Undangan Digital Premium'],
         description: formData.description,
-        availability: formData.availability
+        availability: formData.availability,
+        featured: formData.featured
       };
       onAddProduct(newProd);
     }
@@ -1001,6 +1007,19 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       <option value="booked">🔴 BOOKED (Penuh / Terisi)</option>
                     </select>
                   </div>
+                </div>
+
+                <div className="flex items-center gap-3 bg-amber-50 p-4 rounded-xl border border-amber-200">
+                  <input 
+                    type="checkbox" 
+                    id="featured-checkbox"
+                    checked={formData.featured}
+                    onChange={(e) => setFormData({ ...formData, featured: e.target.checked })}
+                    className="w-5 h-5 accent-emerald-950 cursor-pointer"
+                  />
+                  <label htmlFor="featured-checkbox" className="font-bold text-emerald-950 cursor-pointer">
+                    Tampilkan di "Pilihan Utama" (Beranda)
+                  </label>
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
