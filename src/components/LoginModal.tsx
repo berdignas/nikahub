@@ -358,7 +358,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
               {mode === 'verify_success' && 'Verifikasi Berhasil!'}
             </h3>
             <p className="text-xs text-sand/80 mt-1 max-w-xs mx-auto">
-              {mode === 'register' && 'Isi pendaftaran singkat untuk reservasi tenda VIP & cicip katering.'}
+              {mode === 'register' && 'Buat akun NikaHub Anda untuk dapat memesan layanan dengan mudah.'}
               {mode === 'login' && 'Masuk cepat dengan alamat email terdaftar yang sudah diverifikasi.'}
               {mode === 'verify_pending' && `Email verifikasi dari Berdikari Wedding telah dikirim ke ${pendingEmail}`}
               {mode === 'verify_success' && 'Akun Berdikari Wedding Anda aktif! Silakan masuk kembali.'}
@@ -492,32 +492,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <label className="block font-bold text-emerald-950 mb-1">
-                      Rencana Tanggal
-                    </label>
-                    <input
-                      type="date"
-                      value={eventDate}
-                      onChange={(e) => setEventDate(e.target.value)}
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 text-[11px] focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="block font-bold text-emerald-950 mb-1">
-                      Estimasi Tamu
-                    </label>
-                    <input
-                      type="text"
-                      value={guestEstimate}
-                      onChange={(e) => setGuestEstimate(e.target.value)}
-                      placeholder="Contoh: 500 Pax"
-                      className="w-full px-3 py-2 rounded-xl border border-gray-200 text-[11px] focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50"
-                    />
-                  </div>
-                </div>
+                
 
                 {error && (
                   <p className="text-[11px] text-rose-600 font-semibold px-1">
