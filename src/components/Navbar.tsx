@@ -455,7 +455,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             initial={{ opacity: 0, y: -20, scale: 0.98 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -20, scale: 0.98 }}
-            className="fixed inset-x-3 top-16 z-50 p-5 rounded-3xl bg-white/98 backdrop-blur-2xl border border-white/60 shadow-2xl flex flex-col gap-3 text-emerald-950 md:hidden max-h-[85vh] overflow-y-auto"
+            className="fixed inset-x-3 top-16 z-50 p-5 rounded-3xl bg-white border border-emerald-950/10 shadow-2xl flex flex-col gap-3 text-emerald-950 md:hidden max-h-[85vh] overflow-y-auto"
           >
             <div className="flex items-center justify-between pb-3 border-b border-emerald-950/10">
               <div className="flex items-center gap-2">
