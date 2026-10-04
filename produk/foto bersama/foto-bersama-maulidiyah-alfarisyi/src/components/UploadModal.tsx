@@ -1,14 +1,14 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Camera, Image as ImageIcon, Sparkles, AlertCircle, Trash2, Loader2, RefreshCw } from 'lucide-react';
+import { X, Camera, Image as ImageIcon, Sparkles, AlertCircle, Trash2, Loader2, RefreshCw, Plus, FolderArchive } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { compressImageFile, MAX_PHOTO_PER_DEVICE, getOrCreateDeviceId } from '../utils/deviceStorage';
-import { PhotoMoment } from '../types';
+import { GuestAlbum, PhotoMoment } from '../types';
 
 interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   uploadedCount: number;
-  onPhotoUploaded: (newPhoto: PhotoMoment) => void;
+  onAlbumCreated: (newAlbum: GuestAlbum) => void;
   onGoToMyPhotos: () => void;
 }
 
@@ -16,14 +16,12 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   isOpen,
   onClose,
   uploadedCount,
-  onPhotoUploaded,
+  onAlbumCreated,
   onGoToMyPhotos,
 }) => {
   const [senderName, setSenderName] = useState('');
   const [caption, setCaption] = useState('');
-  const [selectedImage, setSelectedImage] = useState<string | null>(null);
-  const [originalSizeText, setOriginalSizeText] = useState('');
-  const [compressedSizeText, setCompressedSizeText] = useState('');
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
@@ -91,13 +89,10 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     try {
       const blob = await (await fetch(dataUrl)).blob();
       const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
-      setOriginalSizeText(`${Math.round(blob.size / 1024)} KB`);
       const compressedDataUrl = await compressImageFile(file);
-      setSelectedImage(compressedDataUrl);
-      const compKb = Math.round((compressedDataUrl.length * 3) / 4 / 1024);
-      setCompressedSizeText(`${compKb} KB`);
+      setSelectedImages((prev) => [...prev, compressedDataUrl]);
     } catch {
-      setSelectedImage(dataUrl);
+      setSelectedImages((prev) => [...prev, dataUrl]);
     } finally {
       setIsCompressing(false);
     }
@@ -107,34 +102,45 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
   const remaining = Math.max(0, MAX_PHOTO_PER_DEVICE - uploadedCount);
   const isQuotaFull = remaining === 0;
+  const availableSlots = remaining - selectedImages.length;
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
 
-    setErrorMsg('');
+    if (availableSlots <= 0) {
+      setErrorMsg(`Batas maksimal 5 foto per perangkat telah tercapai.`);
+      return;
+    }
+
+    const filesToProcess = Array.from(files).slice(0, availableSlots);
     setIsCompressing(true);
+    setErrorMsg('');
 
     try {
-      const origKb = Math.round(file.size / 1024);
-      setOriginalSizeText(origKb > 1024 ? `${(origKb / 1024).toFixed(1)} MB` : `${origKb} KB`);
-
-      const compressedDataUrl = await compressImageFile(file);
-      setSelectedImage(compressedDataUrl);
-
-      const compKb = Math.round((compressedDataUrl.length * 3) / 4 / 1024);
-      setCompressedSizeText(compKb > 1024 ? `${(compKb / 1024).toFixed(1)} MB` : `${compKb} KB`);
+      const compressedList: string[] = [];
+      for (const file of filesToProcess) {
+        const compressed = await compressImageFile(file);
+        compressedList.push(compressed);
+      }
+      setSelectedImages((prev) => [...prev, ...compressedList]);
     } catch (err) {
-      setErrorMsg('Gagal memproses gambar. Silakan coba pilih gambar lain.');
+      setErrorMsg('Gagal memproses beberapa gambar. Silakan coba kembali.');
     } finally {
       setIsCompressing(false);
+      // Reset input value
+      if (e.target) e.target.value = '';
     }
+  };
+
+  const handleRemoveImage = (indexToRemove: number) => {
+    setSelectedImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedImage) {
-      setErrorMsg('Silakan pilih atau ambil foto terlebih dahulu.');
+    if (selectedImages.length === 0) {
+      setErrorMsg('Silakan pilih atau ambil minimal 1 foto.');
       return;
     }
 
@@ -148,51 +154,71 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
     try {
       const deviceId = getOrCreateDeviceId();
-      const newPhoto: PhotoMoment = {
-        id: 'photo_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6),
-        senderName: senderName.trim() || 'Tamu Undangan',
-        caption: caption.trim() || 'Momen bahagia bersama Maulidiyah & Alfarisyi ✨',
-        imageUrl: selectedImage,
+      const albumId = 'album_' + Date.now().toString(36) + '_' + Math.random().toString(36).substring(2, 6);
+      const guestName = senderName.trim() || 'Tamu Undangan';
+      const guestCaption = caption.trim() || 'Momen bahagia bersama Maulidiyah & Alfarisyi ✨';
+
+      const photoMoments: PhotoMoment[] = selectedImages.map((imgUrl, i) => ({
+        id: `photo_${Date.now()}_${i}_${Math.random().toString(36).substring(2, 5)}`,
+        senderName: guestName,
+        caption: guestCaption,
+        imageUrl: imgUrl,
         deviceId: deviceId,
         likesCount: 1,
         likedByDevices: [deviceId],
         createdAt: new Date().toISOString(),
         isInitialSample: false,
+      }));
+
+      const newAlbum: GuestAlbum = {
+        id: albumId,
+        deviceId: deviceId,
+        senderName: guestName,
+        caption: guestCaption,
+        photos: photoMoments,
+        likesCount: 1,
+        likedByDevices: [deviceId],
+        comments: [],
+        createdAt: new Date().toISOString(),
+        isInitialSample: false,
       };
 
-      onPhotoUploaded(newPhoto);
+      onAlbumCreated(newAlbum);
 
       // Trigger Confetti
       confetti({
-        particleCount: 80,
-        spread: 60,
+        particleCount: 90,
+        spread: 70,
         origin: { y: 0.6 },
-        colors: ['#ece5da', '#d8cca8', '#b8c4ae', '#f8f6e1'],
+        colors: ['#E6CA92', '#0A261D', '#FAF9F5', '#C5A880'],
       });
 
-      setSelectedImage(null);
+      setSelectedImages([]);
+      setSenderName('');
       setCaption('');
       setIsSubmitting(false);
       onClose();
     } catch (err) {
-      setErrorMsg('Terjadi kendala saat menyimpan foto.');
+      setErrorMsg('Terjadi kendala saat menyimpan album foto.');
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-white border border-gray-200 text-[#0A261D] rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A261D]/80 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-lg bg-white border border-[#E6CA92]/40 text-[#0A261D] rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
         {/* Modal Header */}
         <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-[#FAF9F5]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#FAF9F5] flex items-center justify-center border border-[#685c46]/40">
-              <Camera className="w-4 h-4 text-[#C5A880]" />
+            <div className="w-8 h-8 rounded-full bg-[#FAF9F5] flex items-center justify-center border border-[#E6CA92]/40">
+              <FolderArchive className="w-4 h-4 text-[#C5A880]" />
             </div>
             <div>
-              <h3 className="font-serif font-bold text-xl text-[#0A261D] leading-none">Unggah Foto Bersama</h3>
-              <p className="text-[11px] font-sans-ui text-gray-500 mt-0.5">
-                Foto ke-{uploadedCount + 1} dari batas maksimal 5 foto
+              <h3 className="font-serif font-bold text-xl text-[#0A261D] leading-none">
+                Unggah Folder Foto Tamu
+              </h3>
+              <p className="text-[11px] font-sans text-gray-500 mt-0.5">
+                Pilih 1 hingga {remaining} foto untuk folder Anda (Batas 5 foto/tamu)
               </p>
             </div>
           </div>
@@ -201,7 +227,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               stopLiveCamera();
               onClose();
             }}
-            className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-all hover:bg-gray-200"
+            className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-all hover:bg-gray-200 cursor-pointer"
           >
             <X className="w-5 h-5" />
           </button>
@@ -231,30 +257,35 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                     onClose();
                     onGoToMyPhotos();
                   }}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] text-xs font-semibold shadow-md hover:scale-105 transition-all"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] text-xs font-semibold shadow-md hover:scale-105 transition-all cursor-pointer"
                 >
-                  Lihat / Kelola Foto Saya
+                  Lihat Folder Saya
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-gray-700 text-xs hover:bg-gray-200"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-gray-700 text-xs hover:bg-gray-200 cursor-pointer"
                 >
                   Tutup
                 </button>
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 font-sans-ui">
+            <form onSubmit={handleSubmit} className="space-y-4 font-sans">
               {/* Photo Input Area */}
               <div>
-                <label className="block text-xs font-medium text-[#0A261D] mb-2">
-                  Pilih atau Ambil Foto:
-                </label>
+                <div className="flex items-center justify-between mb-2">
+                  <label className="text-xs font-semibold text-[#0A261D]">
+                    Pilih Foto (Bisa pilih 1 hingga {remaining} foto):
+                  </label>
+                  <span className="text-[11px] font-bold text-[#C5A880]">
+                    {selectedImages.length} / {remaining} Foto Dipilih
+                  </span>
+                </div>
 
                 {/* Live Camera Viewfinder Overlay */}
                 {isLiveCamera ? (
-                  <div className="relative rounded-2xl overflow-hidden border border-[#d8cca8]/60 bg-black flex flex-col items-center">
+                  <div className="relative rounded-2xl overflow-hidden border border-[#E6CA92]/60 bg-black flex flex-col items-center">
                     <video
                       ref={videoRef}
                       autoPlay
@@ -269,7 +300,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                           setFacingMode(nextMode);
                           startLiveCamera(nextMode);
                         }}
-                        className="p-3 rounded-full bg-black/60 text-[#0A261D] border border-white/20 hover:bg-black/90 transition-all"
+                        className="p-3 rounded-full bg-black/60 text-white border border-white/20 hover:bg-black/90 transition-all cursor-pointer"
                         title="Tukar Kamera Depan/Belakang"
                       >
                         <RefreshCw className="w-5 h-5" />
@@ -279,53 +310,93 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                       <button
                         type="button"
                         onClick={captureLivePhoto}
-                        className="w-14 h-14 rounded-full bg-gradient-to-r from-[#ece5da] to-[#d8cca8] border-4 border-white/80 shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all"
+                        className="w-14 h-14 rounded-full bg-gradient-to-r from-white to-[#E6CA92] border-4 border-white/80 shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
                         title="Potret Foto"
                       >
-                        <div className="w-6 h-6 rounded-full bg-[#473c27]" />
+                        <div className="w-6 h-6 rounded-full bg-[#0A261D]" />
                       </button>
 
                       <button
                         type="button"
                         onClick={stopLiveCamera}
-                        className="p-3 rounded-full bg-black/60 text-red-300 border border-red-500/30 hover:bg-red-950/80 transition-all"
+                        className="p-3 rounded-full bg-black/60 text-red-300 border border-red-500/30 hover:bg-red-950/80 transition-all cursor-pointer"
                         title="Tutup Kamera Live"
                       >
                         <X className="w-5 h-5" />
                       </button>
                     </div>
                   </div>
-                ) : !selectedImage ? (
-                  <div className="grid grid-cols-2 gap-3">
-                    {/* Live Web Camera Button */}
-                    <button
-                      type="button"
-                      disabled={isCompressing}
-                      onClick={() => startLiveCamera('environment')}
-                      className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] transition-all flex flex-col items-center justify-center gap-2 group text-center"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#FAF9F5] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Camera className="w-5 h-5 text-[#C5A880]" />
-                      </div>
-                      <span className="text-xs font-medium text-[#0A261D]">Buka Kamera HP</span>
-                      <span className="text-[10px] text-gray-500">Ambil Foto Langsung</span>
-                    </button>
+                ) : (
+                  <div className="space-y-3">
+                    {/* Selected Images Thumbnail Grid */}
+                    {selectedImages.length > 0 && (
+                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 p-3 rounded-2xl bg-[#FAF9F5] border border-[#E6CA92]/30">
+                        {selectedImages.map((img, idx) => (
+                          <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group bg-gray-100">
+                            <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                            <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] font-bold px-1 rounded">
+                              {idx + 1}
+                            </span>
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveImage(idx)}
+                              className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition-all shadow-sm cursor-pointer"
+                              title="Hapus foto ini"
+                            >
+                              <X className="w-3 h-3" />
+                            </button>
+                          </div>
+                        ))}
 
-                    {/* Gallery Button */}
-                    <button
-                      type="button"
-                      disabled={isCompressing}
-                      onClick={() => fileInputRef.current?.click()}
-                      className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] transition-all flex flex-col items-center justify-center gap-2 group text-center"
-                    >
-                      <div className="w-10 h-10 rounded-full bg-[#FAF9F5] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <ImageIcon className="w-5 h-5 text-[#C5A880]" />
+                        {/* Add more slot if still under limit */}
+                        {availableSlots > 0 && (
+                          <button
+                            type="button"
+                            onClick={() => fileInputRef.current?.click()}
+                            className="aspect-square rounded-xl border-2 border-dashed border-[#E6CA92] hover:border-[#0A261D] bg-white flex flex-col items-center justify-center text-[#C5A880] hover:text-[#0A261D] transition-colors cursor-pointer"
+                            title="Tambah foto lagi"
+                          >
+                            <Plus className="w-5 h-5" />
+                            <span className="text-[10px] font-bold mt-1">Tambah</span>
+                          </button>
+                        )}
                       </div>
-                      <span className="text-xs font-medium text-[#0A261D]">Buka Galeri</span>
-                      <span className="text-[10px] text-gray-500">Pilih dari Memori HP</span>
-                    </button>
+                    )}
 
-                    {/* Hidden Inputs for fallback native capture */}
+                    {/* Action buttons to pick photos */}
+                    {selectedImages.length === 0 && (
+                      <div className="grid grid-cols-2 gap-3">
+                        {/* Live Web Camera Button */}
+                        <button
+                          type="button"
+                          disabled={isCompressing}
+                          onClick={() => startLiveCamera('environment')}
+                          className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] transition-all flex flex-col items-center justify-center gap-2 group text-center cursor-pointer"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-white border border-[#E6CA92]/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
+                            <Camera className="w-5 h-5 text-[#C5A880]" />
+                          </div>
+                          <span className="text-xs font-bold text-[#0A261D]">Buka Kamera HP</span>
+                          <span className="text-[10px] text-gray-500">Ambil Foto Langsung</span>
+                        </button>
+
+                        {/* Gallery Button */}
+                        <button
+                          type="button"
+                          disabled={isCompressing}
+                          onClick={() => fileInputRef.current?.click()}
+                          className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] transition-all flex flex-col items-center justify-center gap-2 group text-center cursor-pointer"
+                        >
+                          <div className="w-10 h-10 rounded-full bg-white border border-[#E6CA92]/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
+                            <ImageIcon className="w-5 h-5 text-[#C5A880]" />
+                          </div>
+                          <span className="text-xs font-bold text-[#0A261D]">Buka Galeri HP</span>
+                          <span className="text-[10px] text-gray-500">Pilih 1-{remaining} Foto Sekaligus</span>
+                        </button>
+                      </div>
+                    )}
+
+                    {/* Hidden Inputs for native file picker & camera */}
                     <input
                       ref={cameraInputRef}
                       type="file"
@@ -337,40 +408,18 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                     <input
                       ref={fileInputRef}
                       type="file"
+                      multiple
                       accept="image/*"
                       className="hidden"
                       onChange={handleFileChange}
                     />
-                  </div>
-                ) : (
-                  <div className="relative rounded-2xl overflow-hidden border border-[#685c46]/50 bg-black/40 group">
-                    <img
-                      src={selectedImage}
-                      alt="Preview"
-                      className="w-full max-h-64 object-contain bg-black/60 mx-auto"
-                    />
-
-                    {/* Overlay Compression Pill */}
-                    <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-[10px] text-gray-500 border border-white/10">
-                      Visually Lossless: <span className="text-[#0A261D] line-through">{originalSizeText}</span> → <strong className="text-emerald-300">{compressedSizeText}</strong>
-                    </div>
-
-                    {/* Change / Remove button */}
-                    <button
-                      type="button"
-                      onClick={() => setSelectedImage(null)}
-                      className="absolute top-2 right-2 p-2 rounded-full bg-red-950/80 hover:bg-red-900 text-red-200 border border-red-700/50 transition-all shadow-md"
-                      title="Ganti Foto"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
                   </div>
                 )}
 
                 {isCompressing && (
                   <div className="flex items-center justify-center gap-2 py-3 text-xs text-[#C5A880]">
                     <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Memproses & mengompresi foto (Visually Lossless)...</span>
+                    <span>Memproses & mengompresi foto otomatis (Visually Lossless)...</span>
                   </div>
                 )}
               </div>
@@ -378,27 +427,28 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               {/* Sender Name */}
               <div>
                 <label className="block text-xs font-semibold text-[#0A261D] mb-1.5">
-                  Nama Anda / Rombongan:
+                  Nama Anda / Rombongan (Judul Folder):
                 </label>
                 <input
                   type="text"
                   value={senderName}
                   onChange={(e) => setSenderName(e.target.value)}
-                  placeholder="Contoh: Budi & Keluarga / Sahabat SMA"
+                  placeholder="Contoh: Faizun / Keluarga Malang / Sahabat SMA"
                   maxLength={50}
                   className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors"
+                  required
                 />
               </div>
 
               {/* Caption / Ucapan */}
               <div>
                 <label className="block text-xs font-semibold text-[#0A261D] mb-1.5">
-                  Ucapan & Doa untuk Mempelai (Opsional):
+                  Ucapan & Doa untuk Mempelai:
                 </label>
                 <textarea
                   value={caption}
                   onChange={(e) => setCaption(e.target.value)}
-                  placeholder="Tuliskan ucapan selamat atau cerita di balik foto ini..."
+                  placeholder="Tuliskan ucapan selamat atau doa restu untuk Maulidiyah & Alfarisyi..."
                   rows={3}
                   maxLength={250}
                   className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors resize-none"
@@ -416,18 +466,18 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isSubmitting || isCompressing || !selectedImage}
-                  className="w-full py-3.5 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] font-bold text-xs shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
+                  disabled={isSubmitting || isCompressing || selectedImages.length === 0}
+                  className="w-full py-3.5 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] font-bold text-xs shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-[#E6CA92]" />
-                      <span>Menyimpan Foto...</span>
+                      <span>Menyimpan Folder Foto...</span>
                     </>
                   ) : (
                     <>
                       <Sparkles className="w-4 h-4 text-[#E6CA92]" />
-                      <span>Publikasikan ke Galeri Bersama</span>
+                      <span>Publikasikan Folder ({selectedImages.length} Foto)</span>
                     </>
                   )}
                 </button>

@@ -3,23 +3,23 @@ import { Navbar } from './components/Navbar';
 import { Header } from './components/Header';
 import { PhotoGrid } from './components/PhotoGrid';
 import { UploadModal } from './components/UploadModal';
-import { PhotoDetailModal } from './components/PhotoDetailModal';
+import { GuestAlbumModal } from './components/GuestAlbumModal';
+import { CouplePhotoModal } from './components/CouplePhotoModal';
 import { TvSlideshowMode } from './components/TvSlideshowMode';
 import { QrCodeModal } from './components/QrCodeModal';
 import { DownloadAllModal } from './components/DownloadAllModal';
 import { EVENT_INFO } from './data/initialPhotos';
-import { PhotoMoment, FilterTab } from './types';
+import { GuestAlbum, PhotoMoment, FilterTab, CommentItem } from './types';
 import {
-  getStoredPhotos,
-  savePhotos,
+  getStoredAlbums,
+  saveAlbums,
   getOrCreateDeviceId,
-  getDeviceUploadCount,
   MAX_PHOTO_PER_DEVICE,
 } from './utils/deviceStorage';
 import { Heart, Camera, QrCode } from 'lucide-react';
 
 export function App() {
-  const [photos, setPhotos] = useState<PhotoMoment[]>([]);
+  const [albums, setAlbums] = useState<GuestAlbum[]>([]);
   const [deviceId, setDeviceId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
 
@@ -28,67 +28,132 @@ export function App() {
   const [isQrOpen, setIsQrOpen] = useState(false);
   const [isTvOpen, setIsTvOpen] = useState(false);
   const [isDownloadAllOpen, setIsDownloadAllOpen] = useState(false);
-  const [selectedPhoto, setSelectedPhoto] = useState<PhotoMoment | null>(null);
+  const [isCouplePhotoOpen, setIsCouplePhotoOpen] = useState(false);
+  const [selectedAlbum, setSelectedAlbum] = useState<GuestAlbum | null>(null);
 
   // Initialize data on mount
   useEffect(() => {
     const devId = getOrCreateDeviceId();
     setDeviceId(devId);
-    const stored = getStoredPhotos();
-    setPhotos(stored);
+    const stored = getStoredAlbums();
+    setAlbums(stored);
   }, []);
 
-  // Save whenever photos change
-  const updatePhotos = (newPhotos: PhotoMoment[]) => {
-    setPhotos(newPhotos);
-    savePhotos(newPhotos);
+  // Save whenever albums change
+  const updateAlbums = (newAlbums: GuestAlbum[]) => {
+    setAlbums(newAlbums);
+    saveAlbums(newAlbums);
   };
 
-  // Upload handler with database & Cloudflare R2 sync
-  const handlePhotoUploaded = (newPhoto: PhotoMoment) => {
-    const updated = [newPhoto, ...photos];
-    updatePhotos(updated);
-    
+  // Upload new album handler (with 1 to 5 photos)
+  const handleAlbumCreated = (newAlbum: GuestAlbum) => {
+    const updated = [newAlbum, ...albums];
+    updateAlbums(updated);
+
+    // Also auto-select the newly created album for immediate preview!
+    setSelectedAlbum(newAlbum);
+
     // Async background sync to Supabase PostgreSQL database
     import('./utils/supabaseClient').then(({ insertPhotoToDatabase }) => {
-      insertPhotoToDatabase(newPhoto);
+      newAlbum.photos.forEach((photo) => {
+        insertPhotoToDatabase(photo);
+      });
     });
   };
 
-  // Like toggle handler
-  const handleLikeToggle = (photoId: string) => {
-    const updated = photos.map((p) => {
-      if (p.id !== photoId) return p;
-      const isLiked = p.likedByDevices?.includes(deviceId);
+  // Like toggle handler for guest album
+  const handleLikeToggle = (albumId: string) => {
+    const updated = albums.map((alb) => {
+      if (alb.id !== albumId) return alb;
+      const isLiked = alb.likedByDevices?.includes(deviceId);
       const newLikedBy = isLiked
-        ? (p.likedByDevices || []).filter((id) => id !== deviceId)
-        : [...(p.likedByDevices || []), deviceId];
+        ? (alb.likedByDevices || []).filter((id) => id !== deviceId)
+        : [...(alb.likedByDevices || []), deviceId];
 
-      return {
-        ...p,
+      const updatedAlbum: GuestAlbum = {
+        ...alb,
         likedByDevices: newLikedBy,
-        likesCount: Math.max(0, (p.likesCount || 0) + (isLiked ? -1 : 1)),
+        likesCount: Math.max(0, (alb.likesCount || 0) + (isLiked ? -1 : 1)),
       };
+
+      if (selectedAlbum && selectedAlbum.id === albumId) {
+        setSelectedAlbum(updatedAlbum);
+      }
+
+      return updatedAlbum;
     });
-    updatePhotos(updated);
 
-    // Also update modal preview if open
-    if (selectedPhoto && selectedPhoto.id === photoId) {
-      const current = updated.find((p) => p.id === photoId);
-      if (current) setSelectedPhoto(current);
+    updateAlbums(updated);
+  };
+
+  // Add comment handler to guest album
+  const handleAddComment = (albumId: string, senderName: string, commentText: string) => {
+    const newComment: CommentItem = {
+      id: 'comm_' + Date.now() + '_' + Math.random().toString(36).substring(2, 6),
+      senderName,
+      commentText,
+      createdAt: new Date().toISOString(),
+    };
+
+    const updated = albums.map((alb) => {
+      if (alb.id !== albumId) return alb;
+      const updatedAlbum: GuestAlbum = {
+        ...alb,
+        comments: [...(alb.comments || []), newComment],
+      };
+
+      if (selectedAlbum && selectedAlbum.id === albumId) {
+        setSelectedAlbum(updatedAlbum);
+      }
+
+      return updatedAlbum;
+    });
+
+    updateAlbums(updated);
+  };
+
+  // Delete entire album handler (refunds all upload slots!)
+  const handleDeleteAlbum = (albumId: string) => {
+    const updated = albums.filter((alb) => alb.id !== albumId);
+    updateAlbums(updated);
+    if (selectedAlbum?.id === albumId) {
+      setSelectedAlbum(null);
     }
   };
 
-  // Delete handler (refunds 1 upload slot!)
-  const handleDeletePhoto = (photoId: string) => {
-    const updated = photos.filter((p) => p.id !== photoId);
-    updatePhotos(updated);
-    if (selectedPhoto?.id === photoId) {
-      setSelectedPhoto(null);
+  // Delete single photo from album
+  const handleDeletePhotoFromAlbum = (albumId: string, photoId: string) => {
+    const targetAlbum = albums.find((a) => a.id === albumId);
+    if (!targetAlbum) return;
+
+    const remainingPhotos = targetAlbum.photos.filter((p) => p.id !== photoId);
+    if (remainingPhotos.length === 0) {
+      handleDeleteAlbum(albumId);
+      return;
     }
+
+    const updated = albums.map((alb) => {
+      if (alb.id !== albumId) return alb;
+      const updatedAlbum: GuestAlbum = {
+        ...alb,
+        photos: remainingPhotos,
+      };
+      if (selectedAlbum && selectedAlbum.id === albumId) {
+        setSelectedAlbum(updatedAlbum);
+      }
+      return updatedAlbum;
+    });
+
+    updateAlbums(updated);
   };
 
-  const uploadedCount = photos.filter((p) => p.deviceId === deviceId && !p.isInitialSample).length;
+  // Count photos uploaded by this device
+  const uploadedCount = albums
+    .filter((a) => a.deviceId === deviceId && !a.isInitialSample)
+    .reduce((sum, a) => sum + (a.photos?.length || 0), 0);
+
+  // Flat photo list for TV Slideshow & Download All
+  const allPhotos: PhotoMoment[] = albums.flatMap((a) => a.photos || []);
 
   return (
     <div className="min-h-screen bg-[#FAF9F5] text-[#0A261D] flex flex-col font-sans selection:bg-[#E6CA92]/40 selection:text-[#0A261D]">
@@ -101,23 +166,24 @@ export function App() {
         onOpenDownloadAll={() => setIsDownloadAllOpen(true)}
       />
 
-      {/* Hero Header & Quota Info */}
+      {/* Hero Header with FOTO UTAMA MEMPELAI on top */}
       <Header
         uploadedCount={uploadedCount}
         onOpenUpload={() => setIsUploadOpen(true)}
         onOpenQr={() => setIsQrOpen(true)}
+        onOpenCouplePhoto={() => setIsCouplePhotoOpen(true)}
       />
 
-      {/* Main Photo Gallery */}
+      {/* Main Editorial Guest Albums Collage Grid */}
       <main className="flex-1">
         <PhotoGrid
-          photos={photos}
+          albums={albums}
           currentDeviceId={deviceId}
           activeTab={activeTab}
           onChangeTab={setActiveTab}
           onLikeToggle={handleLikeToggle}
-          onDeletePhoto={handleDeletePhoto}
-          onOpenDetail={(photo) => setSelectedPhoto(photo)}
+          onDeleteAlbum={handleDeleteAlbum}
+          onOpenAlbum={(alb) => setSelectedAlbum(alb)}
           onOpenUpload={() => setIsUploadOpen(true)}
         />
       </main>
@@ -166,35 +232,48 @@ export function App() {
         isOpen={isUploadOpen}
         onClose={() => setIsUploadOpen(false)}
         uploadedCount={uploadedCount}
-        onPhotoUploaded={handlePhotoUploaded}
+        onAlbumCreated={handleAlbumCreated}
         onGoToMyPhotos={() => {
           setActiveTab('mine');
         }}
       />
 
-      <PhotoDetailModal
-        photo={selectedPhoto}
+      {/* Guest Album Folder Modal: Displays all 5 photos with carousel, thumbs, greetings, likes, live comments */}
+      <GuestAlbumModal
+        album={selectedAlbum}
         currentDeviceId={deviceId}
-        onClose={() => setSelectedPhoto(null)}
+        onClose={() => setSelectedAlbum(null)}
         onLikeToggle={handleLikeToggle}
+        onAddComment={handleAddComment}
+        onDeletePhoto={handleDeletePhotoFromAlbum}
       />
 
-      <TvSlideshowMode
-        isOpen={isTvOpen}
-        onClose={() => setIsTvOpen(false)}
-        photos={photos}
+      {/* Couple Official Portrait Modal */}
+      <CouplePhotoModal
+        isOpen={isCouplePhotoOpen}
+        onClose={() => setIsCouplePhotoOpen(false)}
         eventInfo={EVENT_INFO}
       />
 
+      {/* TV Slideshow Mode (Projector Screen) */}
+      <TvSlideshowMode
+        isOpen={isTvOpen}
+        onClose={() => setIsTvOpen(false)}
+        photos={allPhotos}
+        eventInfo={EVENT_INFO}
+      />
+
+      {/* QR Code Modal */}
       <QrCodeModal
         isOpen={isQrOpen}
         onClose={() => setIsQrOpen(false)}
       />
 
+      {/* Download All Modal */}
       <DownloadAllModal
         isOpen={isDownloadAllOpen}
         onClose={() => setIsDownloadAllOpen(false)}
-        photos={photos}
+        photos={allPhotos}
       />
     </div>
   );

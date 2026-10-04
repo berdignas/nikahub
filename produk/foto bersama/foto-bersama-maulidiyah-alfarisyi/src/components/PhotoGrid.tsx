@@ -1,41 +1,42 @@
 import React, { useState } from 'react';
-import { Sparkles, Heart, User, Search, Camera } from 'lucide-react';
-import { PhotoMoment, FilterTab } from '../types';
+import { Sparkles, Heart, User, Search, Camera, FolderArchive } from 'lucide-react';
+import { GuestAlbum, FilterTab } from '../types';
 import { PhotoCard } from './PhotoCard';
 
 interface PhotoGridProps {
-  photos: PhotoMoment[];
+  albums: GuestAlbum[];
   currentDeviceId: string;
   activeTab: FilterTab;
   onChangeTab: (tab: FilterTab) => void;
-  onLikeToggle: (photoId: string) => void;
-  onDeletePhoto: (photoId: string) => void;
-  onOpenDetail: (photo: PhotoMoment) => void;
+  onLikeToggle: (albumId: string) => void;
+  onDeleteAlbum: (albumId: string) => void;
+  onOpenAlbum: (album: GuestAlbum) => void;
   onOpenUpload: () => void;
 }
 
 export const PhotoGrid: React.FC<PhotoGridProps> = ({
-  photos,
+  albums,
   currentDeviceId,
   activeTab,
   onChangeTab,
   onLikeToggle,
-  onDeletePhoto,
-  onOpenDetail,
+  onDeleteAlbum,
+  onOpenAlbum,
   onOpenUpload,
 }) => {
   const [searchQuery, setSearchQuery] = useState('');
 
   // Counts
-  const allCount = photos.length;
-  const myCount = photos.filter(p => p.deviceId === currentDeviceId && !p.isInitialSample).length;
-  const popularCount = photos.filter(p => p.likesCount > 10).length;
+  const allCount = albums.length;
+  const myAlbums = albums.filter((a) => a.deviceId === currentDeviceId && !a.isInitialSample);
+  const myPhotoCount = myAlbums.reduce((sum, a) => sum + (a.photos?.length || 0), 0);
+  const totalAllPhotos = albums.reduce((sum, a) => sum + (a.photos?.length || 0), 0);
 
   // Filter logic
-  let filtered = [...photos];
+  let filtered = [...albums];
 
   if (activeTab === 'mine') {
-    filtered = filtered.filter(p => p.deviceId === currentDeviceId && !p.isInitialSample);
+    filtered = filtered.filter((a) => a.deviceId === currentDeviceId && !a.isInitialSample);
   } else if (activeTab === 'popular') {
     filtered = filtered.sort((a, b) => (b.likesCount || 0) - (a.likesCount || 0));
   } else {
@@ -47,12 +48,27 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
   if (searchQuery.trim()) {
     const q = searchQuery.toLowerCase();
     filtered = filtered.filter(
-      p => p.senderName.toLowerCase().includes(q) || p.caption.toLowerCase().includes(q)
+      (a) => a.senderName.toLowerCase().includes(q) || a.caption.toLowerCase().includes(q)
     );
   }
 
   return (
     <section className="max-w-6xl mx-auto px-4 sm:px-6 py-10">
+      {/* Section Header */}
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E6CA92]/20 pb-4">
+        <div>
+          <span className="text-[10px] font-sans font-bold tracking-widest uppercase text-[#C5A880] block mb-1">
+            Guest Story & Photo Collection
+          </span>
+          <h2 className="font-serif font-bold text-2xl sm:text-3xl text-[#0A261D]">
+            Folder & Momen Tamu Undangan
+          </h2>
+          <p className="text-xs font-sans text-gray-500 mt-1">
+            Menampilkan {allCount} folder tamu ({totalAllPhotos} foto dibagikan). Tekan folder untuk melihat seluruh foto di dalamnya.
+          </p>
+        </div>
+      </div>
+
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
         {/* Navigation Tabs */}
@@ -65,8 +81,8 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
                 : 'text-gray-600 hover:text-[#0A261D] font-medium'
             }`}
           >
-            <Sparkles className="w-3.5 h-3.5 text-[#E6CA92]" />
-            <span>Semua Momen</span>
+            <FolderArchive className="w-3.5 h-3.5 text-[#E6CA92]" />
+            <span>Semua Folder</span>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${activeTab === 'all' ? 'bg-white/20 text-[#FAF9F5]' : 'bg-gray-100 text-gray-700'}`}>
               {allCount}
             </span>
@@ -81,9 +97,9 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
             }`}
           >
             <User className="w-3.5 h-3.5 text-[#E6CA92]" />
-            <span>Foto Saya</span>
-            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${activeTab === 'mine' ? 'bg-white/20 text-[#FAF9F5]' : myCount >= 5 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'}`}>
-              {myCount}/5
+            <span>Folder Saya</span>
+            <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${activeTab === 'mine' ? 'bg-white/20 text-[#FAF9F5]' : myPhotoCount >= 5 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'}`}>
+              {myPhotoCount}/5 Foto
             </span>
           </button>
 
@@ -96,7 +112,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
             }`}
           >
             <Heart className="w-3.5 h-3.5 text-rose-500" />
-            <span>Paling Disukai</span>
+            <span>Paling Populer</span>
           </button>
         </div>
 
@@ -113,17 +129,17 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         </div>
       </div>
 
-      {/* Grid of Photos */}
+      {/* Editorial Collage Grid of Guest Folders */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5 sm:gap-6">
-          {filtered.map((photo) => (
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
+          {filtered.map((album) => (
             <PhotoCard
-              key={photo.id}
-              photo={photo}
+              key={album.id}
+              album={album}
               currentDeviceId={currentDeviceId}
               onLikeToggle={onLikeToggle}
-              onDeletePhoto={onDeletePhoto}
-              onOpenDetail={onOpenDetail}
+              onDeleteAlbum={onDeleteAlbum}
+              onOpenDetail={onOpenAlbum}
             />
           ))}
         </div>
@@ -133,12 +149,12 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
             <Camera className="w-6 h-6" />
           </div>
           <h3 className="font-serif font-bold text-xl text-[#0A261D] mb-1">
-            {activeTab === 'mine' ? 'Belum Ada Foto dari Perangkat Ini' : 'Belum Ada Foto Ditemukan'}
+            {activeTab === 'mine' ? 'Belum Ada Folder dari Perangkat Ini' : 'Folder Tidak Ditemukan'}
           </h3>
           <p className="text-xs font-sans text-gray-500 mb-6 leading-relaxed">
             {activeTab === 'mine'
-              ? 'Anda memiliki kuota hingga 5 foto. Bagikan momen indah Anda sekarang untuk diabadikan bersama!'
-              : 'Tidak ada foto yang cocok dengan pencarian kata kunci Anda.'}
+              ? 'Anda memiliki kuota hingga 5 foto. Unggah momen foto Anda sekarang agar masuk ke galeri bersama!'
+              : 'Tidak ada album atau pengirim yang sesuai dengan pencarian Anda.'}
           </p>
 
           {activeTab === 'mine' && (

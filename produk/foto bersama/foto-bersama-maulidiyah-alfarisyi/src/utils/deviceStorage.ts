@@ -1,9 +1,10 @@
-import { PhotoMoment } from '../types';
-import { INITIAL_PHOTOS } from '../data/initialPhotos';
+import { PhotoMoment, GuestAlbum, CommentItem } from '../types';
+import { INITIAL_ALBUMS, INITIAL_PHOTOS } from '../data/initialPhotos';
 import { compressVisuallyLossless } from './imageCompressor';
 
 const DEVICE_ID_KEY = 'fb_device_id_maulidiyah_alfarisyi';
 const PHOTOS_STORAGE_KEY = 'fb_photos_v1_maulidiyah_alfarisyi';
+const ALBUMS_STORAGE_KEY = 'fb_albums_v2_maulidiyah_alfarisyi';
 
 export const MAX_PHOTO_PER_DEVICE = 5;
 
@@ -21,27 +22,42 @@ export function getOrCreateDeviceId(): string {
   }
 }
 
-// Retrieve photos from local storage, merging with initial photos
-export function getStoredPhotos(): PhotoMoment[] {
+// Retrieve guest albums from local storage
+export function getStoredAlbums(): GuestAlbum[] {
   try {
-    const raw = localStorage.getItem(PHOTOS_STORAGE_KEY);
+    const raw = localStorage.getItem(ALBUMS_STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(PHOTOS_STORAGE_KEY, JSON.stringify(INITIAL_PHOTOS));
-      return INITIAL_PHOTOS;
+      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(INITIAL_ALBUMS));
+      return INITIAL_ALBUMS;
     }
-    const parsed: PhotoMoment[] = JSON.parse(raw);
+    const parsed: GuestAlbum[] = JSON.parse(raw);
     if (!Array.isArray(parsed) || parsed.length === 0) {
-      localStorage.setItem(PHOTOS_STORAGE_KEY, JSON.stringify(INITIAL_PHOTOS));
-      return INITIAL_PHOTOS;
+      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(INITIAL_ALBUMS));
+      return INITIAL_ALBUMS;
     }
     return parsed;
   } catch (e) {
-    console.error('Error reading stored photos:', e);
-    return INITIAL_PHOTOS;
+    console.error('Error reading stored albums:', e);
+    return INITIAL_ALBUMS;
   }
 }
 
-// Save photos to storage
+// Save guest albums to local storage
+export function saveAlbums(albums: GuestAlbum[]): void {
+  try {
+    localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(albums));
+  } catch (e) {
+    console.error('Failed to save albums to localStorage:', e);
+  }
+}
+
+// Retrieve photos from local storage, merging with initial photos (backward-compatibility)
+export function getStoredPhotos(): PhotoMoment[] {
+  const albums = getStoredAlbums();
+  return albums.flatMap((a) => a.photos);
+}
+
+// Save photos to storage (backward-compatibility)
 export function savePhotos(photos: PhotoMoment[]): void {
   try {
     localStorage.setItem(PHOTOS_STORAGE_KEY, JSON.stringify(photos));
@@ -50,11 +66,12 @@ export function savePhotos(photos: PhotoMoment[]): void {
   }
 }
 
-// Count how many photos this device has uploaded
+// Count how many photos this device has uploaded across its albums
 export function getDeviceUploadCount(deviceId?: string): number {
   const currentDeviceId = deviceId || getOrCreateDeviceId();
-  const photos = getStoredPhotos();
-  return photos.filter(p => p.deviceId === currentDeviceId && !p.isInitialSample).length;
+  const albums = getStoredAlbums();
+  const deviceAlbums = albums.filter((a) => a.deviceId === currentDeviceId && !a.isInitialSample);
+  return deviceAlbums.reduce((sum, album) => sum + (album.photos ? album.photos.length : 0), 0);
 }
 
 // Check if device can upload more (strictly max 5)
