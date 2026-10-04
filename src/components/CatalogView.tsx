@@ -17,6 +17,7 @@ import {
   SlidersHorizontal,
   Check,
   ChevronRight,
+  ChevronDown,
   UserCheck
 } from 'lucide-react';
 
@@ -60,6 +61,8 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   const [searchQuery, setSearchQuery] = useState('');
   const [activeSubCategory, setActiveSubCategory] = useState<string>('all');
   const [sortBy, setSortBy] = useState<'featured' | 'price-asc' | 'price-desc' | 'rating'>('featured');
+  const [categoryDropdownOpen, setCategoryDropdownOpen] = useState(false);
+  const [subDropdownOpen, setSubDropdownOpen] = useState(false);
 
   const formatRupiah = (val: number) => {
     return new Intl.NumberFormat('id-ID', {
