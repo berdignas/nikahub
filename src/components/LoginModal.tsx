@@ -3,6 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import { X, Mail, Sparkles, Lock, ArrowRight, ShieldCheck, Phone, CheckCircle2, RefreshCw, Send, KeyRound, Check, Eye, EyeOff } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { User } from '../types';
+import { saveUserToSupabase } from '../lib/supabase';
 
 interface LoginModalProps {
   isOpen: boolean;
@@ -168,7 +169,8 @@ export const LoginModal: React.FC<LoginModalProps> = ({
       body: JSON.stringify({ email: trimmedEmail, name: userName })
     }).catch(() => null);
 
-    // Save locally
+    // Save to Supabase and locally
+    saveUserToSupabase(newUserRecord).catch(() => null);
     saveUserToLocalStorage(newUserRecord);
 
     setIsLoading(false);
@@ -233,6 +235,11 @@ export const LoginModal: React.FC<LoginModalProps> = ({
         password: existingUser?.password || password,
         isVerified: true
       });
+      saveUserToSupabase({
+        ...user,
+        password: existingUser?.password || password,
+        isVerified: true
+      }).catch(() => null);
 
       // Synchronize with server in background
       try {

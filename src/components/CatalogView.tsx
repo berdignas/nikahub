@@ -91,18 +91,31 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
   // Product counts by category group
   const getProductCount = (groupId: string) => {
     if (groupId === 'all') return products.length;
-    return products.filter(p => p.category === groupId).length;
+    return products.filter(p => 
+      p.category === groupId ||
+      (groupId === 'fotografer' && (p.category as string) === 'fotografi') ||
+      (groupId === 'fotografi' && (p.category as string) === 'fotografer') ||
+      (groupId === 'undangan_digital' && (p.category as string) === 'undangan') ||
+      (groupId === 'undangan' && (p.category as string) === 'undangan_digital')
+    ).length;
   };
 
   // Filter and sort products
   const filteredProducts = products
     .filter(p => {
-      // Category group match
-      const matchesCat = activeCategory === 'all' || p.category === activeCategory;
+      // Category group match with alias support
+      const matchesCat = 
+        activeCategory === 'all' || 
+        p.category === activeCategory ||
+        (activeCategory === 'fotografer' && (p.category as string) === 'fotografi') ||
+        (activeCategory === 'fotografi' && (p.category as string) === 'fotografer') ||
+        (activeCategory === 'undangan_digital' && (p.category as string) === 'undangan') ||
+        (activeCategory === 'undangan' && (p.category as string) === 'undangan_digital');
 
       // Sub-category match
       const matchesSub = 
         activeSubCategory === 'all' || 
+        !p.subCategory ||
         p.subCategory === activeSubCategory ||
         (activeSubCategory === 'featured' && p.featured);
 

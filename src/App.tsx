@@ -16,6 +16,13 @@ import { Footer } from './components/Footer';
 import { WEDDING_PRODUCTS } from './data/mockData';
 import { WeddingProduct, ProductCategory, BookingItem, User } from './types';
 import confetti from 'canvas-confetti';
+import { 
+  fetchProductsFromSupabase, 
+  saveProductToSupabase, 
+  deleteProductFromSupabase, 
+  syncLocalProductsToSupabase,
+  supabase 
+} from './lib/supabase';
 
 const getSecretRoutePage = (): ActivePage => {
   try {
@@ -46,15 +53,70 @@ export function App() {
     currentPageRef.current = currentPage;
   }, [currentPage]);
   
-  // Dynamic Products State managed by Admin CRUD (Default clean empty)
+  // Dynamic Products State synchronized with Supabase Database
   const [products, setProducts] = useState<WeddingProduct[]>(() => {
     try {
       const stored = localStorage.getItem('nikahub_products_data');
-      return stored ? JSON.parse(stored) : [];
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.length > 0) return parsed;
+      }
+      return WEDDING_PRODUCTS;
     } catch {
-      return [];
+      return WEDDING_PRODUCTS;
     }
   });
+
+  // Sync with Supabase on mount and subscribe to Realtime updates
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadProducts = async () => {
+      try {
+        const dbProducts = await fetchProductsFromSupabase();
+        if (isMounted) {
+          if (dbProducts && dbProducts.length > 0) {
+            setProducts(dbProducts);
+          } else {
+            // Check if there are local products to migrate
+            const stored = localStorage.getItem('nikahub_products_data');
+            if (stored) {
+              const localProds = JSON.parse(stored);
+              if (localProds.length > 0) {
+                setProducts(localProds);
+                syncLocalProductsToSupabase().then(() => {
+                  fetchProductsFromSupabase().then(res => {
+                    if (isMounted && res.length > 0) setProducts(res);
+                  });
+                });
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.error('Error loading products from Supabase:', err);
+      }
+    };
+
+    loadProducts();
+
+    // Realtime listener for catalog changes
+    const channel = supabase
+      .channel('realtime-products-sync')
+      .on(
+        'postgres_changes',
+        { event: '*', schema: 'public', table: 'products' },
+        () => {
+          loadProducts();
+        }
+      )
+      .subscribe();
+
+    return () => {
+      isMounted = false;
+      supabase.removeChannel(channel);
+    };
+  }, []);
 
   const [activeCategory, setActiveCategory] = useState<ProductCategory>('all');
   const [selectedProduct, setSelectedProduct] = useState<WeddingProduct | null>(null);
@@ -241,20 +303,35 @@ export function App() {
     }
   };
 
-  // Admin CRUD Handlers
-  const handleAddProduct = (newProd: WeddingProduct) => {
+  // Admin CRUD Handlers (Synchronized to Supabase Database)
+  const handleAddProduct = async (newProd: WeddingProduct) => {
     const updated = [newProd, ...products];
     saveProductsToStorage(updated);
+    try {
+      await saveProductToSupabase(newProd);
+    } catch (e) {
+      console.error('Failed to sync added product to Supabase:', e);
+    }
   };
 
-  const handleUpdateProduct = (updatedProd: WeddingProduct) => {
+  const handleUpdateProduct = async (updatedProd: WeddingProduct) => {
     const updated = products.map(p => p.id === updatedProd.id ? updatedProd : p);
     saveProductsToStorage(updated);
+    try {
+      await saveProductToSupabase(updatedProd);
+    } catch (e) {
+      console.error('Failed to sync updated product to Supabase:', e);
+    }
   };
 
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     const updated = products.filter(p => p.id !== productId);
     saveProductsToStorage(updated);
+    try {
+      await deleteProductFromSupabase(productId);
+    } catch (e) {
+      console.error('Failed to sync deleted product to Supabase:', e);
+    }
   };
 
   const handleNavigate = (page: ActivePage, pushToHistory = true) => {

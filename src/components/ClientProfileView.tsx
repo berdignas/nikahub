@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { User, WeddingProduct } from '../types';
+import { fetchOrdersFromSupabase } from '../lib/supabase';
 import { 
   User as UserIcon, 
   ShoppingBag, 
@@ -34,7 +35,27 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({
 
   const wishlistProducts = allProducts.filter(p => wishlistIds.includes(p.id));
 
-  // Mock Orders
+  // Real & Mock Orders
+  const [realOrders, setRealOrders] = useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (user?.email) {
+      fetchOrdersFromSupabase(user.email).then(data => {
+        if (data && data.length > 0) {
+          const formatted = data.map((d: any) => ({
+            id: d.id,
+            date: d.event_date || new Date(d.created_at).toLocaleDateString('id-ID'),
+            productName: Array.isArray(d.items) && d.items[0]?.title ? d.items[0].title : 'Paket Pernikahan NikaHub',
+            status: d.status || 'Menunggu Konfirmasi',
+            price: Number(d.total_price) || 0,
+            image: "https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=800&q=80"
+          }));
+          setRealOrders(formatted);
+        }
+      });
+    }
+  }, [user?.email]);
+
   const mockOrders = [
     {
       id: 'ORD-202610-001',
@@ -53,6 +74,8 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({
       image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80"
     }
   ];
+
+  const displayOrders = realOrders.length > 0 ? realOrders : mockOrders;
 
   return (
     <div className="pt-24 pb-20 min-h-screen bg-[#FAF9F5] text-emerald-950 font-sans">
@@ -165,7 +188,7 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({
                 <div>
                   <h2 className="font-serif text-2xl font-bold text-emerald-950 mb-6">Riwayat Pesanan</h2>
                   <div className="space-y-4">
-                    {mockOrders.map((order, idx) => (
+                    {displayOrders.map((order, idx) => (
                       <div key={idx} className="p-4 sm:p-5 rounded-2xl border border-emerald-950/10 hover:border-champagne-400/50 transition-colors bg-white flex flex-col sm:flex-row gap-5">
                         <img src={order.image} alt={order.productName} className="w-full sm:w-32 h-32 object-cover rounded-xl" />
                         <div className="flex-1 flex flex-col justify-between">

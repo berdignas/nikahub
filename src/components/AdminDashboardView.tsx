@@ -29,6 +29,17 @@ import {
 import confetti from 'canvas-confetti';
 import { WeddingProduct, ProductCategory } from '../types';
 import { ImageCropperModal } from './ImageCropperModal';
+import { 
+  fetchOrdersFromSupabase, 
+  updateOrderStatusInSupabase, 
+  fetchUsersFromSupabase, 
+  deleteUserFromSupabase,
+  fetchWebSettingsFromSupabase,
+  saveWebSettingsToSupabase,
+  uploadImageToSupabaseStorage,
+  saveProductToSupabase,
+  syncLocalProductsToSupabase
+} from '../lib/supabase';
 
 // Helper function to compress image files client-side using Canvas HTML5
 const compressImageFile = (file: File, maxWidth = 1200, maxHeight = 1200, quality = 0.75): Promise<string> => {
@@ -130,15 +141,23 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
     try {
       setIsCompressing(true);
-      setCompressionInfo('⏳ Mengompres file gambar...');
+      setCompressionInfo('⏳ Mengompres file & mengunggah ke Supabase Storage...');
       const originalKb = Math.round(file.size / 1024);
 
-      // Compress to max 1200x1200px @ 75% quality JPEG
+      // 1. Compress to max 1200x1200px @ 75% quality JPEG
       const compressedDataUrl = await compressImageFile(file, 1200, 1200, 0.75);
       const compressedKb = Math.round((compressedDataUrl.length * 0.75) / 1024);
 
-      setFormData(prev => ({ ...prev, image: compressedDataUrl }));
-      setCompressionInfo(`✅ Kompresi Berhasil: ${originalKb} KB ➔ ${compressedKb} KB (Hemat ${(100 - (compressedKb/originalKb)*100).toFixed(0)}%)`);
+      // 2. Upload to Supabase Storage CDN
+      const uploadedUrl = await uploadImageToSupabaseStorage(compressedDataUrl, 'product');
+      const finalImageUrl = uploadedUrl || compressedDataUrl;
+
+      setFormData(prev => ({ ...prev, image: finalImageUrl }));
+      setCompressionInfo(
+        uploadedUrl
+          ? `✅ Foto Berhasil Diunggah ke Supabase CDN! (${originalKb} KB ➔ ${compressedKb} KB)`
+          : `✅ Foto terkompresi siap digunakan (${compressedKb} KB)`
+      );
     } catch (err) {
       console.error('Image compression failed:', err);
       setCompressionInfo('⚠️ Gagal mengompres, menggunakan file asli.');
@@ -184,39 +203,77 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   // Orders State for Admin
   const [orders, setOrders] = useState<any[]>([]);
 
-  // Clients State loaded dynamically from localStorage & API
+  // Refresh orders from Supabase
+  const refreshOrdersList = async () => {
+    try {
+      const data = await fetchOrdersFromSupabase();
+      setOrders(data);
+    } catch (e) {
+      console.error('Failed to load orders', e);
+    }
+  };
+
+  // Clients State loaded dynamically from Supabase & localStorage & API
   const [clients, setClients] = useState<any[]>([]);
 
   const refreshClientsList = async () => {
-    let localUsers: any[] = [];
+    const userMap = new Map();
+
+    // 1. LocalStorage
     try {
       const storedStr = localStorage.getItem('nikahub_users');
-      localUsers = storedStr ? Object.values(JSON.parse(storedStr)) : [];
+      const localUsers = storedStr ? Object.values(JSON.parse(storedStr)) : [];
+      localUsers.forEach((u: any) => userMap.set(u.email.toLowerCase(), u));
     } catch {
-      localUsers = [];
+      // ignore
     }
 
+    // 2. Supabase
+    try {
+      const dbUsers = await fetchUsersFromSupabase();
+      dbUsers.forEach((u: any) => {
+        const existing = userMap.get(u.email.toLowerCase()) || {};
+        userMap.set(u.email.toLowerCase(), { ...existing, ...u });
+      });
+    } catch {
+      // ignore
+    }
+
+    // 3. Backend Express API if running
     try {
       const res = await fetch('/api/auth/users').catch(() => null);
       if (res && res.ok) {
         const data = await res.json();
         if (data.success && Array.isArray(data.users)) {
-          const userMap = new Map();
-          localUsers.forEach(u => userMap.set(u.email.toLowerCase(), u));
-          data.users.forEach((u: any) => userMap.set(u.email.toLowerCase(), { ...userMap.get(u.email.toLowerCase()), ...u }));
-          setClients(Array.from(userMap.values()));
-          return;
+          data.users.forEach((u: any) => {
+            const existing = userMap.get(u.email.toLowerCase()) || {};
+            userMap.set(u.email.toLowerCase(), { ...existing, ...u });
+          });
         }
       }
     } catch {
       // ignore
     }
 
-    setClients(localUsers);
+    setClients(Array.from(userMap.values()));
+  };
+
+  // Web Settings loaded from Supabase
+  const refreshWebSettings = async () => {
+    try {
+      const data = await fetchWebSettingsFromSupabase();
+      if (data) {
+        setWebSettings(prev => ({ ...prev, ...data }));
+      }
+    } catch {
+      // ignore
+    }
   };
 
   React.useEffect(() => {
-    refreshClientsList();
+    if (activeTab === 'orders') refreshOrdersList();
+    if (activeTab === 'clients') refreshClientsList();
+    if (activeTab === 'settings') refreshWebSettings();
   }, [activeTab]);
 
   const handleDeleteClientUser = async (userEmail: string, userName?: string) => {
@@ -225,7 +282,10 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       return;
     }
 
-    // 1. Delete from LocalStorage
+    // 1. Delete from Supabase
+    await deleteUserFromSupabase(userEmail);
+
+    // 2. Delete from LocalStorage
     try {
       const storedStr = localStorage.getItem('nikahub_users');
       if (storedStr) {
@@ -237,7 +297,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       console.error('Failed deleting from local storage', e);
     }
 
-    // 2. Delete from Backend API if connected
+    // 3. Delete from Backend API if connected
     try {
       await fetch(`/api/auth/users/${encodeURIComponent(userEmail)}`, {
         method: 'DELETE'
@@ -308,62 +368,96 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     setIsAddModalOpen(true);
   };
 
-  const handleSaveProduct = (e: React.FormEvent) => {
+  const [isSavingProduct, setIsSavingProduct] = useState(false);
+
+  const handleSaveProduct = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!formData.title.trim()) return;
-
-    const includesArr = formData.includesText.split(',').map(s => s.trim()).filter(Boolean);
-
-    const isDigital = formData.category === 'undangan_digital' || formData.category === 'undangan' || formData.category === 'bukutamu_digital';
-    const finalLocation = isDigital ? 'Nasional / Online' : (formData.location.trim() || 'Jakarta & Jabodetabek');
-
-    if (editingProduct) {
-      // Edit
-      const updated: WeddingProduct = {
-        ...editingProduct,
-        title: formData.title,
-        category: formData.category,
-        categoryLabel: formData.categoryLabel,
-        tagline: formData.tagline,
-        price: Number(formData.price),
-        originalPrice: Number(formData.originalPrice),
-        vendorName: formData.vendorName,
-        image: formData.image,
-        location: finalLocation,
-        liveDemoUrl: formData.liveDemoUrl?.trim() || undefined,
-        description: formData.description,
-        includes: includesArr.length ? includesArr : editingProduct.includes,
-        availability: formData.availability,
-        featured: formData.featured
-      };
-      onUpdateProduct(updated);
-    } else {
-      // Add
-      const newProd: WeddingProduct = {
-        id: `prod-admin-${Date.now()}`,
-        title: formData.title,
-        category: formData.category,
-        categoryLabel: formData.categoryLabel,
-        tagline: formData.tagline,
-        price: Number(formData.price),
-        originalPrice: Number(formData.originalPrice),
-        rating: 4.9,
-        reviewCount: 12,
-        image: formData.image,
-        gallery: [formData.image],
-        vendorName: formData.vendorName,
-        location: finalLocation,
-        liveDemoUrl: formData.liveDemoUrl?.trim() || undefined,
-        includes: includesArr.length ? includesArr : ['Fitur Undangan Digital Premium'],
-        description: formData.description,
-        availability: formData.availability,
-        featured: formData.featured
-      };
-      onAddProduct(newProd);
+    if (!formData.title.trim()) {
+      alert('Silakan masukkan judul layanan terlebih dahulu!');
+      return;
     }
 
-    confetti({ particleCount: 50, spread: 60, origin: { y: 0.7 } });
-    setIsAddModalOpen(false);
+    try {
+      setIsSavingProduct(true);
+      const includesArr = formData.includesText.split(',').map(s => s.trim()).filter(Boolean);
+      const isDigital = formData.category === 'undangan_digital' || formData.category === 'undangan' || formData.category === 'bukutamu_digital';
+      const finalLocation = isDigital ? 'Nasional / Online' : (formData.location.trim() || 'Jakarta & Jabodetabek');
+
+      // Auto upload to Supabase storage if still data URI (e.g. from cropper)
+      let finalImageUrl = formData.image;
+      if (finalImageUrl && finalImageUrl.startsWith('data:')) {
+        const uploadedUrl = await uploadImageToSupabaseStorage(finalImageUrl, 'product');
+        if (uploadedUrl) {
+          finalImageUrl = uploadedUrl;
+        }
+      }
+
+      let targetProduct: WeddingProduct;
+
+      if (editingProduct) {
+        // Edit existing product
+        targetProduct = {
+          ...editingProduct,
+          title: formData.title.trim(),
+          category: formData.category,
+          categoryLabel: formData.categoryLabel,
+          tagline: formData.tagline.trim(),
+          price: Number(formData.price),
+          originalPrice: Number(formData.originalPrice),
+          vendorName: formData.vendorName.trim(),
+          image: finalImageUrl,
+          location: finalLocation,
+          liveDemoUrl: formData.liveDemoUrl?.trim() || undefined,
+          description: formData.description.trim(),
+          includes: includesArr.length ? includesArr : editingProduct.includes,
+          availability: formData.availability,
+          featured: formData.featured
+        };
+
+        const res = await saveProductToSupabase(targetProduct);
+        if (!res.success) {
+          throw new Error(res.error || 'Gagal menyimpan pembaruan ke Supabase');
+        }
+        onUpdateProduct(targetProduct);
+      } else {
+        // Add new product
+        targetProduct = {
+          id: `prod-${Date.now()}`,
+          title: formData.title.trim(),
+          category: formData.category,
+          categoryLabel: formData.categoryLabel,
+          tagline: formData.tagline.trim(),
+          price: Number(formData.price),
+          originalPrice: Number(formData.originalPrice),
+          rating: 5.0,
+          reviewCount: 1,
+          image: finalImageUrl,
+          gallery: [finalImageUrl],
+          vendorName: formData.vendorName.trim(),
+          location: finalLocation,
+          liveDemoUrl: formData.liveDemoUrl?.trim() || undefined,
+          includes: includesArr.length ? includesArr : ['Fasilitas Standar VIP NikaHub'],
+          description: formData.description.trim(),
+          availability: formData.availability,
+          featured: formData.featured
+        };
+
+        const res = await saveProductToSupabase(targetProduct);
+        if (!res.success) {
+          throw new Error(res.error || 'Gagal menyimpan produk ke Supabase');
+        }
+        onAddProduct(targetProduct);
+      }
+
+      confetti({ particleCount: 70, spread: 70, origin: { y: 0.6 } });
+      alert(`✅ Berhasil! Produk "${targetProduct.title}" telah tersimpan langsung di Database Supabase dan tersinkronisasi ke Katalog Klien!`);
+      setIsAddModalOpen(false);
+    } catch (err: any) {
+      console.error('Save product error:', err);
+      alert(`⚠️ Peringatan: ${err.message || 'Gagal menyimpan ke database'}`);
+    } finally {
+      setIsSavingProduct(false);
+    }
   };
 
   const handleToggleAvailability = (product: WeddingProduct) => {
@@ -377,8 +471,9 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     });
   };
 
-  const handleChangeOrderStatus = (orderId: string, newStatus: string) => {
+  const handleChangeOrderStatus = async (orderId: string, newStatus: string) => {
     setOrders(prev => prev.map(o => o.id === orderId ? { ...o, status: newStatus } : o));
+    await updateOrderStatusInSupabase(orderId, newStatus);
   };
 
   return (
@@ -758,13 +853,19 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
               <p className="text-xs text-gray-500">Atur konten teks utama yang akan dilihat klien pada halaman depan website.</p>
             </div>
             <button
-              onClick={() => {
-                alert('Pengaturan CMS berhasil disimpan secara lokal (Simulasi).');
+              onClick={async () => {
+                const success = await saveWebSettingsToSupabase(webSettings);
+                if (success) {
+                  confetti({ particleCount: 40, spread: 50 });
+                  alert('Pengaturan CMS berhasil disimpan ke Database Supabase!');
+                } else {
+                  alert('Pengaturan CMS berhasil disimpan secara lokal.');
+                }
               }}
               className="px-5 py-3 bg-emerald-950 hover:bg-emerald-900 text-sand rounded-xl text-xs font-bold shadow-md transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 w-full sm:w-auto"
             >
               <Save className="w-4 h-4 text-champagne-400" />
-              <span>Simpan Perubahan</span>
+              <span>Simpan Perubahan ke Supabase</span>
             </button>
           </div>
 
@@ -1186,10 +1287,11 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </button>
                   <button
                     type="submit"
-                    className="px-6 py-2.5 rounded-full bg-emerald-950 text-sand hover:bg-emerald-900 font-bold flex items-center gap-1.5 shadow-md cursor-pointer"
+                    disabled={isSavingProduct || isCompressing}
+                    className="px-6 py-2.5 rounded-full bg-emerald-950 text-sand hover:bg-emerald-900 font-bold flex items-center gap-1.5 shadow-md cursor-pointer disabled:opacity-50"
                   >
                     <Save className="w-4 h-4 text-champagne-400" />
-                    <span>Simpan Ke Katalog</span>
+                    <span>{isSavingProduct ? 'Menyimpan ke Supabase...' : isCompressing ? 'Mengompres...' : 'Simpan Ke Katalog'}</span>
                   </button>
                 </div>
               </form>

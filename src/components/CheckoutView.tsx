@@ -21,6 +21,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { BookingItem, User } from '../types';
+import { createOrderInSupabase } from '../lib/supabase';
 
 interface CheckoutViewProps {
   items: BookingItem[];
@@ -81,11 +82,33 @@ export const CheckoutView: React.FC<CheckoutViewProps> = ({
 
     setIsSubmitted(true);
 
+    const orderId = `ORD-${Date.now().toString().slice(-6)}`;
+    createOrderInSupabase({
+      id: orderId,
+      userEmail: user.email,
+      clientName: clientName || user.name || 'Klien NikaHub',
+      clientPhone: clientPhone || user.phone || '-',
+      items: items.map(it => ({
+        productId: it.product.id,
+        title: it.product.title,
+        category: it.product.categoryLabel,
+        price: it.product.price,
+        quantity: it.quantity,
+        eventDate: it.eventDate
+      })),
+      totalPrice,
+      eventDate,
+      eventCity,
+      eventNotes: `${specialNotes ? `Catatan: ${specialNotes}. ` : ''}Alamat: ${fullAddress || '-'}. Luas: ${landArea || '-'}. Tamu: ${guestCount || '-'}. Skema: ${paymentTerm}`,
+      status: 'Menunggu Konfirmasi WA',
+      whatsappUrl: `https://wa.me/qr/XCPMCWREYZVOM1`
+    });
+
     const itemsSummary = items.map((it, idx) => 
       `${idx + 1}. *${it.product.title}* (${formatRupiah(it.product.price)})\n   Kategori: ${it.product.categoryLabel}`
     ).join('\n\n');
 
-    const msg = `Halo Tim Concierge NikaHub Atelier,\n\nSaya (${clientName || user.email}) ingin memproses *CHECKOUT & VERIFIKASI KONTRAK SPK* untuk paket berikut:\n\n${itemsSummary}\n\n*ESTIMASI TOTAL BIAYA:* ${formatRupiah(totalPrice)}\n\n📋 *DATA PEMESAN:* \n• Nama: ${clientName || '-'}\n• Email: ${user.email}\n• WhatsApp: ${clientPhone || '-'}\n\n📅 *DETAIL ACARA:* \n• Tanggal Acara: ${eventDate}\n• Kota/Lokasi: ${eventCity}\n• Alamat Lengkap: ${fullAddress || 'Sesuai koordinat WA'}\n• Luas Lahan: ${landArea || '-'}\n• Estimasi Tamu: ${guestCount || '-'}\n• Skema DP: ${paymentTerm === 'dp30' ? 'DP 30% SPK awal' : 'Pelunasan Bertahap'}\n• Catatan Tambahan: ${specialNotes || '-'}\n\nMohon terbitkan draft Surat Perjanjian Kerja (SPK) resmi dan konfirmasi slot jadwal survei lokasi. Terima kasih!`;
+    const msg = `Halo Tim Concierge NikaHub Atelier,\n\nSaya (${clientName || user.email}) ingin memproses *CHECKOUT & VERIFIKASI KONTRAK SPK* [ID: ${orderId}] untuk paket berikut:\n\n${itemsSummary}\n\n*ESTIMASI TOTAL BIAYA:* ${formatRupiah(totalPrice)}\n\n📋 *DATA PEMESAN:* \n• Nama: ${clientName || '-'}\n• Email: ${user.email}\n• WhatsApp: ${clientPhone || '-'}\n\n📅 *DETAIL ACARA:* \n• Tanggal Acara: ${eventDate}\n• Kota/Lokasi: ${eventCity}\n• Alamat Lengkap: ${fullAddress || 'Sesuai koordinat WA'}\n• Luas Lahan: ${landArea || '-'}\n• Estimasi Tamu: ${guestCount || '-'}\n• Skema DP: ${paymentTerm === 'dp30' ? 'DP 30% SPK awal' : 'Pelunasan Bertahap'}\n• Catatan Tambahan: ${specialNotes || '-'}\n\nMohon terbitkan draft Surat Perjanjian Kerja (SPK) resmi dan konfirmasi slot jadwal survei lokasi. Terima kasih!`;
 
     const url = `https://wa.me/qr/XCPMCWREYZVOM1`;
     window.open(url, '_blank');
