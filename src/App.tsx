@@ -308,7 +308,11 @@ export function App() {
     const updated = [newProd, ...products];
     saveProductsToStorage(updated);
     try {
-      await saveProductToSupabase(newProd);
+      const res = await saveProductToSupabase(newProd);
+      if (res && !res.success) {
+        console.error('DB Sync Error:', res.error);
+        alert('Produk tersimpan di lokal, tapi gagal dikirim ke database Supabase.\nKemungkinan: Skema SQL belum dijalankan di Supabase atau RLS memblokir.\nError: ' + res.error);
+      }
     } catch (e) {
       console.error('Failed to sync added product to Supabase:', e);
     }
