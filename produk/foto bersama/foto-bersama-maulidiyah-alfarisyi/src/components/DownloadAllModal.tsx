@@ -40,37 +40,37 @@ export const DownloadAllModal: React.FC<DownloadAllModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-md bg-[#1a2217] border border-[#685c46]/50 rounded-3xl shadow-2xl p-6 text-center">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A261D]/80 backdrop-blur-md animate-fade-in">
+      <div className="relative w-full max-w-md bg-white border border-[#E6CA92]/40 rounded-3xl shadow-2xl p-6 text-center">
         {/* Close */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-[#20291e] text-[#b8c4ae] hover:text-[#f8f6e1] flex items-center justify-center transition-all hover:bg-[#2f3b2d]"
+          className="absolute top-4 right-4 w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:text-[#0A261D] hover:bg-gray-200 flex items-center justify-center transition-all"
         >
           <X className="w-5 h-5" />
         </button>
 
         {/* Icon */}
-        <div className="w-14 h-14 rounded-full bg-[#20291e] border border-[#685c46]/40 mx-auto flex items-center justify-center text-[#d8cca8] mb-3">
+        <div className="w-14 h-14 rounded-full bg-[#FAF9F5] border border-[#E6CA92]/40 mx-auto flex items-center justify-center text-[#C5A880] mb-3 shadow-inner">
           <FolderArchive className="w-7 h-7" />
         </div>
 
-        <h3 className="font-aston text-3xl text-[#f8f6e1] mb-1">
+        <h3 className="font-serif text-2xl font-bold text-[#0A261D] mb-1">
           Unduh Seluruh Foto Album
         </h3>
-        <p className="font-sans-ui text-xs text-[#b8c4ae] mb-6 leading-relaxed">
-          Terdapat total <strong className="text-[#f8f6e1]">{photos.length} momen foto</strong> yang telah dibagikan oleh para tamu undangan pernikahan Maulidiyah & Alfarisyi.
+        <p className="font-sans text-xs text-gray-500 mb-6 leading-relaxed">
+          Terdapat total <strong className="text-[#0A261D]">{photos.length} momen foto</strong> yang telah dibagikan oleh para tamu undangan pernikahan Maulidiyah & Alfarisyi.
         </p>
 
         {isDownloading ? (
           <div className="py-4 space-y-3">
-            <div className="flex items-center justify-center gap-2 text-xs font-sans-ui text-[#d8cca8]">
-              <Loader2 className="w-4 h-4 animate-spin" />
+            <div className="flex items-center justify-center gap-2 text-xs font-sans text-[#0A261D] font-semibold">
+              <Loader2 className="w-4 h-4 animate-spin text-[#C5A880]" />
               <span>Mengunduh foto ({downloadProgress}%)...</span>
             </div>
-            <div className="w-full bg-[#20291e] h-2 rounded-full overflow-hidden">
+            <div className="w-full bg-gray-100 h-2.5 rounded-full overflow-hidden p-0.5 border border-gray-200">
               <div 
-                className="bg-gradient-to-r from-[#d8cca8] to-[#b8c4ae] h-full transition-all duration-300"
+                className="bg-gradient-to-r from-[#C5A880] to-[#0A261D] h-full rounded-full transition-all duration-300"
                 style={{ width: `${downloadProgress}%` }}
               />
             </div>
@@ -79,15 +79,15 @@ export const DownloadAllModal: React.FC<DownloadAllModalProps> = ({
           <div className="space-y-3">
             <button
               onClick={handleDownloadAllSequential}
-              className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-gradient-to-r from-[#ece5da] to-[#d8cca8] text-[#473c27] font-sans-ui text-xs font-semibold shadow-lg hover:scale-102 active:scale-98 transition-all"
+              className="w-full flex items-center justify-center gap-2 py-3.5 rounded-xl bg-gradient-to-r from-[#0A261D] to-[#124032] text-[#E6CA92] font-sans text-xs font-bold shadow-md hover:brightness-110 active:scale-98 transition-all"
             >
-              <Download className="w-4 h-4 text-[#685c46]" />
+              <Download className="w-4 h-4 text-[#E6CA92]" />
               <span>Mulai Unduh Seluruh Foto ({photos.length} Foto)</span>
             </button>
 
             <button
               onClick={onClose}
-              className="w-full py-2.5 rounded-xl bg-[#20291e] border border-[#685c46]/30 text-[#f8f6e1] font-sans-ui text-xs hover:border-[#b8c4ae]"
+              className="w-full py-2.5 rounded-xl bg-white border border-gray-200 text-gray-600 font-sans text-xs font-medium hover:bg-gray-50"
             >
               Kembali ke Galeri
             </button>

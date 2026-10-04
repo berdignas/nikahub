@@ -1,33 +1,36 @@
 @import "tailwindcss";
 
 :root {
-  --theme-sage: #b8c4ae;
-  --theme-cream: #f8f6e1;
-  --theme-bronze: #685c46;
-  --theme-bronze-dark: #473c27;
-  --theme-ivory: #ece5da;
-  --theme-forest: #1e261b;
+  --theme-emerald: #0A261D;
+  --theme-emerald-light: #164E3D;
+  --theme-sand: #FAF9F5;
+  --theme-sand-dark: #F0EDE4;
+  --theme-gold: #C5A880;
+  --theme-gold-light: #E6CA92;
+  --theme-champagne: #DFD3C3;
+  --theme-charcoal: #1C2826;
 }
 
 body {
-  background-color: #161c14;
-  color: #473c27;
-  font-family: "Times New Roman 1", 'Times New Roman', Georgia, serif;
+  background-color: #FAF9F5;
+  color: #0A261D;
+  font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+  letter-spacing: -0.01em;
 }
 
-/* Authentic Theme Typography */
-.font-aston {
-  font-family: "Kirei Aston Script Pro Bold", cursive, sans-serif;
+/* Haute Couture Luxury Typography */
+.font-aston,
+.font-roman,
+.font-serif,
+.font-playfair {
+  font-family: 'Playfair Display', Georgia, serif;
 }
 
 .font-cinzel {
   font-family: 'Cinzel', serif;
 }
 
-.font-roman {
-  font-family: "Times New Roman 1", 'Times New Roman', Georgia, serif;
-}
-
+.font-sans,
 .font-sans-ui {
   font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
 }
@@ -38,14 +41,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #161c14;
+  background: #FAF9F5;
 }
 ::-webkit-scrollbar-thumb {
-  background: #685c46;
+  background: #C5A880;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #b8c4ae;
+  background: #0A261D;
 }
 
 .no-scrollbar::-webkit-scrollbar {

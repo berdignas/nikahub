@@ -1,7 +1,7 @@
 import { PhotoMoment, EventInfo } from '../types';
 
 export const EVENT_INFO: EventInfo = {
-  coupleTitle: "Nur Thoifah & Ahmad Ferdi",
+  coupleTitle: "Maulidiyah & Alfarisyi",
   brideName: "Nur Thoifah Maulidiyah",
   groomName: "Ahmad Ferdi Al-Farisyi",
   eventDateText: "Minggu, 18 Oktober 2026",

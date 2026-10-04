@@ -182,16 +182,16 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-[#1a2217] border border-[#685c46]/50 rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+      <div className="relative w-full max-w-lg bg-white border border-gray-200 text-[#0A261D] rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#685c46]/30 bg-[#161c14]">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-[#FAF9F5]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#2a3528] flex items-center justify-center border border-[#685c46]/40">
-              <Camera className="w-4 h-4 text-[#d8cca8]" />
+            <div className="w-8 h-8 rounded-full bg-[#FAF9F5] flex items-center justify-center border border-[#685c46]/40">
+              <Camera className="w-4 h-4 text-[#C5A880]" />
             </div>
             <div>
-              <h3 className="font-aston text-2xl text-[#f8f6e1] leading-none">Unggah Foto Bersama</h3>
-              <p className="text-[11px] font-sans-ui text-[#b8c4ae] mt-0.5">
+              <h3 className="font-serif font-bold text-xl text-[#0A261D] leading-none">Unggah Foto Bersama</h3>
+              <p className="text-[11px] font-sans-ui text-gray-500 mt-0.5">
                 Foto ke-{uploadedCount + 1} dari batas maksimal 5 foto
               </p>
             </div>
@@ -201,7 +201,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               stopLiveCamera();
               onClose();
             }}
-            className="w-8 h-8 rounded-full bg-[#20291e] text-[#b8c4ae] hover:text-[#f8f6e1] flex items-center justify-center transition-all hover:bg-[#2f3b2d]"
+            className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-all hover:bg-gray-200"
           >
             <X className="w-5 h-5" />
           </button>
@@ -211,15 +211,15 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         <div className="p-6 overflow-y-auto space-y-5">
           {/* If Quota is FULL (5/5) */}
           {isQuotaFull ? (
-            <div className="text-center py-6 px-4 space-y-4 font-sans-ui">
-              <div className="w-16 h-16 rounded-full bg-amber-900/30 border border-amber-600/40 mx-auto flex items-center justify-center text-amber-300">
+            <div className="text-center py-6 px-4 space-y-4 font-sans">
+              <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 mx-auto flex items-center justify-center text-amber-600 shadow-sm">
                 <Sparkles className="w-8 h-8" />
               </div>
-              <h4 className="font-aston text-3xl text-[#f8f6e1]">
+              <h4 className="font-serif font-bold text-2xl text-[#0A261D]">
                 Kuota Foto Lengkap (5/5)
               </h4>
-              <p className="text-xs text-[#ece5da]/80 leading-relaxed max-w-sm mx-auto">
-                Terima kasih banyak telah membagikan 5 momen kebersamaan Anda bersama <strong className="text-[#f8f6e1]">Maulidiyah & Alfarisyi</strong>.
+              <p className="text-xs text-gray-600 leading-relaxed max-w-sm mx-auto">
+                Terima kasih banyak telah membagikan 5 momen kebersamaan Anda bersama <strong className="text-[#0A261D]">Maulidiyah & Alfarisyi</strong>.
                 <br /><br />
                 Batasan <strong>5 foto per perangkat</strong> diterapkan agar seluruh tamu undangan mendapatkan ruang yang setara untuk berbagi foto.
               </p>
@@ -231,14 +231,14 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                     onClose();
                     onGoToMyPhotos();
                   }}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gradient-to-r from-[#ece5da] to-[#d8cca8] text-[#473c27] text-xs font-semibold shadow-md hover:scale-105 transition-all"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] text-xs font-semibold shadow-md hover:scale-105 transition-all"
                 >
                   Lihat / Kelola Foto Saya
                 </button>
                 <button
                   type="button"
                   onClick={onClose}
-                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-[#20291e] border border-[#685c46]/40 text-[#f8f6e1] text-xs hover:border-[#b8c4ae]"
+                  className="w-full sm:w-auto px-5 py-2.5 rounded-xl bg-gray-100 border border-gray-200 text-gray-700 text-xs hover:bg-gray-200"
                 >
                   Tutup
                 </button>
@@ -248,7 +248,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             <form onSubmit={handleSubmit} className="space-y-4 font-sans-ui">
               {/* Photo Input Area */}
               <div>
-                <label className="block text-xs font-medium text-[#ece5da] mb-2">
+                <label className="block text-xs font-medium text-[#0A261D] mb-2">
                   Pilih atau Ambil Foto:
                 </label>
 
@@ -269,7 +269,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                           setFacingMode(nextMode);
                           startLiveCamera(nextMode);
                         }}
-                        className="p-3 rounded-full bg-black/60 text-[#f8f6e1] border border-white/20 hover:bg-black/90 transition-all"
+                        className="p-3 rounded-full bg-black/60 text-[#0A261D] border border-white/20 hover:bg-black/90 transition-all"
                         title="Tukar Kamera Depan/Belakang"
                       >
                         <RefreshCw className="w-5 h-5" />
@@ -302,13 +302,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                       type="button"
                       disabled={isCompressing}
                       onClick={() => startLiveCamera('environment')}
-                      className="p-4 rounded-2xl border-2 border-dashed border-[#685c46]/50 bg-[#161c14] hover:bg-[#20291e] hover:border-[#d8cca8] transition-all flex flex-col items-center justify-center gap-2 group text-center"
+                      className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] transition-all flex flex-col items-center justify-center gap-2 group text-center"
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#2a3528] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <Camera className="w-5 h-5 text-[#d8cca8]" />
+                      <div className="w-10 h-10 rounded-full bg-[#FAF9F5] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <Camera className="w-5 h-5 text-[#C5A880]" />
                       </div>
-                      <span className="text-xs font-medium text-[#f8f6e1]">Buka Kamera HP</span>
-                      <span className="text-[10px] text-[#b8c4ae]">Ambil Foto Langsung</span>
+                      <span className="text-xs font-medium text-[#0A261D]">Buka Kamera HP</span>
+                      <span className="text-[10px] text-gray-500">Ambil Foto Langsung</span>
                     </button>
 
                     {/* Gallery Button */}
@@ -316,13 +316,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                       type="button"
                       disabled={isCompressing}
                       onClick={() => fileInputRef.current?.click()}
-                      className="p-4 rounded-2xl border-2 border-dashed border-[#685c46]/50 bg-[#161c14] hover:bg-[#20291e] hover:border-[#d8cca8] transition-all flex flex-col items-center justify-center gap-2 group text-center"
+                      className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] transition-all flex flex-col items-center justify-center gap-2 group text-center"
                     >
-                      <div className="w-10 h-10 rounded-full bg-[#2a3528] flex items-center justify-center group-hover:scale-110 transition-transform">
-                        <ImageIcon className="w-5 h-5 text-[#d8cca8]" />
+                      <div className="w-10 h-10 rounded-full bg-[#FAF9F5] flex items-center justify-center group-hover:scale-110 transition-transform">
+                        <ImageIcon className="w-5 h-5 text-[#C5A880]" />
                       </div>
-                      <span className="text-xs font-medium text-[#f8f6e1]">Buka Galeri</span>
-                      <span className="text-[10px] text-[#b8c4ae]">Pilih dari Memori HP</span>
+                      <span className="text-xs font-medium text-[#0A261D]">Buka Galeri</span>
+                      <span className="text-[10px] text-gray-500">Pilih dari Memori HP</span>
                     </button>
 
                     {/* Hidden Inputs for fallback native capture */}
@@ -351,8 +351,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                     />
 
                     {/* Overlay Compression Pill */}
-                    <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-[10px] text-[#b8c4ae] border border-white/10">
-                      Visually Lossless: <span className="text-[#f8f6e1] line-through">{originalSizeText}</span> → <strong className="text-emerald-300">{compressedSizeText}</strong>
+                    <div className="absolute bottom-2 left-2 px-2.5 py-1 rounded-lg bg-black/70 backdrop-blur-md text-[10px] text-gray-500 border border-white/10">
+                      Visually Lossless: <span className="text-[#0A261D] line-through">{originalSizeText}</span> → <strong className="text-emerald-300">{compressedSizeText}</strong>
                     </div>
 
                     {/* Change / Remove button */}
@@ -368,7 +368,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                 )}
 
                 {isCompressing && (
-                  <div className="flex items-center justify-center gap-2 py-3 text-xs text-[#d8cca8]">
+                  <div className="flex items-center justify-center gap-2 py-3 text-xs text-[#C5A880]">
                     <Loader2 className="w-4 h-4 animate-spin" />
                     <span>Memproses & mengompresi foto (Visually Lossless)...</span>
                   </div>
@@ -377,7 +377,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
               {/* Sender Name */}
               <div>
-                <label className="block text-xs font-medium text-[#ece5da] mb-1.5">
+                <label className="block text-xs font-semibold text-[#0A261D] mb-1.5">
                   Nama Anda / Rombongan:
                 </label>
                 <input
@@ -386,13 +386,13 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   onChange={(e) => setSenderName(e.target.value)}
                   placeholder="Contoh: Budi & Keluarga / Sahabat SMA"
                   maxLength={50}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#161c14] border border-[#685c46]/50 text-[#f8f6e1] placeholder-[#b8c4ae]/40 text-xs focus:outline-none focus:border-[#d8cca8] transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors"
                 />
               </div>
 
               {/* Caption / Ucapan */}
               <div>
-                <label className="block text-xs font-medium text-[#ece5da] mb-1.5">
+                <label className="block text-xs font-semibold text-[#0A261D] mb-1.5">
                   Ucapan & Doa untuk Mempelai (Opsional):
                 </label>
                 <textarea
@@ -401,12 +401,12 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   placeholder="Tuliskan ucapan selamat atau cerita di balik foto ini..."
                   rows={3}
                   maxLength={250}
-                  className="w-full px-4 py-2.5 rounded-xl bg-[#161c14] border border-[#685c46]/50 text-[#f8f6e1] placeholder-[#b8c4ae]/40 text-xs focus:outline-none focus:border-[#d8cca8] transition-colors resize-none"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors resize-none"
                 />
               </div>
 
               {errorMsg && (
-                <div className="flex items-center gap-2 p-3 rounded-xl bg-red-950/40 border border-red-800/40 text-red-300 text-xs">
+                <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">
                   <AlertCircle className="w-4 h-4 shrink-0" />
                   <span>{errorMsg}</span>
                 </div>
@@ -417,16 +417,16 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting || isCompressing || !selectedImage}
-                  className="w-full py-3 rounded-2xl bg-gradient-to-r from-[#ece5da] via-[#e5dbc2] to-[#d8cca8] text-[#473c27] font-semibold text-sm shadow-xl hover:scale-[1.02] active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
+                  className="w-full py-3.5 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] font-bold text-xs shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2"
                 >
                   {isSubmitting ? (
                     <>
-                      <Loader2 className="w-4 h-4 animate-spin text-[#473c27]" />
+                      <Loader2 className="w-4 h-4 animate-spin text-[#E6CA92]" />
                       <span>Menyimpan Foto...</span>
                     </>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-[#685c46]" />
+                      <Sparkles className="w-4 h-4 text-[#E6CA92]" />
                       <span>Publikasikan ke Galeri Bersama</span>
                     </>
                   )}
