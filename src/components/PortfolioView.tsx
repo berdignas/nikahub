@@ -63,7 +63,11 @@ const PORTFOLIO_ITEMS = [
   }
 ];
 
-export const PortfolioView: React.FC = () => {
+interface PortfolioViewProps {
+  onNavigateToContact?: () => void;
+}
+
+export const PortfolioView: React.FC<PortfolioViewProps> = ({ onNavigateToContact }) => {
   return (
     <div className="pt-24 pb-20 bg-[#F9F9F8] min-h-screen">
       
@@ -150,7 +154,10 @@ export const PortfolioView: React.FC = () => {
         className="max-w-4xl mx-auto px-4 sm:px-6 mt-32 text-center"
       >
         <h2 className="font-serif text-4xl font-bold text-emerald-950 mb-6">Cerita Selanjutnya Adalah Milik Anda</h2>
-        <button className="bg-emerald-950 text-white px-10 py-4 rounded-full font-bold text-sm hover:bg-champagne-600 transition-colors shadow-xl hover:shadow-2xl hover:-translate-y-1">
+        <button 
+          onClick={onNavigateToContact}
+          className="bg-emerald-950 text-sand hover:bg-emerald-900 px-10 py-4 rounded-full font-bold text-sm transition-all shadow-xl hover:shadow-2xl hover:-translate-y-1 cursor-pointer active:scale-95"
+        >
           Konsultasi Konsep Gratis
         </button>
       </motion.div>
