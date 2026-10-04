@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { X, Camera, Image as ImageIcon, Sparkles, AlertCircle, Trash2, Loader2, RefreshCw, Plus, FolderArchive } from 'lucide-react';
+import { X, Camera, Image as ImageIcon, Sparkles, AlertCircle, Trash2, Loader2, RefreshCw, Plus, FolderArchive, Smartphone } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { compressImageFile, MAX_PHOTO_PER_DEVICE, getOrCreateDeviceId } from '../utils/deviceStorage';
 import { GuestAlbum, PhotoMoment } from '../types';
@@ -28,6 +28,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
   // Live Stream Camera State
   const [isLiveCamera, setIsLiveCamera] = useState(false);
+  const [isCameraLoading, setIsCameraLoading] = useState(false);
   const [facingMode, setFacingMode] = useState<'user' | 'environment'>('environment');
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -42,30 +43,67 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     }
   }, [isOpen]);
 
+  // Hook stream to video element whenever isLiveCamera turns true or videoRef mounts
+  useEffect(() => {
+    if (isLiveCamera && videoRef.current && streamRef.current) {
+      videoRef.current.srcObject = streamRef.current;
+      videoRef.current.play().catch((err) => {
+        console.warn('Video playback error:', err);
+      });
+    }
+  }, [isLiveCamera]);
+
   const stopLiveCamera = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
+    if (videoRef.current) {
+      videoRef.current.srcObject = null;
+    }
     setIsLiveCamera(false);
+    setIsCameraLoading(false);
   };
 
   const startLiveCamera = async (mode: 'user' | 'environment' = facingMode) => {
     setErrorMsg('');
+    setIsCameraLoading(true);
+    stopLiveCamera();
+
     try {
-      stopLiveCamera();
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { facingMode: mode, width: { ideal: 1920 }, height: { ideal: 1080 } },
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('Browser tidak mendukung akses kamera langsung');
+      }
+
+      const constraints: MediaStreamConstraints = {
+        video: {
+          facingMode: { ideal: mode },
+          width: { ideal: 1920, min: 640 },
+          height: { ideal: 1080, min: 480 },
+        },
         audio: false,
-      });
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
       streamRef.current = stream;
+      setFacingMode(mode);
+      setIsLiveCamera(true);
+      setIsCameraLoading(false);
+
       if (videoRef.current) {
         videoRef.current.srcObject = stream;
+        videoRef.current.play().catch(() => {});
       }
-      setIsLiveCamera(true);
     } catch (err) {
-      // Fallback to native camera input
-      cameraInputRef.current?.click();
+      console.warn('Failed to start live camera, fallback to native camera:', err);
+      setIsCameraLoading(false);
+      setIsLiveCamera(false);
+      // Fallback directly to native phone camera application
+      if (cameraInputRef.current) {
+        cameraInputRef.current.click();
+      } else {
+        setErrorMsg('Tidak dapat mengakses kamera browser. Silakan gunakan tombol "Buka Kamera Bawaan HP" di bawah.');
+      }
     }
   };
 
@@ -79,8 +117,14 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
 
+    // Flip horizontally if front-camera
+    if (facingMode === 'user') {
+      ctx.translate(canvas.width, 0);
+      ctx.scale(-1, 1);
+    }
+
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
-    const dataUrl = canvas.toDataURL('image/jpeg', 0.9);
+    const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
 
     stopLiveCamera();
 
@@ -88,7 +132,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     setIsCompressing(true);
     try {
       const blob = await (await fetch(dataUrl)).blob();
-      const file = new File([blob], 'camera-capture.jpg', { type: 'image/jpeg' });
+      const file = new File([blob], `camera-${Date.now()}.jpg`, { type: 'image/jpeg' });
       const compressedDataUrl = await compressImageFile(file);
       setSelectedImages((prev) => [...prev, compressedDataUrl]);
     } catch {
@@ -128,7 +172,6 @@ export const UploadModal: React.FC<UploadModalProps> = ({
       setErrorMsg('Gagal memproses beberapa gambar. Silakan coba kembali.');
     } finally {
       setIsCompressing(false);
-      // Reset input value
       if (e.target) e.target.value = '';
     }
   };
@@ -205,19 +248,19 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-[#0A261D]/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-white border border-[#E6CA92]/40 text-[#0A261D] rounded-3xl shadow-2xl overflow-hidden max-h-[92vh] flex flex-col">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0A261D]/80 backdrop-blur-sm animate-fade-in">
+      <div className="relative w-full max-w-lg bg-white border border-[#E6CA92]/40 text-[#0A261D] rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col font-sans">
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-[#FAF9F5]">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 bg-[#FAF9F5]">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-full bg-[#FAF9F5] flex items-center justify-center border border-[#E6CA92]/40">
+            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-[#E6CA92]/40 shadow-xs">
               <FolderArchive className="w-4 h-4 text-[#C5A880]" />
             </div>
             <div>
-              <h3 className="font-serif font-bold text-xl text-[#0A261D] leading-none">
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-[#0A261D] leading-none">
                 Unggah Folder Foto Tamu
               </h3>
-              <p className="text-[11px] font-sans text-gray-500 mt-0.5">
+              <p className="text-[11px] text-gray-500 mt-0.5">
                 Pilih 1 hingga {remaining} foto untuk folder Anda (Batas 5 foto/tamu)
               </p>
             </div>
@@ -229,15 +272,15 @@ export const UploadModal: React.FC<UploadModalProps> = ({
             }}
             className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-all hover:bg-gray-200 cursor-pointer"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
         {/* Modal Content */}
-        <div className="p-6 overflow-y-auto space-y-5">
+        <div className="p-5 sm:p-6 overflow-y-auto space-y-5">
           {/* If Quota is FULL (5/5) */}
           {isQuotaFull ? (
-            <div className="text-center py-6 px-4 space-y-4 font-sans">
+            <div className="text-center py-6 px-4 space-y-4">
               <div className="w-16 h-16 rounded-full bg-amber-50 border border-amber-200 mx-auto flex items-center justify-center text-amber-600 shadow-sm">
                 <Sparkles className="w-8 h-8" />
               </div>
@@ -271,7 +314,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               </div>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4 font-sans">
+            <form onSubmit={handleSubmit} className="space-y-4">
               {/* Photo Input Area */}
               <div>
                 <div className="flex items-center justify-between mb-2">
@@ -283,120 +326,209 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   </span>
                 </div>
 
-                {/* Live Camera Viewfinder Overlay */}
+                {/* Live Camera Viewfinder Overlay (Wide, Spacious, Full Screen Responsive) */}
                 {isLiveCamera ? (
-                  <div className="relative rounded-2xl overflow-hidden border border-[#E6CA92]/60 bg-black flex flex-col items-center">
-                    <video
-                      ref={videoRef}
-                      autoPlay
-                      playsInline
-                      className="w-full max-h-72 object-cover bg-black"
-                    />
-                    <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-4 z-20">
-                      <button
-                        type="button"
-                        onClick={() => {
-                          const nextMode = facingMode === 'environment' ? 'user' : 'environment';
-                          setFacingMode(nextMode);
-                          startLiveCamera(nextMode);
+                  <div className="relative rounded-2xl overflow-hidden border-2 border-[#E6CA92] bg-black flex flex-col items-center shadow-xl">
+                    <div className="relative w-full aspect-[4/3] sm:aspect-[16/9] min-h-[260px] bg-black overflow-hidden flex items-center justify-center">
+                      <video
+                        ref={videoRef}
+                        autoPlay
+                        playsInline
+                        muted
+                        onLoadedMetadata={(e) => {
+                          (e.target as HTMLVideoElement).play().catch(() => {});
                         }}
-                        className="p-3 rounded-full bg-black/60 text-white border border-white/20 hover:bg-black/90 transition-all cursor-pointer"
-                        title="Tukar Kamera Depan/Belakang"
-                      >
-                        <RefreshCw className="w-5 h-5" />
-                      </button>
+                        className={`w-full h-full object-cover ${facingMode === 'user' ? 'scale-x-[-1]' : ''}`}
+                      />
 
-                      {/* Big Shutter Button */}
-                      <button
-                        type="button"
-                        onClick={captureLivePhoto}
-                        className="w-14 h-14 rounded-full bg-gradient-to-r from-white to-[#E6CA92] border-4 border-white/80 shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer"
-                        title="Potret Foto"
-                      >
-                        <div className="w-6 h-6 rounded-full bg-[#0A261D]" />
-                      </button>
+                      {isCameraLoading && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/70 text-white gap-2 z-10">
+                          <Loader2 className="w-7 h-7 animate-spin text-[#E6CA92]" />
+                          <span className="text-xs">Membuka Kamera...</span>
+                        </div>
+                      )}
 
-                      <button
-                        type="button"
-                        onClick={stopLiveCamera}
-                        className="p-3 rounded-full bg-black/60 text-red-300 border border-red-500/30 hover:bg-red-950/80 transition-all cursor-pointer"
-                        title="Tutup Kamera Live"
-                      >
-                        <X className="w-5 h-5" />
-                      </button>
+                      {/* Top bar controls */}
+                      <div className="absolute top-3 left-3 right-3 flex items-center justify-between z-20">
+                        <span className="px-2.5 py-1 rounded-full bg-black/60 backdrop-blur-md text-[10px] text-white/90 border border-white/20">
+                          {facingMode === 'environment' ? 'Kamera Belakang' : 'Kamera Depan'}
+                        </span>
+
+                        <button
+                          type="button"
+                          onClick={() => {
+                            stopLiveCamera();
+                            cameraInputRef.current?.click();
+                          }}
+                          className="px-2.5 py-1 rounded-full bg-black/60 hover:bg-black/90 text-[10px] text-[#E6CA92] border border-[#E6CA92]/40 backdrop-blur-md transition-all flex items-center gap-1 cursor-pointer"
+                          title="Beralih ke aplikasi kamera bawaan HP"
+                        >
+                          <Smartphone className="w-3 h-3" />
+                          <span>Kamera Bawaan HP</span>
+                        </button>
+                      </div>
+
+                      {/* Bottom Shutter and Switch Controls */}
+                      <div className="absolute bottom-3 left-0 right-0 flex items-center justify-center gap-5 z-20 px-4">
+                        {/* Flip Camera Button */}
+                        <button
+                          type="button"
+                          onClick={() => {
+                            const nextMode = facingMode === 'environment' ? 'user' : 'environment';
+                            startLiveCamera(nextMode);
+                          }}
+                          className="w-11 h-11 rounded-full bg-black/70 text-white border border-white/30 hover:bg-black flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-lg"
+                          title="Tukar Kamera Depan / Belakang"
+                        >
+                          <RefreshCw className="w-5 h-5" />
+                        </button>
+
+                        {/* Large Luxury Shutter Button */}
+                        <button
+                          type="button"
+                          onClick={captureLivePhoto}
+                          className="w-16 h-16 rounded-full bg-gradient-to-tr from-[#FAF9F5] via-white to-[#E6CA92] border-4 border-white shadow-2xl flex items-center justify-center hover:scale-105 active:scale-95 transition-all cursor-pointer ring-4 ring-black/40"
+                          title="Potret Foto"
+                        >
+                          <div className="w-7 h-7 rounded-full bg-[#0A261D] border border-[#E6CA92]" />
+                        </button>
+
+                        {/* Close Live Camera */}
+                        <button
+                          type="button"
+                          onClick={stopLiveCamera}
+                          className="w-11 h-11 rounded-full bg-black/70 text-red-300 border border-red-500/40 hover:bg-red-950 flex items-center justify-center transition-all active:scale-90 cursor-pointer shadow-lg"
+                          title="Tutup Kamera"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ) : (
                   <div className="space-y-3">
                     {/* Selected Images Thumbnail Grid */}
                     {selectedImages.length > 0 && (
-                      <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5 p-3 rounded-2xl bg-[#FAF9F5] border border-[#E6CA92]/30">
-                        {selectedImages.map((img, idx) => (
-                          <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group bg-gray-100">
-                            <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
-                            <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] font-bold px-1 rounded">
-                              {idx + 1}
-                            </span>
+                      <div className="p-3 rounded-2xl bg-[#FAF9F5] border border-[#E6CA92]/30 space-y-2">
+                        <div className="grid grid-cols-3 sm:grid-cols-5 gap-2.5">
+                          {selectedImages.map((img, idx) => (
+                            <div key={idx} className="relative aspect-square rounded-xl overflow-hidden border border-gray-200 group bg-gray-100 shadow-xs">
+                              <img src={img} alt={`Preview ${idx + 1}`} className="w-full h-full object-cover" />
+                              <span className="absolute bottom-1 left-1 bg-black/70 text-white text-[9px] font-bold px-1 rounded">
+                                {idx + 1}
+                              </span>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveImage(idx)}
+                                className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition-all shadow-sm cursor-pointer"
+                                title="Hapus foto ini"
+                              >
+                                <X className="w-3 h-3" />
+                              </button>
+                            </div>
+                          ))}
+
+                          {/* Add more slot if still under limit */}
+                          {availableSlots > 0 && (
                             <button
                               type="button"
-                              onClick={() => handleRemoveImage(idx)}
-                              className="absolute top-1 right-1 p-1 rounded-full bg-red-600 text-white hover:bg-red-700 transition-all shadow-sm cursor-pointer"
-                              title="Hapus foto ini"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="aspect-square rounded-xl border-2 border-dashed border-[#E6CA92] hover:border-[#0A261D] bg-white flex flex-col items-center justify-center text-[#C5A880] hover:text-[#0A261D] transition-colors cursor-pointer"
+                              title="Tambah foto lagi"
                             >
-                              <X className="w-3 h-3" />
+                              <Plus className="w-5 h-5" />
+                              <span className="text-[10px] font-bold mt-0.5">Tambah</span>
+                            </button>
+                          )}
+                        </div>
+
+                        {/* Quick Action to Add Photo via Camera or Gallery when some photos already selected */}
+                        {availableSlots > 0 && (
+                          <div className="flex items-center justify-center gap-2 pt-1 text-xs">
+                            <button
+                              type="button"
+                              onClick={() => cameraInputRef.current?.click()}
+                              className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#0A261D] text-[#0A261D] text-[11px] font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                            >
+                              <Camera className="w-3.5 h-3.5 text-[#C5A880]" />
+                              <span>Ambil Foto HP</span>
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => fileInputRef.current?.click()}
+                              className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#0A261D] text-[#0A261D] text-[11px] font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                            >
+                              <ImageIcon className="w-3.5 h-3.5 text-[#C5A880]" />
+                              <span>Pilih Galeri</span>
                             </button>
                           </div>
-                        ))}
-
-                        {/* Add more slot if still under limit */}
-                        {availableSlots > 0 && (
-                          <button
-                            type="button"
-                            onClick={() => fileInputRef.current?.click()}
-                            className="aspect-square rounded-xl border-2 border-dashed border-[#E6CA92] hover:border-[#0A261D] bg-white flex flex-col items-center justify-center text-[#C5A880] hover:text-[#0A261D] transition-colors cursor-pointer"
-                            title="Tambah foto lagi"
-                          >
-                            <Plus className="w-5 h-5" />
-                            <span className="text-[10px] font-bold mt-1">Tambah</span>
-                          </button>
                         )}
                       </div>
                     )}
 
-                    {/* Action buttons to pick photos */}
+                    {/* Action buttons to pick photos (when 0 selected) */}
                     {selectedImages.length === 0 && (
-                      <div className="grid grid-cols-2 gap-3">
-                        {/* Live Web Camera Button */}
-                        <button
-                          type="button"
-                          disabled={isCompressing}
-                          onClick={() => startLiveCamera('environment')}
-                          className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] transition-all flex flex-col items-center justify-center gap-2 group text-center cursor-pointer"
-                        >
-                          <div className="w-10 h-10 rounded-full bg-white border border-[#E6CA92]/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
-                            <Camera className="w-5 h-5 text-[#C5A880]" />
-                          </div>
-                          <span className="text-xs font-bold text-[#0A261D]">Buka Kamera HP</span>
-                          <span className="text-[10px] text-gray-500">Ambil Foto Langsung</span>
-                        </button>
+                      <div className="space-y-2.5">
+                        {/* Big Primary Choice: Buka Kamera Bawaan HP & Kamera Web */}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+                          {/* Option 1: Native Internal Phone Camera App (Most reliable on all smartphones) */}
+                          <button
+                            type="button"
+                            disabled={isCompressing}
+                            onClick={() => cameraInputRef.current?.click()}
+                            className="p-4 rounded-2xl border-2 border-dashed border-[#D4AF37]/60 bg-gradient-to-br from-[#FAF9F5] to-white hover:border-[#0A261D] hover:shadow-md transition-all flex items-center gap-3.5 text-left cursor-pointer group"
+                          >
+                            <div className="w-12 h-12 rounded-2xl bg-[#0A261D] text-[#E6CA92] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
+                              <Smartphone className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-[#0A261D] block">
+                                Kamera Bawaan HP
+                              </span>
+                              <span className="text-[11px] text-gray-500 block leading-tight mt-0.5">
+                                Buka aplikasi kamera internal HP (Hasil Tajam & Jernih)
+                              </span>
+                            </div>
+                          </button>
 
-                        {/* Gallery Button */}
+                          {/* Option 2: Live Web Browser Camera */}
+                          <button
+                            type="button"
+                            disabled={isCompressing}
+                            onClick={() => startLiveCamera('environment')}
+                            className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] hover:shadow-md transition-all flex items-center gap-3.5 text-left cursor-pointer group"
+                          >
+                            <div className="w-12 h-12 rounded-2xl bg-white border border-[#E6CA92]/50 text-[#C5A880] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
+                              <Camera className="w-6 h-6" />
+                            </div>
+                            <div>
+                              <span className="text-xs font-bold text-[#0A261D] block">
+                                Kamera Web Langsung
+                              </span>
+                              <span className="text-[11px] text-gray-500 block leading-tight mt-0.5">
+                                Potret foto langsung di layar browser
+                              </span>
+                            </div>
+                          </button>
+                        </div>
+
+                        {/* Option 3: Pick from Phone Gallery */}
                         <button
                           type="button"
                           disabled={isCompressing}
                           onClick={() => fileInputRef.current?.click()}
-                          className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] transition-all flex flex-col items-center justify-center gap-2 group text-center cursor-pointer"
+                          className="w-full p-3.5 rounded-2xl border border-gray-200 bg-white hover:border-[#0A261D] hover:bg-[#FAF9F5] transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-xs"
                         >
-                          <div className="w-10 h-10 rounded-full bg-white border border-[#E6CA92]/40 flex items-center justify-center group-hover:scale-110 transition-transform shadow-xs">
-                            <ImageIcon className="w-5 h-5 text-[#C5A880]" />
-                          </div>
-                          <span className="text-xs font-bold text-[#0A261D]">Buka Galeri HP</span>
-                          <span className="text-[10px] text-gray-500">Pilih 1-{remaining} Foto Sekaligus</span>
+                          <ImageIcon className="w-4 h-4 text-[#C5A880]" />
+                          <span className="text-xs font-bold text-[#0A261D]">
+                            Atau Pilih Foto dari Galeri HP (Bisa pilih 1-{remaining} foto)
+                          </span>
                         </button>
                       </div>
                     )}
 
                     {/* Hidden Inputs for native file picker & camera */}
+                    {/* Native phone camera application input */}
                     <input
                       ref={cameraInputRef}
                       type="file"
@@ -405,6 +537,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                       className="hidden"
                       onChange={handleFileChange}
                     />
+                    {/* Native multi-file gallery picker */}
                     <input
                       ref={fileInputRef}
                       type="file"
@@ -417,9 +550,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                 )}
 
                 {isCompressing && (
-                  <div className="flex items-center justify-center gap-2 py-3 text-xs text-[#C5A880]">
-                    <Loader2 className="w-4 h-4 animate-spin" />
-                    <span>Memproses & mengompresi foto otomatis (Visually Lossless)...</span>
+                  <div className="flex items-center justify-center gap-2 py-3 text-xs text-[#C5A880] bg-[#FAF9F5] rounded-xl border border-[#E6CA92]/30 mt-2">
+                    <Loader2 className="w-4 h-4 animate-spin text-[#0A261D]" />
+                    <span className="font-medium text-[#0A261D]">Memproses & mengompresi foto otomatis...</span>
                   </div>
                 )}
               </div>
@@ -435,7 +568,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   onChange={(e) => setSenderName(e.target.value)}
                   placeholder="Contoh: Faizun / Keluarga Malang / Sahabat SMA"
                   maxLength={50}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors shadow-xs"
                   required
                 />
               </div>
@@ -451,7 +584,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   placeholder="Tuliskan ucapan selamat atau doa restu untuk Maulidiyah & Alfarisyi..."
                   rows={3}
                   maxLength={250}
-                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors resize-none"
+                  className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors resize-none shadow-xs"
                 />
               </div>
 
