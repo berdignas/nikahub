@@ -5,6 +5,7 @@ import { CatalogView } from './components/CatalogView';
 import { PortfolioView } from './components/PortfolioView';
 import { ContactView } from './components/ContactView';
 import { ProfileDetailView } from './components/ProfileDetailView';
+import { ClientProfileView } from './components/ClientProfileView';
 import { ChatView } from './components/ChatView';
 import { CheckoutView } from './components/CheckoutView';
 import { AdminLoginView } from './components/AdminLoginView';
@@ -468,6 +469,17 @@ export function App() {
 
         {currentPage === 'contact' && (
           <ContactView />
+        )}
+
+        {currentPage === 'client-profile' && user && (
+          <ClientProfileView 
+            user={user}
+            onLogout={handleLogout}
+            wishlistIds={wishlistIds}
+            allProducts={products}
+            onNavigateToCatalog={() => handleNavigate('catalog')}
+            onSelectProduct={handleSelectProduct}
+          />
         )}
 
         {/* SECRET ADMIN LOGIN PAGE (/login-berdignas-nikahub) */}

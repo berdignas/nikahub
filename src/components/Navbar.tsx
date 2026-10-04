@@ -28,7 +28,8 @@ export type ActivePage =
   | 'chat' 
   | 'checkout'
   | 'admin-login'
-  | 'admin-dashboard';
+  | 'admin-dashboard'
+  | 'client-profile';
 
 interface NavbarProps {
   currentPage: ActivePage;
@@ -386,6 +387,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                       </div>
 
                       <div className="space-y-1">
+                        <button
+                          onClick={() => {
+                            onPageChange('client-profile');
+                            setUserDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-950/5 flex items-center gap-2 transition-colors cursor-pointer"
+                        >
+                          <UserIcon className="w-4 h-4 text-champagne-700" />
+                          <span>Profil & Pesanan Saya</span>
+                        </button>
                         <button
                           onClick={() => {
                             window.open('https://wa.me/qr/XCPMCWREYZVOM1', '_blank');
