@@ -182,3 +182,51 @@ export async function fetchPhotosFromDatabase(): Promise<PhotoMoment[] | null> {
   if (!albums) return null;
   return albums.flatMap((a) => a.photos);
 }
+
+/**
+ * Permanently delete album from Supabase Database
+ */
+export async function deleteAlbumFromDatabase(albumId: string): Promise<boolean> {
+  try {
+    // 1. Delete from wedding_albums table
+    const { error: err1 } = await supabase
+      .from('wedding_albums')
+      .delete()
+      .eq('id', albumId);
+
+    // 2. Delete from wedding_photos table (both by album_id and id)
+    const { error: err2 } = await supabase
+      .from('wedding_photos')
+      .delete()
+      .or(`album_id.eq.${albumId},id.eq.${albumId}`);
+
+    if (err1 && err2) {
+      console.warn('Delete warning:', err1 || err2);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.warn('Failed to delete album from Supabase DB:', err);
+    return false;
+  }
+}
+
+/**
+ * Permanently delete single photo from Supabase Database and update album
+ */
+export async function deletePhotoFromDatabase(
+  photoId: string,
+  albumId: string,
+  updatedAlbum?: GuestAlbum
+): Promise<boolean> {
+  try {
+    await supabase.from('wedding_photos').delete().eq('id', photoId);
+    if (updatedAlbum) {
+      await updateAlbumInDatabase(updatedAlbum);
+    }
+    return true;
+  } catch (err) {
+    console.warn('Failed to delete photo from Supabase DB:', err);
+    return false;
+  }
+}

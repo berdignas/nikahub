@@ -16,7 +16,14 @@ import {
   getOrCreateDeviceId,
   MAX_PHOTO_PER_DEVICE,
 } from './utils/deviceStorage';
-import { supabase, insertAlbumToDatabase, updateAlbumInDatabase, fetchAlbumsFromDatabase } from './utils/supabaseClient';
+import {
+  supabase,
+  insertAlbumToDatabase,
+  updateAlbumInDatabase,
+  fetchAlbumsFromDatabase,
+  deleteAlbumFromDatabase,
+  deletePhotoFromDatabase,
+} from './utils/supabaseClient';
 import { Heart, Camera, QrCode } from 'lucide-react';
 
 export function App() {
@@ -166,6 +173,7 @@ export function App() {
     if (selectedAlbum?.id === albumId) {
       setSelectedAlbum(null);
     }
+    deleteAlbumFromDatabase(albumId);
   };
 
   // Delete single photo from album
@@ -179,12 +187,15 @@ export function App() {
       return;
     }
 
+    let updatedTargetAlbum: GuestAlbum | undefined;
+
     const updated = albums.map((alb) => {
       if (alb.id !== albumId) return alb;
       const updatedAlbum: GuestAlbum = {
         ...alb,
         photos: remainingPhotos,
       };
+      updatedTargetAlbum = updatedAlbum;
       if (selectedAlbum && selectedAlbum.id === albumId) {
         setSelectedAlbum(updatedAlbum);
       }
@@ -192,6 +203,7 @@ export function App() {
     });
 
     updateAlbums(updated);
+    deletePhotoFromDatabase(photoId, albumId, updatedTargetAlbum);
   };
 
   // Count photos uploaded by this device
