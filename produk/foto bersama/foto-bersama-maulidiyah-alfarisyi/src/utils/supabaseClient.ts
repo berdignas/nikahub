@@ -194,17 +194,22 @@ export async function deleteAlbumFromDatabase(albumId: string): Promise<boolean>
       .delete()
       .eq('id', albumId);
 
-    // 2. Delete from wedding_photos table (both by album_id and id)
+    // 2. Delete from wedding_photos table by album_id
     const { error: err2 } = await supabase
       .from('wedding_photos')
       .delete()
-      .or(`album_id.eq.${albumId},id.eq.${albumId}`);
+      .eq('album_id', albumId);
 
-    if (err1 && err2) {
-      console.warn('Delete warning:', err1 || err2);
-      return false;
+    // 3. Delete from wedding_photos table by id (in case photo was stored with id = albumId)
+    const { error: err3 } = await supabase
+      .from('wedding_photos')
+      .delete()
+      .eq('id', albumId);
+
+    if (err1 || err2 || err3) {
+      console.warn('Supabase delete response:', { err1, err2, err3 });
     }
-    return true;
+    return !err1;
   } catch (err) {
     console.warn('Failed to delete album from Supabase DB:', err);
     return false;
@@ -220,7 +225,15 @@ export async function deletePhotoFromDatabase(
   updatedAlbum?: GuestAlbum
 ): Promise<boolean> {
   try {
-    await supabase.from('wedding_photos').delete().eq('id', photoId);
+    const { error: photoErr } = await supabase
+      .from('wedding_photos')
+      .delete()
+      .eq('id', photoId);
+
+    if (photoErr) {
+      console.warn('Supabase delete photo error:', photoErr);
+    }
+
     if (updatedAlbum) {
       await updateAlbumInDatabase(updatedAlbum);
     }
