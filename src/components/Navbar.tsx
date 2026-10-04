@@ -142,7 +142,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     <>
       {/* Floating Island Header */}
       <header className="fixed top-0 sm:top-4 left-0 right-0 z-40 sm:px-4 transition-all duration-300">
-        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 px-3 py-2 sm:py-0 bg-white/95 sm:bg-transparent backdrop-blur-xl sm:backdrop-blur-none border-b border-gray-200 sm:border-none shadow-sm sm:shadow-none pointer-events-auto">
+        <div className="max-w-6xl mx-auto flex items-center justify-between gap-2 px-3 py-2.5 sm:py-0 bg-emerald-950/90 sm:bg-transparent backdrop-blur-2xl sm:backdrop-blur-none border-b border-champagne-400/20 sm:border-none shadow-md sm:shadow-none pointer-events-auto text-sand">
           
           {/* Brand Logo */}
           <motion.div 
@@ -355,9 +355,9 @@ export const Navbar: React.FC<NavbarProps> = ({
               </AnimatePresence>
             </div>
 
-            {/* Email Authentication / User Menu */}
+            {/* Email Authentication / User Menu (Desktop Only) */}
             {user ? (
-              <div className="relative">
+              <div className="relative hidden md:block">
                 <button
                   onClick={() => setUserDropdownOpen(!userDropdownOpen)}
                   className="flex items-center gap-1.5 p-1 sm:p-1.5 sm:pl-3 rounded-full bg-white/90 backdrop-blur-xl border border-emerald-950/15 text-emerald-950 hover:bg-white transition-all shadow-bezel cursor-pointer"
@@ -438,7 +438,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Mobile Hamburger Button */}
             <button 
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="md:hidden p-2 rounded-lg sm:rounded-full bg-gray-50/80 sm:bg-white/90 backdrop-blur-xl sm:border sm:border-white/60 sm:shadow-bezel text-emerald-950 hover:bg-gray-100 active:scale-95 cursor-pointer shrink-0"
+              className="md:hidden p-2 rounded-full bg-emerald-900/80 text-champagne-300 border border-champagne-400/30 shadow-sm hover:bg-emerald-900 active:scale-95 cursor-pointer shrink-0"
               aria-label="Toggle Menu"
             >
               {mobileMenuOpen ? <X className="w-4 h-4" /> : <Menu className="w-4 h-4" />}
