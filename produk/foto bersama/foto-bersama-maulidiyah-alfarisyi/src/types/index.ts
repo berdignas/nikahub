@@ -2,6 +2,8 @@ export interface CommentItem {
   id: string;
   senderName: string;
   commentText: string;
+  voiceNoteUrl?: string;
+  voiceDuration?: number;
   createdAt: string;
 }
 
@@ -22,6 +24,8 @@ export interface GuestAlbum {
   deviceId: string;
   senderName: string;
   caption: string;
+  voiceNoteUrl?: string;
+  voiceDuration?: number;
   photos: PhotoMoment[];
   likesCount: number;
   likedByDevices: string[];

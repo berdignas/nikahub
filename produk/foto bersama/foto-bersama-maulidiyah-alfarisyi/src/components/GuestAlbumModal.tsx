@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { X, Heart, MessageSquare, Download, ChevronLeft, ChevronRight, User, Send, Sparkles, FolderArchive, Trash2, Calendar, Check, ShieldAlert } from 'lucide-react';
 import { GuestAlbum, CommentItem } from '../types';
+import { VoiceNotePlayer } from './VoiceNotePlayer';
 
 interface GuestAlbumModalProps {
   album: GuestAlbum | null;
@@ -240,6 +241,15 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                 "{album.caption}"
               </p>
             </div>
+
+            {/* Guest Voice Note Player */}
+            {album.voiceNoteUrl && (
+              <VoiceNotePlayer
+                audioUrl={album.voiceNoteUrl}
+                duration={album.voiceDuration}
+                senderName={album.senderName}
+              />
+            )}
 
             {/* Interaction Bar: Like Count & Download Button */}
             <div className="flex items-center justify-between gap-2 pt-1 pb-2 border-b border-gray-100">

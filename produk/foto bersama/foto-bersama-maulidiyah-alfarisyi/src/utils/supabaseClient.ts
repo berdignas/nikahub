@@ -21,7 +21,11 @@ export async function insertAlbumToDatabase(album: GuestAlbum): Promise<boolean>
         device_id: album.deviceId,
         sender_name: album.senderName,
         caption: album.caption,
-        photos_data: album.photos,
+        photos_data: {
+          photos: album.photos,
+          voiceNoteUrl: album.voiceNoteUrl || null,
+          voiceDuration: album.voiceDuration || null,
+        },
         likes_count: album.likesCount || 1,
         liked_by_devices: album.likedByDevices || [],
         comments_data: album.comments || [],
@@ -63,7 +67,11 @@ export async function updateAlbumInDatabase(album: GuestAlbum): Promise<boolean>
         device_id: album.deviceId,
         sender_name: album.senderName,
         caption: album.caption,
-        photos_data: album.photos,
+        photos_data: {
+          photos: album.photos,
+          voiceNoteUrl: album.voiceNoteUrl || null,
+          voiceDuration: album.voiceDuration || null,
+        },
         likes_count: album.likesCount || 0,
         liked_by_devices: album.likedByDevices || [],
         comments_data: album.comments || [],
@@ -89,18 +97,31 @@ export async function fetchAlbumsFromDatabase(): Promise<GuestAlbum[] | null> {
       .order('created_at', { ascending: false });
 
     if (!albumError && albumData && albumData.length > 0) {
-      return albumData.map((row) => ({
-        id: row.id,
-        deviceId: row.device_id,
-        senderName: row.sender_name,
-        caption: row.caption,
-        photos: Array.isArray(row.photos_data) ? row.photos_data : [],
-        likesCount: row.likes_count || 0,
-        likedByDevices: Array.isArray(row.liked_by_devices) ? row.liked_by_devices : [],
-        comments: Array.isArray(row.comments_data) ? row.comments_data : [],
-        createdAt: row.created_at,
-        isInitialSample: false,
-      }));
+      return albumData.map((row) => {
+        const rawPhotosData = row.photos_data;
+        const photosList = Array.isArray(rawPhotosData)
+          ? rawPhotosData
+          : rawPhotosData && Array.isArray(rawPhotosData.photos)
+          ? rawPhotosData.photos
+          : [];
+        const voiceUrl = row.voice_note_url || (rawPhotosData && !Array.isArray(rawPhotosData) ? rawPhotosData.voiceNoteUrl : undefined);
+        const voiceDur = row.voice_duration || (rawPhotosData && !Array.isArray(rawPhotosData) ? rawPhotosData.voiceDuration : undefined);
+
+        return {
+          id: row.id,
+          deviceId: row.device_id,
+          senderName: row.sender_name,
+          caption: row.caption,
+          voiceNoteUrl: voiceUrl || undefined,
+          voiceDuration: voiceDur || undefined,
+          photos: photosList,
+          likesCount: row.likes_count || 0,
+          likedByDevices: Array.isArray(row.liked_by_devices) ? row.liked_by_devices : [],
+          comments: Array.isArray(row.comments_data) ? row.comments_data : [],
+          createdAt: row.created_at,
+          isInitialSample: false,
+        };
+      });
     }
 
     // Fallback: Group from wedding_photos table if wedding_albums table is not available

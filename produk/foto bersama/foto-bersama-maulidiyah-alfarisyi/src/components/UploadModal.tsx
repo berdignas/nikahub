@@ -3,6 +3,7 @@ import { X, Camera, Image as ImageIcon, Sparkles, AlertCircle, Trash2, Loader2, 
 import confetti from 'canvas-confetti';
 import { compressImageFile, MAX_PHOTO_PER_DEVICE, getOrCreateDeviceId } from '../utils/deviceStorage';
 import { GuestAlbum, PhotoMoment } from '../types';
+import { VoiceNoteRecorder } from './VoiceNoteRecorder';
 
 interface UploadModalProps {
   isOpen: boolean;
@@ -21,6 +22,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 }) => {
   const [senderName, setSenderName] = useState('');
   const [caption, setCaption] = useState('');
+  const [voiceNoteUrl, setVoiceNoteUrl] = useState<string>('');
+  const [voiceDuration, setVoiceDuration] = useState<number>(0);
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -218,6 +221,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         deviceId: deviceId,
         senderName: guestName,
         caption: guestCaption,
+        voiceNoteUrl: voiceNoteUrl || undefined,
+        voiceDuration: voiceDuration || undefined,
         photos: photoMoments,
         likesCount: 1,
         likedByDevices: [deviceId],
@@ -239,6 +244,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
       setSelectedImages([]);
       setSenderName('');
       setCaption('');
+      setVoiceNoteUrl('');
+      setVoiceDuration(0);
       setIsSubmitting(false);
       onClose();
     } catch (err) {
@@ -576,7 +583,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               {/* Caption / Ucapan */}
               <div>
                 <label className="block text-xs font-semibold text-[#0A261D] mb-1.5">
-                  Ucapan & Doa untuk Mempelai:
+                  Ucapan & Doa untuk Mempelai (Teks):
                 </label>
                 <textarea
                   value={caption}
@@ -587,6 +594,20 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   className="w-full px-4 py-2.5 rounded-xl bg-white border border-gray-300 text-[#0A261D] placeholder-gray-400 text-xs focus:outline-none focus:border-[#C5A880] focus:ring-1 focus:ring-[#C5A880] transition-colors resize-none shadow-xs"
                 />
               </div>
+
+              {/* Voice Note / Rekam Pesan Suara */}
+              <VoiceNoteRecorder
+                onAudioRecorded={(audioDataUrl, dur) => {
+                  setVoiceNoteUrl(audioDataUrl);
+                  setVoiceDuration(dur);
+                }}
+                onAudioRemoved={() => {
+                  setVoiceNoteUrl('');
+                  setVoiceDuration(0);
+                }}
+                recordedAudioUrl={voiceNoteUrl}
+                recordedDuration={voiceDuration}
+              />
 
               {errorMsg && (
                 <div className="flex items-center gap-2 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs">

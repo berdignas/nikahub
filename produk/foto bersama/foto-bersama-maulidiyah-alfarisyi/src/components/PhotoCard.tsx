@@ -1,6 +1,7 @@
 import React from 'react';
-import { Heart, User, Clock, Trash2, FolderArchive, MessageSquare, ArrowRight, ShieldAlert } from 'lucide-react';
+import { Heart, User, Clock, Trash2, FolderArchive, MessageSquare, ArrowRight, ShieldAlert, Mic } from 'lucide-react';
 import { GuestAlbum } from '../types';
+import { VoiceNotePlayer } from './VoiceNotePlayer';
 
 interface PhotoCardProps {
   album: GuestAlbum;
@@ -112,9 +113,19 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
             <span className="truncate text-sm">{album.senderName}</span>
           </div>
           {album.caption && (
-            <p className="font-serif italic text-xs text-white/95 line-clamp-2 drop-shadow-sm leading-relaxed mb-1">
+            <p className="font-serif italic text-xs text-white/95 line-clamp-2 drop-shadow-sm leading-relaxed mb-1.5">
               "{album.caption}"
             </p>
+          )}
+          {album.voiceNoteUrl && (
+            <div className="mb-2">
+              <VoiceNotePlayer
+                audioUrl={album.voiceNoteUrl}
+                duration={album.voiceDuration}
+                senderName={album.senderName}
+                compact
+              />
+            </div>
           )}
           <span className="text-[10px] font-sans text-[#E6CA92] font-semibold flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
             Buka folder ({photos.length} foto) <ArrowRight className="w-3 h-3" />
