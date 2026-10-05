@@ -18,7 +18,10 @@ export const BotanicalCornerDecor: React.FC<BotanicalCornerDecorProps> = ({
         <div className="absolute -top-4 -left-4 w-28 sm:w-36 pointer-events-none z-20 animate-sway-tl origin-top-left filter drop-shadow-md">
           <img
             src="./assets/bunga_top_left_clean.webp"
-            alt="Top Left Botanical"
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
             className="w-full h-auto object-contain"
           />
         </div>
@@ -29,7 +32,10 @@ export const BotanicalCornerDecor: React.FC<BotanicalCornerDecorProps> = ({
         <div className="absolute -top-4 -right-4 w-28 sm:w-36 pointer-events-none z-20 animate-sway-tr origin-top-right filter drop-shadow-md">
           <img
             src="./assets/bunga_top_right_clean.webp"
-            alt="Top Right Botanical"
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
             className="w-full h-auto object-contain"
           />
         </div>
@@ -40,7 +46,10 @@ export const BotanicalCornerDecor: React.FC<BotanicalCornerDecorProps> = ({
         <div className="absolute top-1/2 -translate-y-1/2 -left-4 w-20 sm:w-28 pointer-events-none z-20 animate-sway-bl origin-left filter drop-shadow-sm">
           <img
             src="./assets/bunga_mid_left_clean.webp"
-            alt="Mid Left Botanical"
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
             className="w-full h-auto object-contain"
           />
         </div>
@@ -51,7 +60,10 @@ export const BotanicalCornerDecor: React.FC<BotanicalCornerDecorProps> = ({
         <div className="absolute top-1/2 -translate-y-1/2 -right-4 w-20 sm:w-28 pointer-events-none z-20 animate-sway-br origin-right filter drop-shadow-sm">
           <img
             src="./assets/bunga_mid_right_clean.webp"
-            alt="Mid Right Botanical"
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
             className="w-full h-auto object-contain"
           />
         </div>
@@ -62,7 +74,10 @@ export const BotanicalCornerDecor: React.FC<BotanicalCornerDecorProps> = ({
         <div className="absolute -bottom-4 -left-4 w-28 sm:w-36 pointer-events-none z-20 animate-sway-bl origin-bottom-left filter drop-shadow-md">
           <img
             src="./assets/bunga_bottom_left_clean.webp"
-            alt="Bottom Left Botanical"
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
             className="w-full h-auto object-contain"
           />
         </div>
@@ -73,7 +88,10 @@ export const BotanicalCornerDecor: React.FC<BotanicalCornerDecorProps> = ({
         <div className="absolute -bottom-4 -right-4 w-28 sm:w-36 pointer-events-none z-20 animate-sway-br origin-bottom-right filter drop-shadow-md">
           <img
             src="./assets/bunga_bottom_right_clean.webp"
-            alt="Bottom Right Botanical"
+            alt=""
+            onError={(e) => {
+              e.currentTarget.style.display = 'none';
+            }}
             className="w-full h-auto object-contain"
           />
         </div>

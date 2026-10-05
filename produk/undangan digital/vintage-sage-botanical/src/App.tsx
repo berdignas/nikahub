@@ -18,6 +18,7 @@ import { GiftSection } from './components/GiftSection';
 import { RsvpSection } from './components/RsvpSection';
 import { FooterSection } from './components/FooterSection';
 import { AudioPlayer } from './components/AudioPlayer';
+import { AutoScrollController } from './components/AutoScrollController';
 import { BottomNav } from './components/BottomNav';
 import { invitationData } from './data/invitationData';
 
@@ -123,10 +124,13 @@ export const App: React.FC = () => {
         <RsvpSection />
         <FooterSection />
 
+        {/* Floating Auto-Scroll Controls with 0.5x & 1x options */}
+        <AutoScrollController isCoverOpen={isCoverOpen} />
+
         {/* Floating Bottom Nav */}
         {!isCoverOpen && <BottomNav />}
 
-        {/* Floating Audio Player */}
+        {/* Floating Audio Player (Top Right, Non-overlapping) */}
         {!isCoverOpen && (
           <AudioPlayer
             isPlaying={isPlayingMusic}
