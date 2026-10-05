@@ -1,0 +1,152 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+  --sage-primary: #767D63;
+  --sage-dark: #51583D;
+  --sage-deep: #3A402B;
+  --sage-light: #EEF0E9;
+  --gold-accent: #C2A676;
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #23271D;
+}
+::-webkit-scrollbar-thumb {
+  background: #51583D;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #767D63;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  background-color: #1A1D16;
+  font-family: 'Montserrat', sans-serif;
+  color: #3D3B38;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Botanical Sway Animations */
+@keyframes sway-slow {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0px) scale(1);
+  }
+  50% {
+    transform: rotate(3deg) translateY(-8px) scale(1.02);
+  }
+}
+
+@keyframes sway-reverse {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0px) scale(1);
+  }
+  50% {
+    transform: rotate(-3.5deg) translateY(-6px) scale(1.01);
+  }
+}
+
+@keyframes float-gentle {
+  0%, 100% {
+    transform: translateY(0px) scale(1);
+  }
+  50% {
+    transform: translateY(-10px) scale(1.02);
+  }
+}
+
+@keyframes pulse-gold {
+  0%, 100% {
+    box-shadow: 0 0 0 0 rgba(194, 166, 118, 0.4);
+  }
+  50% {
+    box-shadow: 0 0 0 12px rgba(194, 166, 118, 0);
+  }
+}
+
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes shimmer-gold {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-sway-slow {
+  animation: sway-slow 7s ease-in-out infinite;
+}
+
+.animate-sway-reverse {
+  animation: sway-reverse 8s ease-in-out infinite;
+}
+
+.animate-float-gentle {
+  animation: float-gentle 5s ease-in-out infinite;
+}
+
+.animate-pulse-gold {
+  animation: pulse-gold 2.5s infinite;
+}
+
+.animate-spin-slow {
+  animation: spin-slow 14s linear infinite;
+}
+
+.gold-shimmer-text {
+  background: linear-gradient(90deg, #9C8157 0%, #E8D8BA 50%, #9C8157 100%);
+  background-size: 200% auto;
+  color: transparent;
+  -webkit-background-clip: text;
+  background-clip: text;
+  animation: shimmer-gold 6s linear infinite;
+}
+
+/* Vintage Arch Frame Mask */
+.arch-frame {
+  border-radius: 180px 180px 16px 16px;
+  overflow: hidden;
+}
+
+.arch-top-only {
+  border-radius: 200px 200px 0 0;
+}
+
+/* Paper Grain Texture Filter */
+.vintage-paper-bg {
+  background-color: #FAF9F5;
+  background-image: radial-gradient(#767D63 0.6px, transparent 0.6px), radial-gradient(#C2A676 0.6px, #FAF9F5 0.6px);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+  background-opacity: 0.03;
+}
+
+/* Subtle card styling */
+.sage-card {
+  background: rgba(255, 255, 255, 0.94);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(194, 166, 118, 0.35);
+  box-shadow: 0 10px 30px -5px rgba(81, 88, 61, 0.08);
+}
