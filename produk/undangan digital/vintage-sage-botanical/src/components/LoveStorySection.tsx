@@ -9,10 +9,10 @@ export const LoveStorySection: React.FC = () => {
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          initial={{ opacity: 0, y: 45, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           className="mb-12"
         >
           <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1 font-semibold">
@@ -31,10 +31,10 @@ export const LoveStorySection: React.FC = () => {
           {invitationData.stories.map((item, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, x: 35 }}
+              initial={{ opacity: 0, x: 40 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: idx * 0.12 }}
+              viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 + idx * 0.15 }}
               className="relative group"
             >
               {/* Timeline Golden Node */}

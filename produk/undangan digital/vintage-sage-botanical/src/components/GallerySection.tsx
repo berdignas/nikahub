@@ -25,10 +25,10 @@ export const GallerySection: React.FC = () => {
       <div className="relative z-10 max-w-[420px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          initial={{ opacity: 0, y: 45, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           className="mb-10"
         >
           <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1 font-semibold">
@@ -47,10 +47,10 @@ export const GallerySection: React.FC = () => {
           {invitationData.gallery.map((img, idx) => (
             <motion.div
               key={img.id}
-              initial={{ opacity: 0, scale: 0.88, y: 30 }}
+              initial={{ opacity: 0, scale: 0.88, y: 40 }}
               whileInView={{ opacity: 1, scale: 1, y: 0 }}
-              viewport={{ once: true, margin: "0px 0px -20% 0px", amount: 0.15 }}
-              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: (idx % 2) * 0.1 }}
+              viewport={{ once: true, margin: "0px 0px -35% 0px", amount: 0.2 }}
+              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.15 + (idx % 2) * 0.15 }}
               onClick={() => setActivePhoto(idx)}
               className="group relative rounded-2xl overflow-hidden shadow-md cursor-pointer border border-[#C2A676]/40 bg-white aspect-[3/4]"
             >

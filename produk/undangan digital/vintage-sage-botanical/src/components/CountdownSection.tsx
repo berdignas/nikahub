@@ -46,10 +46,10 @@ export const CountdownSection: React.FC = () => {
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          initial={{ opacity: 0, y: 45, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           className="mb-8"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 text-[#51583D] text-xs font-semibold uppercase tracking-widest mb-3">
@@ -66,10 +66,10 @@ export const CountdownSection: React.FC = () => {
 
         {/* 4 Flip/Card Boxes */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          initial={{ opacity: 0, scale: 0.9, y: 50 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
           className="grid grid-cols-4 gap-2.5 w-full mb-8"
         >
           {[
@@ -94,10 +94,10 @@ export const CountdownSection: React.FC = () => {
 
         {/* Calendar Action Button */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 35 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
         >
           <a
             href={googleCalendarUrl}

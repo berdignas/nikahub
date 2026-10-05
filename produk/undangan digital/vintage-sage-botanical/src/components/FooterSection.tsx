@@ -19,10 +19,10 @@ export const FooterSection: React.FC = () => {
       <div className="relative z-10 max-w-[380px] mx-auto flex flex-col items-center">
         {/* Top Arch Flower Crown */}
         <motion.div
-          initial={{ opacity: 0, y: 30, scale: 0.9 }}
+          initial={{ opacity: 0, y: 35, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           className="w-48 sm:w-56 mb-[-18px] z-20 pointer-events-none filter drop-shadow-md animate-sway-tl origin-top"
         >
           <img
@@ -37,10 +37,10 @@ export const FooterSection: React.FC = () => {
 
         {/* Arched Closing Photo */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.88, y: 40 }}
+          initial={{ opacity: 0, scale: 0.88, y: 50 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
           className="relative w-44 h-56 rounded-t-[100px] rounded-b-2xl p-1.5 bg-gradient-to-b from-[#C2A676] via-[#767D63] to-[#51583D] shadow-2xl mb-6 overflow-hidden"
         >
           <div className="w-full h-full rounded-t-[94px] rounded-b-xl overflow-hidden bg-[#FAF9F5]">
@@ -54,10 +54,10 @@ export const FooterSection: React.FC = () => {
 
         {/* Thank You Note */}
         <motion.p
-          initial={{ opacity: 0, y: 25 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.18 }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
           className="text-xs text-[#686561] leading-relaxed mb-4 font-light max-w-[320px]"
         >
           Merupakan suatu kehormatan dan kebahagiaan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu kepada kami.
@@ -67,8 +67,8 @@ export const FooterSection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, scaleX: 0 }}
           whileInView={{ opacity: 1, scaleX: 1 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.2, delay: 0.25 }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.3, delay: 0.35 }}
           className="w-24 my-2 mx-auto opacity-80"
         >
           <img
@@ -85,8 +85,8 @@ export const FooterSection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.3 }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.4 }}
           className="mt-4 mb-6"
         >
           <p className="font-serif italic text-xs text-[#767D63] tracking-widest uppercase mb-1">
@@ -102,10 +102,10 @@ export const FooterSection: React.FC = () => {
 
         {/* Grand Bottom Botanical Base Arch / Wreath */}
         <motion.div
-          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          initial={{ opacity: 0, y: 45, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "0px 0px -20% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.35 }}
+          viewport={{ once: true, margin: "0px 0px -30% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.45 }}
           className="w-64 sm:w-80 my-4 pointer-events-none filter drop-shadow-md animate-sway-bl origin-bottom"
         >
           <img
@@ -123,7 +123,7 @@ export const FooterSection: React.FC = () => {
           initial={{ opacity: 0 }}
           whileInView={{ opacity: 1 }}
           viewport={{ once: true, margin: "0px 0px -10% 0px", amount: 0.15 }}
-          transition={{ duration: 1.2, delay: 0.4 }}
+          transition={{ duration: 1.2, delay: 0.5 }}
           className="pt-4 border-t border-[#C2A676]/30 w-full flex flex-col items-center"
         >
           <div className="flex items-center gap-1.5 text-xs text-[#767D63] font-medium">

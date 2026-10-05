@@ -121,10 +121,10 @@ export const RsvpSection: React.FC = () => {
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          initial={{ opacity: 0, y: 45, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.15 }}
           className="mb-8"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 text-[#51583D] text-xs font-semibold uppercase tracking-widest mb-3">
@@ -144,10 +144,10 @@ export const RsvpSection: React.FC = () => {
 
         {/* Stats Pills */}
         <motion.div
-          initial={{ opacity: 0, y: 25 }}
+          initial={{ opacity: 0, y: 35 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
           className="flex items-center justify-center gap-3 mb-6 w-full"
         >
           <div className="flex-1 py-2 px-4 rounded-2xl bg-white/85 border border-[#C2A676]/35 shadow-sm text-center">
@@ -167,10 +167,10 @@ export const RsvpSection: React.FC = () => {
         {/* RSVP Form */}
         <motion.form
           onSubmit={handleSubmit}
-          initial={{ opacity: 0, y: 45, scale: 0.92 }}
+          initial={{ opacity: 0, y: 55, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
-          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
+          viewport={{ once: true, margin: "0px 0px -40% 0px", amount: 0.2 }}
+          transition={{ duration: 1.6, ease: [0.16, 1, 0.3, 1], delay: 0.25 }}
           className="w-full p-6 rounded-3xl bg-[#FAF9F5] border border-[#C2A676]/45 shadow-xl text-left mb-8 space-y-4"
         >
           {/* Input Name */}
@@ -296,8 +296,8 @@ export const RsvpSection: React.FC = () => {
               key={item.id}
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true, margin: "0px 0px -15% 0px", amount: 0.15 }}
-              transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+              viewport={{ once: true, margin: "0px 0px -30% 0px", amount: 0.2 }}
+              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1] }}
               className="p-4 rounded-2xl bg-white/95 border border-[#C2A676]/35 shadow-sm text-left"
             >
               <div className="flex items-center justify-between mb-2">
