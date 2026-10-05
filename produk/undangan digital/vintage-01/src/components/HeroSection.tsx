@@ -41,12 +41,12 @@ export const HeroSection: React.FC = () => {
       <img
         src="./images/bunga_top_left.webp"
         alt="Top Left Leaf"
-        className="absolute top-0 left-0 w-36 sm:w-52 md:w-64 opacity-90 pointer-events-none z-10 animate-sway"
+        className="absolute top-0 left-0 w-36 sm:w-52 md:w-64 opacity-90 pointer-events-none z-10 animate-sway-tl"
       />
       <img
         src="./images/bunga_top_right.webp"
         alt="Top Right Leaf"
-        className="absolute top-0 right-0 w-36 sm:w-52 md:w-64 opacity-90 pointer-events-none z-10 animate-sway-reverse"
+        className="absolute top-0 right-0 w-36 sm:w-52 md:w-64 opacity-90 pointer-events-none z-10 animate-sway-tr"
       />
 
       {/* Center Top Floral Crown Accent */}
@@ -177,12 +177,12 @@ export const HeroSection: React.FC = () => {
       <img
         src="./images/bunga_bottom_left.webp"
         alt="Bottom Left Leaf"
-        className="absolute bottom-0 left-0 w-32 sm:w-48 md:w-56 opacity-90 pointer-events-none z-10 animate-sway-reverse"
+        className="absolute bottom-0 left-0 w-32 sm:w-48 md:w-56 opacity-90 pointer-events-none z-10 animate-sway-bl"
       />
       <img
         src="./images/bunga_bottom_right.webp"
         alt="Bottom Right Leaf"
-        className="absolute bottom-0 right-0 w-32 sm:w-48 md:w-56 opacity-90 pointer-events-none z-10 animate-sway"
+        className="absolute bottom-0 right-0 w-32 sm:w-48 md:w-56 opacity-90 pointer-events-none z-10 animate-sway-br"
       />
     </section>
   );

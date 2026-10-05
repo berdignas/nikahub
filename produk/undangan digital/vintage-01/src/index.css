@@ -13,8 +13,8 @@
 .arch-frame {
   border-top-left-radius: 9999px;
   border-top-right-radius: 9999px;
-  border-bottom-left-radius: 1rem;
-  border-bottom-right-radius: 1rem;
+  border-bottom-left-radius: 1.25rem;
+  border-bottom-right-radius: 1.25rem;
   overflow: hidden;
 }
 
@@ -30,87 +30,138 @@
   border-radius: 3px;
 }
 
-/* Botanical Sway Animations */
-@keyframes sway-gently {
+/* VISIBLE Wind Sway Animations with proper pivot origins */
+@keyframes sway-top-left {
   0%, 100% {
-    transform: rotate(0deg) scale(1);
+    transform: rotate(0deg) translateY(0px) scale(1);
   }
-  50% {
-    transform: rotate(4deg) scale(1.02);
+  35% {
+    transform: rotate(7deg) translateY(4px) scale(1.04);
+  }
+  70% {
+    transform: rotate(-4deg) translateY(-2px) scale(0.98);
   }
 }
 
-.animate-sway {
-  animation: sway-gently 6s ease-in-out infinite;
+@keyframes sway-top-right {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0px) scale(1);
+  }
+  40% {
+    transform: rotate(-7deg) translateY(4px) scale(1.04);
+  }
+  75% {
+    transform: rotate(4deg) translateY(-2px) scale(0.98);
+  }
 }
 
-.animate-sway-reverse {
-  animation: sway-gently 7s ease-in-out infinite reverse;
+@keyframes sway-bottom-left {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0px) scale(1);
+  }
+  30% {
+    transform: rotate(-6deg) translateY(-4px) scale(1.03);
+  }
+  65% {
+    transform: rotate(5deg) translateY(2px) scale(0.98);
+  }
+}
+
+@keyframes sway-bottom-right {
+  0%, 100% {
+    transform: rotate(0deg) translateY(0px) scale(1);
+  }
+  45% {
+    transform: rotate(6deg) translateY(-4px) scale(1.03);
+  }
+  80% {
+    transform: rotate(-5deg) translateY(2px) scale(0.98);
+  }
+}
+
+.animate-sway-tl {
+  transform-origin: top left;
+  animation: sway-top-left 5s ease-in-out infinite;
+}
+
+.animate-sway-tr {
+  transform-origin: top right;
+  animation: sway-top-right 5.5s ease-in-out infinite;
+}
+
+.animate-sway-bl {
+  transform-origin: bottom left;
+  animation: sway-bottom-left 5.2s ease-in-out infinite;
+}
+
+.animate-sway-br {
+  transform-origin: bottom right;
+  animation: sway-bottom-right 5.7s ease-in-out infinite;
 }
 
 /* Falling Petals Animations */
 @keyframes fall-and-sway {
   0% {
-    transform: translateY(-5vh) rotate(0deg) translateX(0px);
+    transform: translateY(-8vh) rotate(0deg) translateX(0px);
     opacity: 0;
   }
   15% {
-    opacity: 0.9;
+    opacity: 0.95;
   }
   85% {
-    opacity: 0.9;
+    opacity: 0.95;
   }
   100% {
-    transform: translateY(105vh) rotate(360deg) translateX(60px);
+    transform: translateY(108vh) rotate(420deg) translateX(70px);
     opacity: 0;
   }
 }
 
 .animate-petal {
-  animation: fall-and-sway 9s linear infinite;
+  animation: fall-and-sway 8s linear infinite;
 }
 
 /* Dove Flight Animations */
 @keyframes dove-fly-right {
   0% {
-    transform: translateX(-15vw) translateY(0vh) scale(0.7);
+    transform: translateX(-20vw) translateY(0vh) scale(0.7);
     opacity: 0;
   }
   15% {
-    opacity: 0.9;
+    opacity: 0.95;
   }
   85% {
-    opacity: 0.9;
+    opacity: 0.95;
   }
   100% {
-    transform: translateX(115vw) translateY(-15vh) scale(1);
+    transform: translateX(120vw) translateY(-18vh) scale(1.05);
     opacity: 0;
   }
 }
 
 @keyframes dove-fly-left {
   0% {
-    transform: translateX(115vw) translateY(0vh) scale(-0.7, 0.7);
+    transform: translateX(120vw) translateY(0vh) scale(-0.7, 0.7);
     opacity: 0;
   }
   15% {
-    opacity: 0.9;
+    opacity: 0.95;
   }
   85% {
-    opacity: 0.9;
+    opacity: 0.95;
   }
   100% {
-    transform: translateX(-15vw) translateY(-10vh) scale(-1, 1);
+    transform: translateX(-20vw) translateY(-12vh) scale(-1.05, 1.05);
     opacity: 0;
   }
 }
 
 .animate-dove-right {
-  animation: dove-fly-right 18s ease-in-out infinite;
+  animation: dove-fly-right 16s ease-in-out infinite;
 }
 
 .animate-dove-left {
-  animation: dove-fly-left 22s ease-in-out infinite 6s;
+  animation: dove-fly-left 20s ease-in-out infinite 5s;
 }
 
 /* Wing Fluttering */
@@ -119,36 +170,58 @@
     transform: rotate(0deg);
   }
   50% {
-    transform: rotate(-30deg);
+    transform: rotate(-35deg);
   }
 }
 
 .animate-wing {
   transform-origin: bottom right;
-  animation: wing-flap 0.4s ease-in-out infinite alternate;
+  animation: wing-flap 0.35s ease-in-out infinite alternate;
 }
 
 /* Butterfly Floating */
-@keyframes butterfly-float {
+@keyframes butterfly-float-1 {
   0% {
     transform: translate(0, 0) rotate(0deg);
   }
   25% {
-    transform: translate(15px, -20px) rotate(8deg);
+    transform: translate(25px, -30px) rotate(12deg);
   }
   50% {
-    transform: translate(-12px, -35px) rotate(-8deg);
+    transform: translate(-18px, -55px) rotate(-10deg);
   }
   75% {
-    transform: translate(18px, -15px) rotate(10deg);
+    transform: translate(30px, -25px) rotate(15deg);
   }
   100% {
     transform: translate(0, 0) rotate(0deg);
   }
 }
 
-.animate-butterfly {
-  animation: butterfly-float 5s ease-in-out infinite;
+@keyframes butterfly-float-2 {
+  0% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+  25% {
+    transform: translate(-22px, -35px) rotate(-12deg);
+  }
+  50% {
+    transform: translate(20px, -60px) rotate(10deg);
+  }
+  75% {
+    transform: translate(-25px, -20px) rotate(-15deg);
+  }
+  100% {
+    transform: translate(0, 0) rotate(0deg);
+  }
+}
+
+.animate-butterfly-1 {
+  animation: butterfly-float-1 5s ease-in-out infinite;
+}
+
+.animate-butterfly-2 {
+  animation: butterfly-float-2 6s ease-in-out infinite 1.5s;
 }
 
 /* Floating Card Micro-animation */
@@ -162,7 +235,7 @@
 }
 
 .animate-float-subtle {
-  animation: float-subtle 4s ease-in-out infinite;
+  animation: float-subtle 3.5s ease-in-out infinite;
 }
 
 /* Shimmer Gold Effect */
@@ -179,20 +252,20 @@
   background: linear-gradient(
     90deg,
     rgba(197, 160, 89, 0.1) 0%,
-    rgba(197, 160, 89, 0.4) 50%,
+    rgba(197, 160, 89, 0.45) 50%,
     rgba(197, 160, 89, 0.1) 100%
   );
   background-size: 200% 100%;
-  animation: shimmer-gold 3s linear infinite;
+  animation: shimmer-gold 2.5s linear infinite;
 }
 
 /* Wax Seal Stamp */
 .wax-seal {
   background: radial-gradient(circle at 30% 30%, #c0392b, #8e1c14);
   box-shadow: 
-    0 6px 20px rgba(142, 28, 20, 0.6),
-    inset 0 2px 4px rgba(255, 255, 255, 0.3),
-    inset 0 -2px 6px rgba(0, 0, 0, 0.5);
+    0 8px 24px rgba(142, 28, 20, 0.65),
+    inset 0 2px 5px rgba(255, 255, 255, 0.4),
+    inset 0 -3px 8px rgba(0, 0, 0, 0.6);
 }
 
 /* Sound Equalizer Bars */
@@ -201,13 +274,13 @@
     height: 4px;
   }
   50% {
-    height: 16px;
+    height: 18px;
   }
 }
 
-.animate-eq-1 { animation: eq-bar 0.8s ease-in-out infinite; }
-.animate-eq-2 { animation: eq-bar 0.6s ease-in-out infinite 0.2s; }
-.animate-eq-3 { animation: eq-bar 1.0s ease-in-out infinite 0.4s; }
+.animate-eq-1 { animation: eq-bar 0.7s ease-in-out infinite; }
+.animate-eq-2 { animation: eq-bar 0.5s ease-in-out infinite 0.15s; }
+.animate-eq-3 { animation: eq-bar 0.9s ease-in-out infinite 0.3s; }
 
 /* Spin slow */
 @keyframes spin-slow {
@@ -216,7 +289,7 @@
 }
 
 .animate-spin-slow {
-  animation: spin-slow 12s linear infinite;
+  animation: spin-slow 14s linear infinite;
 }
 
 .pulse-glow {
@@ -225,9 +298,9 @@
 
 @keyframes pulse-glow-anim {
   0% {
-    box-shadow: 0 0 0 0 rgba(140, 106, 67, 0.5);
+    box-shadow: 0 0 0 0 rgba(197, 160, 89, 0.6);
   }
   100% {
-    box-shadow: 0 0 0 18px rgba(140, 106, 67, 0);
+    box-shadow: 0 0 0 20px rgba(197, 160, 89, 0);
   }
 }

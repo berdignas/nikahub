@@ -56,22 +56,22 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
           <img 
             src="./images/bunga_top_left.webp" 
             alt="Botanical top left leaf" 
-            className="absolute top-0 left-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway"
+            className="absolute top-0 left-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway-tl"
           />
           <img 
             src="./images/bunga_top_right.webp" 
             alt="Botanical top right leaf" 
-            className="absolute top-0 right-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway-reverse"
+            className="absolute top-0 right-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway-tr"
           />
           <img 
             src="./images/bunga_bottom_left.webp" 
             alt="Botanical bottom left leaf" 
-            className="absolute bottom-0 left-0 w-28 sm:w-40 md:w-48 opacity-85 pointer-events-none z-10 animate-sway-reverse"
+            className="absolute bottom-0 left-0 w-28 sm:w-40 md:w-48 opacity-85 pointer-events-none z-10 animate-sway-bl"
           />
           <img 
             src="./images/bunga_bottom_right.webp" 
             alt="Botanical bottom right leaf" 
-            className="absolute bottom-0 right-0 w-28 sm:w-40 md:w-48 opacity-85 pointer-events-none z-10 animate-sway"
+            className="absolute bottom-0 right-0 w-28 sm:w-40 md:w-48 opacity-85 pointer-events-none z-10 animate-sway-br"
           />
 
           {/* Envelope Card Container */}
