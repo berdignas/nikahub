@@ -12,6 +12,8 @@ export interface PhotoMoment {
   senderName: string;
   caption: string;
   imageUrl: string;
+  audioUrl?: string;       // Voice note audio URL (Data URL or R2 URL)
+  audioDuration?: number;  // Duration in seconds
   deviceId: string;
   likesCount: number;
   likedByDevices: string[];
