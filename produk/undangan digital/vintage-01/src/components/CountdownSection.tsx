@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { Calendar, Clock, MapPin, ExternalLink } from 'lucide-react';
+import { Calendar as CalendarIcon, Clock, MapPin, ExternalLink, PlusCircle } from 'lucide-react';
 import { INVITATION_DATA } from '../data/invitationData';
 
 export const CountdownSection: React.FC = () => {
@@ -33,6 +33,8 @@ export const CountdownSection: React.FC = () => {
     return () => clearInterval(interval);
   }, []);
 
+  const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Pernikahan+Habib+%26+Adiba&dates=20261228T010000Z/20261228T070000Z&details=Pernikahan+Habib+Yulianto+%26+Adiba+Putri+Syakila&location=Ds+Pagu,+Wates,+Kediri,+Jawa+Timur`;
+
   return (
     <section id="acara" className="py-20 px-4 bg-[#F5EFE6] border-y border-[#E6DCCE] relative overflow-hidden">
       <div className="max-w-4xl mx-auto text-center">
@@ -60,7 +62,7 @@ export const CountdownSection: React.FC = () => {
           initial={{ opacity: 0, scale: 0.95 }}
           whileInView={{ opacity: 1, scale: 1 }}
           viewport={{ once: true }}
-          className="grid grid-cols-4 gap-3 sm:gap-6 max-w-md mx-auto mb-16"
+          className="grid grid-cols-4 gap-3 sm:gap-6 max-w-md mx-auto mb-8"
         >
           {[
             { label: 'Hari', value: timeLeft.days },
@@ -70,7 +72,7 @@ export const CountdownSection: React.FC = () => {
           ].map((item, idx) => (
             <div 
               key={idx} 
-              className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl border border-[#E6DCCE] shadow-vintage flex flex-col items-center justify-center"
+              className="bg-white/90 backdrop-blur-sm p-4 rounded-2xl border border-[#E6DCCE] shadow-vintage flex flex-col items-center justify-center hover:border-[#C5A059] transition-colors"
             >
               <span className="font-serif text-2xl sm:text-3xl font-bold text-[#8C6A43]">
                 {String(item.value).padStart(2, '0')}
@@ -82,6 +84,19 @@ export const CountdownSection: React.FC = () => {
           ))}
         </motion.div>
 
+        {/* Google Calendar Add Button */}
+        <div className="mb-16">
+          <a
+            href={googleCalendarUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#C5A059] bg-white/80 hover:bg-[#8C6A43] hover:text-white text-[#8C6A43] text-xs font-semibold tracking-wider uppercase transition-all shadow-sm"
+          >
+            <PlusCircle className="w-4 h-4" />
+            <span>Simpan Pengingat di Google Calendar</span>
+          </a>
+        </div>
+
         {/* Event Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {INVITATION_DATA.events.map((evt, index) => (
@@ -91,11 +106,11 @@ export const CountdownSection: React.FC = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ delay: index * 0.2 }}
-              className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl border border-[#E6DCCE] shadow-vintage flex flex-col items-center text-center relative overflow-hidden"
+              className="bg-white/90 backdrop-blur-sm p-8 rounded-3xl border border-[#E6DCCE] shadow-vintage flex flex-col items-center text-center relative overflow-hidden group hover:border-[#C5A059] transition-all"
             >
               {/* Card Ornament Header */}
-              <div className="w-12 h-12 rounded-full bg-[#FAF6F0] border border-[#C5A059] flex items-center justify-center mb-4 text-[#8C6A43]">
-                <Calendar className="w-5 h-5" />
+              <div className="w-12 h-12 rounded-full bg-[#FAF6F0] border border-[#C5A059] flex items-center justify-center mb-4 text-[#8C6A43] group-hover:bg-[#8C6A43] group-hover:text-white transition-colors">
+                <CalendarIcon className="w-5 h-5" />
               </div>
 
               <h3 className="font-serif text-2xl font-bold text-[#8C6A43] mb-4">
@@ -104,7 +119,7 @@ export const CountdownSection: React.FC = () => {
 
               <div className="space-y-3 mb-6 w-full text-sm text-[#3D312A]">
                 <div className="flex items-center justify-center gap-2 text-[#66554B]">
-                  <Calendar className="w-4 h-4 text-[#8C6A43]" />
+                  <CalendarIcon className="w-4 h-4 text-[#8C6A43]" />
                   <span className="font-medium">{evt.date}</span>
                 </div>
                 <div className="flex items-center justify-center gap-2 text-[#66554B]">
@@ -127,7 +142,7 @@ export const CountdownSection: React.FC = () => {
                 className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full bg-[#8C6A43] text-white hover:bg-[#5C4033] text-xs font-semibold tracking-wider uppercase shadow-md transition-all transform hover:-translate-y-0.5"
               >
                 <MapPin className="w-4 h-4" />
-                <span>Lihat Lokasi</span>
+                <span>Petunjuk Lokasi Google Maps</span>
                 <ExternalLink className="w-3 h-3 opacity-70" />
               </a>
             </motion.div>

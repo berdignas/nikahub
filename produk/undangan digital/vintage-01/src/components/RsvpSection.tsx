@@ -1,33 +1,36 @@
 import React, { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MessageSquare, Send, CheckCircle2, XCircle, User, Sparkles } from 'lucide-react';
+import { MessageSquare, Send, CheckCircle2, XCircle, User, Sparkles, Heart, ThumbsUp } from 'lucide-react';
 import { Wish } from '../data/invitationData';
 
 interface RsvpSectionProps {
   initialGuestName?: string;
 }
 
-const INITIAL_WISHES: Wish[] = [
+const INITIAL_WISHES: (Wish & { likes?: number })[] = [
   {
     id: '1',
     name: 'Budi Sudarta & Keluarga',
     attendance: 'Hadir',
     message: 'Selamat untuk Habib dan Adiba! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Aamiin.',
-    timestamp: 'Baru saja'
+    timestamp: 'Baru saja',
+    likes: 12
   },
   {
     id: '2',
     name: 'Siti Rahma',
     attendance: 'Hadir',
     message: 'Barakallahu lakuma wa baraka alaikuma wa jamaa bainakuma fii khair. Selamat menempuh hidup baru!',
-    timestamp: '1 jam yang lalu'
+    timestamp: '1 jam yang lalu',
+    likes: 8
   },
   {
     id: '3',
     name: 'Dimas Kurniawan',
     attendance: 'Tidak Hadir',
     message: 'Selamat wahai saudaraku Habib! Mohon maaf belum bisa hadir secara langsung, doa terbaik selalu menyertai kalian.',
-    timestamp: '3 jam yang lalu'
+    timestamp: '3 jam yang lalu',
+    likes: 5
   }
 ];
 
@@ -35,7 +38,7 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({ initialGuestName = '' 
   const [name, setName] = useState(initialGuestName);
   const [attendance, setAttendance] = useState<'Hadir' | 'Tidak Hadir'>('Hadir');
   const [message, setMessage] = useState('');
-  const [wishes, setWishes] = useState<Wish[]>([]);
+  const [wishes, setWishes] = useState<(Wish & { likes?: number })[]>([]);
   const [submitted, setSubmitted] = useState(false);
 
   useEffect(() => {
@@ -61,12 +64,13 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({ initialGuestName = '' 
     e.preventDefault();
     if (!name.trim() || !message.trim()) return;
 
-    const newWish: Wish = {
+    const newWish: Wish & { likes?: number } = {
       id: Date.now().toString(),
       name: name.trim(),
       attendance,
       message: message.trim(),
-      timestamp: 'Baru saja'
+      timestamp: 'Baru saja',
+      likes: 1
     };
 
     const updated = [newWish, ...wishes];
@@ -76,6 +80,17 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({ initialGuestName = '' 
     setMessage('');
     setSubmitted(true);
     setTimeout(() => setSubmitted(false), 4000);
+  };
+
+  const handleLike = (id: string) => {
+    const updated = wishes.map(w => {
+      if (w.id === id) {
+        return { ...w, likes: (w.likes || 0) + 1 };
+      }
+      return w;
+    });
+    setWishes(updated);
+    localStorage.setItem('vintage_01_wishes', JSON.stringify(updated));
   };
 
   return (
@@ -211,24 +226,41 @@ export const RsvpSection: React.FC<RsvpSectionProps> = ({ initialGuestName = '' 
             {wishes.map((item) => (
               <div
                 key={item.id}
-                className="bg-white/90 backdrop-blur-sm p-4 sm:p-5 rounded-2xl border border-[#E6DCCE] shadow-sm text-left"
+                className="bg-white/90 backdrop-blur-sm p-4 sm:p-5 rounded-2xl border border-[#E6DCCE] shadow-sm text-left flex flex-col justify-between"
               >
-                <div className="flex items-center justify-between mb-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-bold text-sm text-[#3D312A]">{item.name}</span>
-                    <span
-                      className={`text-[10px] font-semibold px-2 py-0.5 rounded-full text-white ${
-                        item.attendance === 'Hadir' ? 'bg-[#2FAE4F]' : 'bg-[#F20D16]'
-                      }`}
-                    >
-                      {item.attendance}
-                    </span>
+                <div>
+                  <div className="flex items-center justify-between mb-2">
+                    <div className="flex items-center gap-2">
+                      <div className="w-8 h-8 rounded-full bg-[#FAF6F0] border border-[#C5A059] flex items-center justify-center font-bold text-xs text-[#8C6A43]">
+                        {item.name.charAt(0).toUpperCase()}
+                      </div>
+                      <span className="font-bold text-sm text-[#3D312A]">{item.name}</span>
+                      <span
+                        className={`text-[10px] font-semibold px-2 py-0.5 rounded-full text-white ${
+                          item.attendance === 'Hadir' ? 'bg-[#2FAE4F]' : 'bg-[#F20D16]'
+                        }`}
+                      >
+                        {item.attendance}
+                      </span>
+                    </div>
+                    <span className="text-[10px] text-[#8C6A43]">{item.timestamp}</span>
                   </div>
-                  <span className="text-[10px] text-[#8C6A43]">{item.timestamp}</span>
+
+                  <p className="text-xs text-[#66554B] leading-relaxed font-light mb-3">
+                    {item.message}
+                  </p>
                 </div>
-                <p className="text-xs text-[#66554B] leading-relaxed font-light">
-                  {item.message}
-                </p>
+
+                {/* Like / Heart Reaction Button */}
+                <div className="flex items-center justify-end pt-2 border-t border-[#E6DCCE]/60">
+                  <button
+                    onClick={() => handleLike(item.id)}
+                    className="inline-flex items-center gap-1.5 text-xs text-[#8C6A43] hover:text-[#5C4033] bg-[#FAF6F0] hover:bg-[#F5EFE6] px-3 py-1 rounded-full border border-[#E6DCCE] transition-colors"
+                  >
+                    <Heart className="w-3.5 h-3.5 text-red-500 fill-red-500" />
+                    <span className="font-semibold">{item.likes || 0}</span>
+                  </button>
+                </div>
               </div>
             ))}
           </div>

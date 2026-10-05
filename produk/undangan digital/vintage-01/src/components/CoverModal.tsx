@@ -1,6 +1,7 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { MailOpen } from 'lucide-react';
+import { MailOpen, Sparkles, Heart } from 'lucide-react';
+import confetti from 'canvas-confetti';
 import { INVITATION_DATA } from '../data/invitationData';
 
 interface CoverModalProps {
@@ -10,13 +11,35 @@ interface CoverModalProps {
 }
 
 export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpen }) => {
+  const [isUnsealing, setIsUnsealing] = useState(false);
+
+  const handleUnseal = () => {
+    setIsUnsealing(true);
+    
+    // Trigger festive golden confetti
+    try {
+      confetti({
+        particleCount: 80,
+        spread: 70,
+        origin: { y: 0.6 },
+        colors: ['#C5A059', '#8C6A43', '#FFFFFF', '#E8B4B8']
+      });
+    } catch (e) {
+      // ignore
+    }
+
+    setTimeout(() => {
+      onOpen();
+    }, 600);
+  };
+
   return (
     <AnimatePresence>
       {isOpen && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, y: '-100%' }}
-          transition={{ duration: 0.8, ease: [0.77, 0, 0.175, 1] }}
+          exit={{ opacity: 0, y: '-100%', scale: 0.95 }}
+          transition={{ duration: 0.9, ease: [0.77, 0, 0.175, 1] }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-[#FAF6F0] overflow-hidden"
         >
           {/* Background image overlay */}
@@ -24,42 +47,51 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
             <img 
               src={INVITATION_DATA.groom.photo} 
               alt="Vintage background" 
-              className="w-full h-full object-cover object-center filter blur-sm opacity-20 scale-105"
+              className="w-full h-full object-cover object-center filter blur-md opacity-25 scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/80 to-[#FAF6F0]/60" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/85 to-[#FAF6F0]/70" />
           </div>
 
-          {/* Decorative Corner Ornaments */}
+          {/* Decorative Corner Floral Ornaments */}
           <img 
             src="./images/flower.png" 
             alt="Floral decor top left" 
-            className="absolute top-0 left-0 w-32 md:w-48 opacity-40 pointer-events-none -scale-x-100"
+            className="absolute -top-6 -left-6 w-36 md:w-56 opacity-50 pointer-events-none -scale-x-100"
           />
           <img 
             src="./images/flower.png" 
             alt="Floral decor bottom right" 
-            className="absolute bottom-0 right-0 w-32 md:w-48 opacity-40 pointer-events-none -scale-y-100"
+            className="absolute -bottom-6 -right-6 w-36 md:w-56 opacity-50 pointer-events-none -scale-y-100"
           />
 
-          <div className="relative z-10 max-w-md w-full mx-4 text-center px-6 py-10 bg-white/70 backdrop-blur-md rounded-3xl border border-[#E6DCCE] shadow-vintage flex flex-col items-center">
+          {/* Envelope Card Container */}
+          <div className="relative z-10 max-w-md w-full mx-4 text-center px-6 py-10 bg-white/80 backdrop-blur-md rounded-3xl border-2 border-[#E6DCCE] shadow-2xl flex flex-col items-center">
             
-            {/* Arch Photo Frame */}
-            <div className="relative w-40 h-52 mb-6 arch-frame border-2 border-[#C5A059] p-1 shadow-md">
+            {/* Arch Photo Frame with Golden Filigree Rim */}
+            <div className="relative w-44 h-56 mb-6 arch-frame border-2 border-[#C5A059] p-1 shadow-lg bg-white group">
               <img 
                 src="./images/cover.jpg" 
                 alt="Habib & Adiba" 
-                className="w-full h-full object-cover arch-frame"
+                className="w-full h-full object-cover arch-frame group-hover:scale-105 transition-transform duration-700"
               />
               <img 
                 src="./images/frame.png" 
                 alt="Decor frame" 
-                className="absolute inset-0 w-full h-full object-contain pointer-events-none opacity-80"
+                className="absolute inset-0 w-full h-full object-contain pointer-events-none opacity-85"
               />
+
+              {/* Floating Butterfly Accent */}
+              <div className="absolute -top-3 -right-3 text-[#C5A059] animate-butterfly pointer-events-none">
+                <Heart className="w-6 h-6 fill-[#C5A059] opacity-80" />
+              </div>
             </div>
 
-            <span className="text-xs uppercase tracking-[0.3em] text-[#8C6A43] font-medium mb-2">
-              Undangan Website Premium
+            <span className="text-xs uppercase tracking-[0.35em] text-[#8C6A43] font-bold mb-1 flex items-center gap-1">
+              <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
+              <span>Undangan Website Premium</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
             </span>
+
             <h2 className="font-script text-4xl text-[#3D312A] mb-1">
               The Wedding of
             </h2>
@@ -68,26 +100,46 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
             </h1>
 
             {/* Guest Box */}
-            <div className="w-full bg-[#F5EFE6] rounded-2xl p-4 border border-[#E6DCCE] mb-6 shadow-inner">
+            <div className="w-full bg-gradient-to-r from-[#F5EFE6] via-white to-[#F5EFE6] rounded-2xl p-4 border border-[#E6DCCE] mb-6 shadow-inner relative overflow-hidden">
               <p className="text-xs text-[#66554B] mb-1 font-light">
-                Kepada Bapak/Ibu/Saudara/i:
+                Kepada Yth. Bapak/Ibu/Saudara/i:
               </p>
-              <p className="text-lg font-bold text-[#3D312A] tracking-wide">
+              <p className="text-xl font-bold text-[#3D312A] tracking-wide">
                 {guestName}
               </p>
-              <p className="text-[10px] text-[#8C6A43] italic mt-1">
+              <p className="text-[10px] text-[#8C6A43] italic mt-1 font-medium">
                 *Mohon maaf bila ada kesalahan penulisan nama/gelar
               </p>
             </div>
 
-            {/* Open Button */}
-            <button
-              onClick={onOpen}
-              className="group relative inline-flex items-center gap-2 px-8 py-3.5 bg-[#8C6A43] hover:bg-[#5C4033] text-white text-sm font-semibold tracking-wider uppercase rounded-full shadow-gold transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0 pulse-glow"
-            >
-              <MailOpen className="w-4 h-4 transition-transform group-hover:rotate-12" />
-              <span>Buka Undangan</span>
-            </button>
+            {/* Interactive Wax Seal Button */}
+            <div className="flex flex-col items-center gap-3">
+              <button
+                onClick={handleUnseal}
+                disabled={isUnsealing}
+                className="relative group cursor-pointer flex flex-col items-center"
+              >
+                {/* 3D Wax Seal Circle Stamp */}
+                <div className="w-16 h-16 rounded-full wax-seal border-2 border-[#C5A059] flex items-center justify-center text-white shadow-xl transform group-hover:scale-110 active:scale-95 transition-all duration-300 pulse-glow">
+                  <span className="font-serif text-lg font-bold text-amber-100 tracking-tighter">
+                    H&amp;A
+                  </span>
+                </div>
+                <span className="text-[11px] font-semibold text-[#8C6A43] tracking-widest uppercase mt-2 group-hover:text-[#5C4033] transition-colors">
+                  {isUnsealing ? 'Membuka Undangan...' : 'Klik Stempel Lilin Untuk Buka'}
+                </span>
+              </button>
+
+              <button
+                onClick={handleUnseal}
+                disabled={isUnsealing}
+                className="inline-flex items-center gap-2 px-8 py-3 bg-[#8C6A43] hover:bg-[#5C4033] text-white text-xs font-semibold tracking-wider uppercase rounded-full shadow-gold transition-all duration-300 transform hover:-translate-y-0.5 active:translate-y-0"
+              >
+                <MailOpen className="w-4 h-4" />
+                <span>Buka Undangan</span>
+              </button>
+            </div>
+
           </div>
         </motion.div>
       )}
