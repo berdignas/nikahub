@@ -1,0 +1,58 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
+/* Custom Vintage Frame styling */
+.arch-frame {
+  border-top-left-radius: 9999px;
+  border-top-right-radius: 9999px;
+  border-bottom-left-radius: 1rem;
+  border-bottom-right-radius: 1rem;
+  overflow: hidden;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #FAF6F0;
+}
+::-webkit-scrollbar-thumb {
+  background: #C5A059;
+  border-radius: 3px;
+}
+
+/* Animations */
+@keyframes spin-slow {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+.pulse-glow {
+  animation: pulse-glow-anim 2s infinite alternate;
+}
+
+@keyframes pulse-glow-anim {
+  0% {
+    box-shadow: 0 0 0 0 rgba(140, 106, 67, 0.4);
+  }
+  100% {
+    box-shadow: 0 0 0 15px rgba(140, 106, 67, 0);
+  }
+}

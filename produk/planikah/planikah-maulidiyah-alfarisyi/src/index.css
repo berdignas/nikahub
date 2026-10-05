@@ -1,0 +1,38 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-[#FAF8F5] text-stone-900;
+  }
+}
+
+/* Custom smooth transitions and luxury borders */
+.luxury-card {
+  @apply bg-white border border-stone-200/80 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.03)] rounded-2xl;
+}
+
+.luxury-card-hover {
+  @apply transition-all duration-300 hover:shadow-[0_12px_32px_-6px_rgba(0,0,0,0.08)] hover:border-stone-300/90;
+}
+
+.badge-gold {
+  @apply bg-stone-900 text-amber-200 font-medium tracking-wider uppercase text-[10px] px-2.5 py-1 rounded-full;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: #F4EFEA;
+}
+::-webkit-scrollbar-thumb {
+  background: #D5C4B1;
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #A48666;
+}

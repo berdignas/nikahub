@@ -81,6 +81,41 @@ export const MAIN_CATEGORY_GROUPS: CategoryGroup[] = [
   }
 ];
 
-// Official Initial Wedding Catalog (Empty by default)
-export const WEDDING_PRODUCTS: WeddingProduct[] = [];
+// Official Initial Wedding Catalog
+export const WEDDING_PRODUCTS: WeddingProduct[] = [
+  {
+    id: 'vintage-01',
+    title: 'Undangan Website Premium Vintage 01',
+    category: 'undangan_digital',
+    categoryLabel: 'Undangan Web',
+    tagline: 'Desain Undangan Aesthetic Vintage & Classic Warm Elegance',
+    price: 149000,
+    originalPrice: 299000,
+    rating: 5.0,
+    reviewCount: 42,
+    image: '/produk/undangan digital/vintage-01/public/images/cover.jpg',
+    gallery: [
+      '/produk/undangan digital/vintage-01/public/images/cover.jpg',
+      '/produk/undangan digital/vintage-01/public/images/groom.jpg',
+      '/produk/undangan digital/vintage-01/public/images/bride.jpg'
+    ],
+    vendorName: 'Punakawan Digital',
+    location: 'Kediri & All Cities',
+    badge: 'Best Seller',
+    featured: true,
+    includes: [
+      'Opening Cover Modal dengan Nama Tamu Dinamis',
+      'Background Music Auto-play dengan Audio Toggle',
+      'Tampilan Foto Mempelai Arch Frame Aesthetic',
+      'Countdown Timer Live Acara Akad & Resepsi',
+      'Fitur RSVP & Buku Tamu Ucapan Real-time',
+      'Amplop Digital Cashless (BCA) & Kirim Hadiah',
+      'Galeri Foto Lightbox & Navigation Bar Floating'
+    ],
+    description: 'Undangan digital berbasis website dengan tema Vintage Classic Aesthetic yang elegan. Dilengkapi berbagai fitur interaktif premium untuk momen spesial pernikahan Anda.',
+    availability: 'ready',
+    liveDemoUrl: './produk/undangan digital/vintage-01/index.html'
+  }
+];
 export const MOCK_ORDERS: BookingOrder[] = [];
+
