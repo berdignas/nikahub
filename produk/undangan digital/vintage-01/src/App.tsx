@@ -15,6 +15,7 @@ import { AudioPlayer } from './components/AudioPlayer';
 import { BottomNav } from './components/BottomNav';
 import { FallingPetals } from './components/FallingPetals';
 import { AnimatedDoves } from './components/AnimatedDoves';
+import { AutoScrollController } from './components/AutoScrollController';
 
 export default function App() {
   const [isCoverOpen, setIsCoverOpen] = useState(true);
@@ -64,8 +65,9 @@ export default function App() {
         <FooterSection />
       </main>
 
-      {/* Floating Controls */}
+      {/* Floating Controls & Auto Scroll */}
       <AudioPlayer autoPlayTrigger={autoPlayAudio} />
+      <AutoScrollController isCoverOpen={isCoverOpen} />
       <BottomNav />
       
     </div>

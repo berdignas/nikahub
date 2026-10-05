@@ -99,5 +99,7 @@ export const INVITATION_DATA = {
     signature: "Habib & Adiba",
     watermark: "Made with ❤ by Punakawan Digital"
   },
-  audio: "./audio/bgm.webm"
+  audio: "./audio/bgm.webm",
+  songTitle: "Christina Perri - A Thousand Years (Acoustic)"
 };
+

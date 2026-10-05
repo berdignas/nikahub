@@ -48,7 +48,7 @@ export const AudioPlayer: React.FC<AudioPlayerProps> = ({ autoPlayTrigger }) => 
       {isPlaying && (
         <div className="hidden sm:flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-full border border-[#E6DCCE] shadow-md text-xs font-semibold text-[#8C6A43] animate-pulse">
           <Music className="w-3.5 h-3.5 text-[#C5A059]" />
-          <span>Ghea Indrawari - 1000x</span>
+          <span>{INVITATION_DATA.songTitle || 'Christina Perri - A Thousand Years'}</span>
           {/* Soundbars Equalizer */}
           <div className="flex items-end gap-0.5 h-3 ml-1">
             <span className="w-1 bg-[#8C6A43] rounded-full animate-eq-1" />
