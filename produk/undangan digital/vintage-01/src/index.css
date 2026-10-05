@@ -30,6 +30,24 @@
   border-radius: 3px;
 }
 
+/* Botanical Sway Animations */
+@keyframes sway-gently {
+  0%, 100% {
+    transform: rotate(0deg) scale(1);
+  }
+  50% {
+    transform: rotate(4deg) scale(1.02);
+  }
+}
+
+.animate-sway {
+  animation: sway-gently 6s ease-in-out infinite;
+}
+
+.animate-sway-reverse {
+  animation: sway-gently 7s ease-in-out infinite reverse;
+}
+
 /* Falling Petals Animations */
 @keyframes fall-and-sway {
   0% {

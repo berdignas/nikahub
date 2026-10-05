@@ -19,10 +19,10 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
     // Trigger festive golden confetti
     try {
       confetti({
-        particleCount: 80,
-        spread: 70,
+        particleCount: 100,
+        spread: 80,
         origin: { y: 0.6 },
-        colors: ['#C5A059', '#8C6A43', '#FFFFFF', '#E8B4B8']
+        colors: ['#C5A059', '#8C6A43', '#FFFFFF', '#E8B4B8', '#A65B49']
       });
     } catch (e) {
       // ignore
@@ -52,20 +52,30 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
             <div className="absolute inset-0 bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/85 to-[#FAF6F0]/70" />
           </div>
 
-          {/* Decorative Corner Floral Ornaments */}
+          {/* Real Scraped Botanical Vector Leaves */}
           <img 
-            src="./images/flower.png" 
-            alt="Floral decor top left" 
-            className="absolute -top-6 -left-6 w-36 md:w-56 opacity-50 pointer-events-none -scale-x-100"
+            src="./images/bunga_top_left.webp" 
+            alt="Botanical top left leaf" 
+            className="absolute top-0 left-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway"
           />
           <img 
-            src="./images/flower.png" 
-            alt="Floral decor bottom right" 
-            className="absolute -bottom-6 -right-6 w-36 md:w-56 opacity-50 pointer-events-none -scale-y-100"
+            src="./images/bunga_top_right.webp" 
+            alt="Botanical top right leaf" 
+            className="absolute top-0 right-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway-reverse"
+          />
+          <img 
+            src="./images/bunga_bottom_left.webp" 
+            alt="Botanical bottom left leaf" 
+            className="absolute bottom-0 left-0 w-28 sm:w-40 md:w-48 opacity-85 pointer-events-none z-10 animate-sway-reverse"
+          />
+          <img 
+            src="./images/bunga_bottom_right.webp" 
+            alt="Botanical bottom right leaf" 
+            className="absolute bottom-0 right-0 w-28 sm:w-40 md:w-48 opacity-85 pointer-events-none z-10 animate-sway"
           />
 
           {/* Envelope Card Container */}
-          <div className="relative z-10 max-w-md w-full mx-4 text-center px-6 py-10 bg-white/80 backdrop-blur-md rounded-3xl border-2 border-[#E6DCCE] shadow-2xl flex flex-col items-center">
+          <div className="relative z-10 max-w-md w-full mx-4 text-center px-6 py-10 bg-white/85 backdrop-blur-md rounded-3xl border-2 border-[#E6DCCE] shadow-2xl flex flex-col items-center">
             
             {/* Arch Photo Frame with Golden Filigree Rim */}
             <div className="relative w-44 h-56 mb-6 arch-frame border-2 border-[#C5A059] p-1 shadow-lg bg-white group">
@@ -82,13 +92,13 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
 
               {/* Floating Butterfly Accent */}
               <div className="absolute -top-3 -right-3 text-[#C5A059] animate-butterfly pointer-events-none">
-                <Heart className="w-6 h-6 fill-[#C5A059] opacity-80" />
+                <Heart className="w-6 h-6 fill-[#C5A059] opacity-90" />
               </div>
             </div>
 
             <span className="text-xs uppercase tracking-[0.35em] text-[#8C6A43] font-bold mb-1 flex items-center gap-1">
               <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
-              <span>Undangan Website Premium</span>
+              <span>Undangan Website Spesial</span>
               <Sparkles className="w-3.5 h-3.5 text-[#C5A059]" />
             </span>
 
