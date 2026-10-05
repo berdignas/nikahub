@@ -23,8 +23,8 @@ export const CoupleSection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           className="mb-10"
         >
           <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1 font-semibold">
@@ -43,10 +43,10 @@ export const CoupleSection: React.FC = () => {
 
         {/* Groom Card */}
         <motion.div
-          initial={{ opacity: 0, y: 55, scale: 0.9 }}
+          initial={{ opacity: 0, y: 55, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           className="w-full p-6 rounded-3xl bg-white/90 backdrop-blur-md border border-[#C2A676]/40 shadow-xl flex flex-col items-center mb-8 relative"
         >
           {/* Arched Portrait Frame */}
@@ -94,7 +94,7 @@ export const CoupleSection: React.FC = () => {
         <motion.div
           initial={{ scale: 0, rotate: -30 }}
           whileInView={{ scale: 1, rotate: 0 }}
-          viewport={{ once: true, amount: 0.4 }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
           transition={{ type: 'spring', damping: 14, stiffness: 100 }}
           className="w-12 h-12 rounded-full bg-[#51583D] border-2 border-[#C2A676] flex items-center justify-center text-[#E8D8BA] shadow-lg my-[-16px] z-20"
         >
@@ -103,10 +103,10 @@ export const CoupleSection: React.FC = () => {
 
         {/* Bride Card */}
         <motion.div
-          initial={{ opacity: 0, y: 55, scale: 0.9 }}
+          initial={{ opacity: 0, y: 55, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           className="w-full p-6 rounded-3xl bg-white/90 backdrop-blur-md border border-[#C2A676]/40 shadow-xl flex flex-col items-center mt-8 relative"
         >
           {/* Arched Portrait Frame */}

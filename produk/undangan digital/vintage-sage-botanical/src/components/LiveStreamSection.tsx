@@ -8,10 +8,10 @@ export const LiveStreamSection: React.FC = () => {
     <section className="relative py-14 px-6 bg-[#FAF9F5] text-center overflow-hidden border-t border-[#C2A676]/20">
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          initial={{ opacity: 0, scale: 0.92, y: 40 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           className="w-full p-6 rounded-3xl bg-gradient-to-br from-[#3D4730] to-[#2A3122] text-[#FAF9F5] border border-[#C2A676]/40 shadow-xl flex flex-col items-center"
         >
           {/* Pulsing Live Badge */}

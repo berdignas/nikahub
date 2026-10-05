@@ -35,8 +35,8 @@ export const GiftSection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 35, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           className="mb-10"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 text-[#51583D] text-xs font-semibold uppercase tracking-widest mb-3">
@@ -59,10 +59,10 @@ export const GiftSection: React.FC = () => {
           {invitationData.bankAccounts.map((card, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 45, scale: 0.9 }}
+              initial={{ opacity: 0, y: 45, scale: 0.92 }}
               whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: true, amount: 0.3 }}
-              transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: idx * 0.15 }}
+              viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+              transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: idx * 0.12 }}
               className="relative w-full rounded-3xl p-6 text-left text-white shadow-xl overflow-hidden border border-[#C2A676]/40"
               style={{
                 backgroundImage: 'url(./assets/bg-bank-1-1-3-1-1.webp)',
@@ -136,8 +136,8 @@ export const GiftSection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 45, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, amount: 0.3 }}
-          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           className="w-full p-6 rounded-3xl bg-[#EEF0E9] border border-[#C2A676]/45 shadow-lg text-left"
         >
           <div className="flex items-center gap-3 mb-3">

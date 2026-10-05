@@ -11,8 +11,8 @@ export const LoveStorySection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 35, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           className="mb-12"
         >
           <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1 font-semibold">
@@ -33,8 +33,8 @@ export const LoveStorySection: React.FC = () => {
               key={idx}
               initial={{ opacity: 0, x: 35 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true, amount: 0.35 }}
-              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: idx * 0.15 }}
+              viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+              transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: idx * 0.12 }}
               className="relative group"
             >
               {/* Timeline Golden Node */}

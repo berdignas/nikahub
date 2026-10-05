@@ -48,8 +48,8 @@ export const CountdownSection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 35, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1] }}
           className="mb-8"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 text-[#51583D] text-xs font-semibold uppercase tracking-widest mb-3">
@@ -68,8 +68,8 @@ export const CountdownSection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, scale: 0.9, y: 40 }}
           whileInView={{ opacity: 1, scale: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.5, ease: [0.16, 1, 0.3, 1], delay: 0.1 }}
           className="grid grid-cols-4 gap-2.5 w-full mb-8"
         >
           {[
@@ -96,8 +96,8 @@ export const CountdownSection: React.FC = () => {
         <motion.div
           initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.35 }}
-          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
+          viewport={{ once: true, margin: "0px 0px -25% 0px", amount: 0.15 }}
+          transition={{ duration: 1.4, ease: [0.16, 1, 0.3, 1], delay: 0.2 }}
         >
           <a
             href={googleCalendarUrl}
