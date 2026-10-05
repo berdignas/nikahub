@@ -25,10 +25,10 @@ export const CoverModal: React.FC<CoverModalProps> = ({ isOpen, onOpen }) => {
   const handleOpenInvitation = () => {
     try {
       confetti({
-        particleCount: 60,
-        spread: 70,
+        particleCount: 70,
+        spread: 80,
         origin: { y: 0.8 },
-        colors: ['#C2A676', '#767D63', '#FAF9F5', '#51583D'],
+        colors: ['#C2A676', '#767D63', '#FAF9F5', '#51583D', '#E8D8BA'],
       });
     } catch {
       // ignore
@@ -44,10 +44,10 @@ export const CoverModal: React.FC<CoverModalProps> = ({ isOpen, onOpen }) => {
           initial={{ y: 0, opacity: 1 }}
           exit={{
             y: '-100%',
-            opacity: 0.9,
+            opacity: 0.95,
             transition: { duration: 1.1, ease: [0.77, 0, 0.175, 1] },
           }}
-          className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#1A1D16]"
+          className="fixed inset-0 z-50 flex items-center justify-center overflow-hidden bg-[#141610]"
         >
           {/* Desktop background layer */}
           <div
@@ -55,28 +55,28 @@ export const CoverModal: React.FC<CoverModalProps> = ({ isOpen, onOpen }) => {
             style={{ backgroundImage: 'url(./assets/VINTAGE-04-LAND.webp)' }}
           />
 
-          {/* Main Card Container */}
-          <div className="relative w-full max-w-[440px] h-full min-h-screen sm:h-[94vh] sm:rounded-[32px] overflow-hidden shadow-2xl flex flex-col justify-between items-center text-center p-6 bg-[#FAF9F5] border border-[#C2A676]/40">
+          {/* Main Mobile Card Container (100dvh for mobile) */}
+          <div className="relative w-full max-w-[440px] h-[100dvh] sm:h-[94vh] sm:rounded-[36px] overflow-hidden shadow-2xl flex flex-col justify-between items-center text-center p-5 sm:p-6 bg-[#FAF9F5] border border-[#C2A676]/40">
             {/* Background Botanical Artwork */}
             <div
-              className="absolute inset-0 bg-cover bg-top opacity-35 pointer-events-none mix-blend-multiply"
+              className="absolute inset-0 bg-cover bg-top opacity-30 pointer-events-none mix-blend-multiply"
               style={{ backgroundImage: 'url(./assets/VINT04-COVER-PII.webp)' }}
             />
 
-            {/* Corner Botanical Foliage & Flowers (Swaying in wind) */}
-            <BotanicalCornerDecor showTop={true} showBottom={true} showMid={true} />
+            {/* Corner Botanical Foliage & Flowers */}
+            <BotanicalCornerDecor showTop={true} showBottom={true} showMid={false} />
 
-            {/* Side Botanical Flanking Vines */}
+            {/* Side Vines */}
             <SideBotanicalVines />
 
             {/* Top Ornamental Badge */}
             <motion.div
-              initial={{ opacity: 0, y: -30, scale: 0.85 }}
+              initial={{ opacity: 0, y: -25, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ type: 'spring', damping: 14, stiffness: 100, delay: 0.2 }}
-              className="relative z-10 pt-6"
+              className="relative z-10 pt-4 sm:pt-6"
             >
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 border border-[#767D63]/30 text-[#51583D] text-xs uppercase tracking-[0.25em] font-medium shadow-sm">
+              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 border border-[#767D63]/30 text-[#51583D] text-[11px] sm:text-xs uppercase tracking-[0.25em] font-semibold shadow-sm backdrop-blur-sm">
                 <Sparkles className="w-3.5 h-3.5 text-[#C2A676]" />
                 <span>Wedding Invitation</span>
                 <Sparkles className="w-3.5 h-3.5 text-[#C2A676]" />
@@ -84,16 +84,16 @@ export const CoverModal: React.FC<CoverModalProps> = ({ isOpen, onOpen }) => {
             </motion.div>
 
             {/* Center Content: Monogram Seal & Names */}
-            <div className="relative z-10 my-auto py-4 flex flex-col items-center max-w-[340px] w-full">
+            <div className="relative z-10 my-auto py-2 sm:py-4 flex flex-col items-center max-w-[340px] w-full">
               {/* Wax Monogram Seal */}
               <motion.div
                 initial={{ scale: 0, rotate: -30 }}
                 animate={{ scale: 1, rotate: 0 }}
                 transition={{ type: 'spring', damping: 12, stiffness: 120, delay: 0.35 }}
-                className="w-20 h-20 rounded-full bg-gradient-to-tr from-[#51583D] via-[#767D63] to-[#8F9878] p-[3px] shadow-xl mb-4 flex items-center justify-center animate-pulse-gold"
+                className="w-18 h-18 sm:w-20 sm:h-20 rounded-full bg-gradient-to-tr from-[#51583D] via-[#767D63] to-[#8F9878] p-[3px] shadow-xl mb-3 sm:mb-4 flex items-center justify-center animate-pulse-gold"
               >
-                <div className="w-full h-full rounded-full border border-[#C2A676]/60 flex flex-col items-center justify-center text-[#FAF9F5] bg-[#3A402B]/85 backdrop-blur-sm">
-                  <span className="font-serif text-2xl font-bold tracking-widest text-[#E8D8BA]">
+                <div className="w-full h-full rounded-full border border-[#C2A676]/60 flex flex-col items-center justify-center text-[#FAF9F5] bg-[#3A402B]/90 backdrop-blur-sm">
+                  <span className="font-serif text-2xl sm:text-3xl font-bold tracking-widest text-[#E8D8BA]">
                     {invitationData.monogram}
                   </span>
                   <div className="w-6 h-[1px] bg-[#C2A676]/60 mt-0.5" />
@@ -105,12 +105,12 @@ export const CoverModal: React.FC<CoverModalProps> = ({ isOpen, onOpen }) => {
                 initial={{ opacity: 0, y: 15 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.7, delay: 0.5 }}
-                className="font-serif italic text-sm text-[#767D63] tracking-widest mb-1"
+                className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-widest mb-1"
               >
                 The Wedding of
               </motion.p>
 
-              {/* Couple Names with Spring Stagger */}
+              {/* Couple Names with Grand Editorial Serif */}
               <motion.h1
                 initial={{ opacity: 0, scale: 0.88, y: 20 }}
                 animate={{ opacity: 1, scale: 1, y: 0 }}
@@ -127,11 +127,14 @@ export const CoverModal: React.FC<CoverModalProps> = ({ isOpen, onOpen }) => {
                 initial={{ opacity: 0, scaleX: 0 }}
                 animate={{ opacity: 1, scaleX: 1 }}
                 transition={{ duration: 0.8, delay: 0.8 }}
-                className="w-40 my-2.5 opacity-80"
+                className="w-36 sm:w-40 my-2 opacity-85"
               >
                 <img
                   src="./assets/G2-ornamen.png"
-                  alt="Divider Ornament"
+                  alt=""
+                  onError={(e) => {
+                    e.currentTarget.style.display = 'none';
+                  }}
                   className="w-full h-auto mx-auto drop-shadow-sm filter brightness-95"
                 />
               </motion.div>
@@ -141,12 +144,12 @@ export const CoverModal: React.FC<CoverModalProps> = ({ isOpen, onOpen }) => {
                 initial={{ opacity: 0, y: 25, scale: 0.95 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
                 transition={{ type: 'spring', damping: 14, stiffness: 100, delay: 0.95 }}
-                className="mt-2 px-5 py-3 rounded-2xl bg-white/90 backdrop-blur-md border border-[#C2A676]/40 shadow-md w-full"
+                className="mt-2 px-5 py-3 rounded-2xl bg-white/90 backdrop-blur-md border border-[#C2A676]/45 shadow-md w-full"
               >
-                <p className="text-[11px] uppercase tracking-[0.2em] text-[#767D63] font-medium">
+                <p className="text-[10px] sm:text-[11px] uppercase tracking-[0.2em] text-[#767D63] font-semibold">
                   Kepada Yth. Bapak/Ibu/Saudara/i:
                 </p>
-                <h3 className="font-serif text-lg font-bold text-[#2C2B29] mt-1 tracking-wide line-clamp-1">
+                <h3 className="font-serif text-lg sm:text-xl font-bold text-[#2C2B29] mt-0.5 tracking-wide line-clamp-1">
                   {guestName}
                 </h3>
                 <p className="text-[10px] text-[#8C867A] italic mt-0.5">
@@ -160,7 +163,7 @@ export const CoverModal: React.FC<CoverModalProps> = ({ isOpen, onOpen }) => {
               initial={{ opacity: 0, y: 30, scale: 0.9 }}
               animate={{ opacity: 1, y: 0, scale: 1 }}
               transition={{ type: 'spring', damping: 14, stiffness: 100, delay: 1.1 }}
-              className="relative z-10 w-full pb-4"
+              className="relative z-10 w-full pb-3 sm:pb-4"
             >
               <button
                 onClick={handleOpenInvitation}

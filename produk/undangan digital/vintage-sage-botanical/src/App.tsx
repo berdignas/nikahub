@@ -110,7 +110,7 @@ export const App: React.FC = () => {
       </aside>
 
       {/* Main Mobile Screen Envelope Container (Max Width 440px) */}
-      <main className="relative w-full max-w-[440px] min-h-screen bg-[#FAF9F5] sm:my-6 sm:rounded-[36px] overflow-hidden shadow-2xl border sm:border-[#C2A676]/40 z-10">
+      <main className="relative w-full max-w-[440px] min-h-screen bg-[#FAF9F5] sm:my-6 sm:rounded-[36px] overflow-hidden shadow-2xl border sm:border-[#C2A676]/40 z-10 pb-20">
         {/* Sections */}
         <HeroSection />
         <AyatSection />
