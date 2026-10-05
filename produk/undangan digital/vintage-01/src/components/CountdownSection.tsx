@@ -5,7 +5,11 @@ import { INVITATION_DATA } from '../data/invitationData';
 import { SectionCard } from './SectionCard';
 
 export const CountdownSection: React.FC = () => {
-  const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=Pernikahan+Habib+%26+Adiba&dates=20261228T010000Z/20261228T070000Z&details=Pernikahan+Habib+Yulianto+%26+Adiba+Putri+Syakila&location=Ds+Pagu,+Wates,+Kediri,+Jawa+Timur`;
+  const googleCalendarUrl = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${encodeURIComponent(
+    `Pernikahan ${INVITATION_DATA.groom.shortName} & ${INVITATION_DATA.bride.shortName}`
+  )}&dates=20261228T010000Z/20261228T070000Z&details=${encodeURIComponent(
+    `Pernikahan ${INVITATION_DATA.groom.name} & ${INVITATION_DATA.bride.name}`
+  )}&location=${encodeURIComponent(INVITATION_DATA.events[0].address)}`;
 
   return (
     <SectionCard id="acara" className="bg-gradient-to-b from-[#FAF6F0] via-white to-[#F5EFE6]">

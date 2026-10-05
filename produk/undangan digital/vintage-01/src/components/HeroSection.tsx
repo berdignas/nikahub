@@ -83,7 +83,7 @@ export const HeroSection: React.FC = () => {
           className="w-20 h-20 rounded-full border-2 border-[#C5A059] flex items-center justify-center mb-5 bg-white/95 shadow-xl relative group mt-2"
         >
           <span className="font-serif text-2xl font-bold text-[#8C6A43] group-hover:scale-110 transition-transform">
-            HA
+            DS
           </span>
           <div className="absolute -inset-1.5 border border-[#8C6A43]/40 rounded-full pointer-events-none animate-spin-slow" />
         </motion.div>
@@ -121,7 +121,7 @@ export const HeroSection: React.FC = () => {
         >
           <img 
             src="./images/cover.jpg" 
-            alt="Habib & Adiba Hero" 
+            alt={`${INVITATION_DATA.groom.shortName} & ${INVITATION_DATA.bride.shortName} Hero`}
             className="w-full h-full object-cover arch-frame group-hover:scale-105 transition-transform duration-700"
           />
           <img 

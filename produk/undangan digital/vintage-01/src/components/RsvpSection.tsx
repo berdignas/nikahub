@@ -13,7 +13,7 @@ const INITIAL_WISHES: (Wish & { likes?: number })[] = [
     id: '1',
     name: 'Budi Sudarta & Keluarga',
     attendance: 'Hadir',
-    message: 'Selamat untuk Habib dan Adiba! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Aamiin ya rabbal alamin.',
+    message: 'Selamat untuk Dimas dan Sarah! Semoga menjadi keluarga yang sakinah, mawaddah, warahmah. Aamiin ya rabbal alamin.',
     timestamp: 'Baru saja',
     likes: 12
   },
@@ -27,9 +27,9 @@ const INITIAL_WISHES: (Wish & { likes?: number })[] = [
   },
   {
     id: '3',
-    name: 'Dimas Kurniawan',
+    name: 'Rian Kurniawan',
     attendance: 'Tidak Hadir',
-    message: 'Selamat saudaraku Habib & Adiba! Mohon maaf belum bisa hadir langsung, doa terbaik selalu menyertai kalian berdua.',
+    message: 'Selamat saudaraku Dimas & Sarah! Mohon maaf belum bisa hadir langsung, doa terbaik selalu menyertai kalian berdua.',
     timestamp: '3 jam yang lalu',
     likes: 5
   }

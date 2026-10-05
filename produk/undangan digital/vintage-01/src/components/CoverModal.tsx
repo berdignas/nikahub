@@ -97,7 +97,7 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
             <div className="relative w-44 h-56 mb-6 arch-frame border-2 border-[#C5A059] p-1 shadow-lg bg-white group">
               <img 
                 src="./images/cover.jpg" 
-                alt="Habib & Adiba" 
+                alt={`${INVITATION_DATA.groom.shortName} & ${INVITATION_DATA.bride.shortName}`}
                 className="w-full h-full object-cover arch-frame group-hover:scale-105 transition-transform duration-700"
               />
               <img 
@@ -148,7 +148,7 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
                 {/* 3D Wax Seal Circle Stamp */}
                 <div className="w-16 h-16 rounded-full wax-seal border-2 border-[#C5A059] flex items-center justify-center text-white shadow-xl transform group-hover:scale-110 active:scale-95 transition-all duration-300 pulse-glow">
                   <span className="font-serif text-lg font-bold text-amber-100 tracking-tighter">
-                    H&amp;A
+                    D&amp;S
                   </span>
                 </div>
                 <span className="text-[11px] font-semibold text-[#8C6A43] tracking-widest uppercase mt-2 group-hover:text-[#5C4033] transition-colors">

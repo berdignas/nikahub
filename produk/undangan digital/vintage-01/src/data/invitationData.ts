@@ -9,22 +9,22 @@ export interface Wish {
 export const INVITATION_DATA = {
   theme: "Vintage 01",
   groom: {
-    name: "Habib Yulianto",
-    shortName: "Habib",
-    father: "Bapak M. Dawam",
-    mother: "(Almh) Ibu Dewi Sudarwati",
-    childRank: "Putra Kedua",
-    instagram: "@Habib",
+    name: "Dimas Prasetyo, S.Kom.",
+    shortName: "Dimas",
+    father: "Bapak Bambang Prasetyo",
+    mother: "Ibu Sri Wahyuni",
+    childRank: "Putra Pertama",
+    instagram: "@dimasprasetyo",
     instagramUrl: "https://instagram.com",
     photo: "./images/groom.jpg"
   },
   bride: {
-    name: "Adiba Putri Syakila",
-    shortName: "Adiba",
-    father: "Bapak Anas Rifai",
-    mother: "Ibu Kholifah",
-    childRank: "Putri Pertama",
-    instagram: "@Adiba",
+    name: "Sarah Anindita, S.Farm.",
+    shortName: "Sarah",
+    father: "Bapak Hendra Gunawan",
+    mother: "Ibu Nurul Hidayati",
+    childRank: "Putri Kedua",
+    instagram: "@sarahanindita",
     instagramUrl: "https://instagram.com",
     photo: "./images/bride.jpg"
   },
@@ -33,7 +33,7 @@ export const INVITATION_DATA = {
   quote: {
     ar: "وَمِنْ آيَاتِهِ أَنْ خَلَقَ لَكُم مِّنْ أَنفُسِكُمْ أَزْوَاجًا لِّتَسْكُنُوا إِلَيْهَا وَجَعَلَ بَيْنَكُم مَّوَدَّةً وَرَحْمَةً ۚ إِنَّ فِي ذَٰلِكَ لَآيَاتٍ لِّقَوْمٍ يَتَفَكَّرُونَ",
     latin: "Dan di antara tanda-tanda (kebesaran)-Nya ialah Dia menciptakan pasangan-pasangan untukmu dari jenismu sendiri, agar kamu cenderung dan merasa tenteram kepadanya, dan Dia menjadikan di antaramu rasa kasih dan sayang. Sesungguhnya pada yang demikian itu benar-benar terdapat tanda-tanda (kebesaran Allah) bagi kaum yang berpikir.",
-    source: "(Qs. Ar-Rum : 21)"
+    source: "(QS. Ar-Rum : 21)"
   },
   events: [
     {
@@ -41,23 +41,23 @@ export const INVITATION_DATA = {
       date: "Senin, 28 Desember 2026",
       time: "Pukul : 08.00 WIB",
       venue: "KEDIAMAN MEMPELAI WANITA",
-      address: "Ds Pagu, Wates, Kediri, Jawa Timur",
-      mapsUrl: "https://maps.google.com"
+      address: "Jl. Taman Melati Indah No. 28, Jakarta Selatan",
+      mapsUrl: "https://maps.google.com/?q=Jakarta"
     },
     {
       title: "Resepsi",
       date: "Senin, 28 Desember 2026",
-      time: "Pukul : 10.00 WIB – Selesai",
-      venue: "KEDIAMAN MEMPELAI WANITA",
-      address: "Ds Pagu, Wates, Kediri, Jawa Timur",
-      mapsUrl: "https://maps.google.com"
+      time: "Pukul : 11.00 WIB – Selesai",
+      venue: "THE VINTAGE BOTANICAL PAVILION",
+      address: "Jl. Harmoni Botanical Garden No. 88, Jakarta Selatan",
+      mapsUrl: "https://maps.google.com/?q=Jakarta"
     }
   ],
   liveStream: {
     date: "Senin, 28 Desember 2026",
     time: "Pukul : 08.00 WIB",
     platform: "Instagram Live",
-    handle: "@Habib",
+    handle: "@dimasprasetyo",
     url: "https://instagram.com"
   },
   loveStory: [
@@ -84,20 +84,20 @@ export const INVITATION_DATA = {
     bank: {
       name: "Bank BCA",
       logo: "./images/bca.webp",
-      accountNumber: "12345678",
-      accountName: "Habib Yulianto"
+      accountNumber: "8830192831",
+      accountName: "DIMAS PRASETYO"
     },
     physicalGift: {
-      recipientName: "Habib Yulianto",
+      recipientName: "Dimas & Sarah",
       phone: "081234567890",
-      address: "Ds Pagu Kec. Wates Kab. Kediri"
+      address: "Jl. Taman Melati Indah No. 28, Jakarta Selatan, 12430"
     }
   },
   closing: {
     greeting: "Wassalamu'alaikum Wr. Wb.",
     message: "Merupakan suatu kehormatan dan kebahagiaan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir dan memberikan doa restu. Atas kehadiran dan doa restunya, kami mengucapkan terima kasih.",
-    signature: "Habib & Adiba",
-    watermark: "Made with ❤ by Punakawan Digital"
+    signature: "Dimas & Sarah",
+    watermark: "Digital Wedding Invitation by NikahHub"
   },
   audio: "./audio/bgm.webm",
   songTitle: "Ed Sheeran - Perfect (Romantic Acoustic)"
