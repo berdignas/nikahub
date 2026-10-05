@@ -25,21 +25,21 @@ export const CoupleSection: React.FC = () => {
           <h2 className="font-serif text-3xl sm:text-4xl font-bold text-[#8C6A43] mb-3 mt-2">
             Assalamu'alaikum Wr. Wb.
           </h2>
-          <p className="text-xs sm:text-sm text-[#66554B] leading-relaxed font-light">
+          <p className="text-xs sm:text-sm text-[#66554B] leading-relaxed font-light px-4">
             Tanpa mengurangi rasa hormat, kami mengundang Bapak/Ibu/Saudara/i serta kerabat sekalian untuk menghadiri acara pernikahan kami.
           </p>
         </motion.div>
 
-        {/* Couple Cards Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-8 items-center">
+        {/* Couple Cards Grid with Center Floating Ampersand */}
+        <div className="relative grid grid-cols-1 md:grid-cols-2 gap-10 md:gap-8 items-stretch">
           
           {/* Groom Card */}
           <motion.div
-            initial={{ opacity: 0, x: -40, scale: 0.95 }}
+            initial={{ opacity: 0, x: -40, scale: 0.94 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, type: "spring", stiffness: 120 }}
-            className="flex flex-col items-center bg-[#FAF6F0]/80 p-8 rounded-3xl border-2 border-[#E6DCCE] shadow-lg hover:border-[#C5A059] hover:shadow-2xl transition-all duration-500 group"
+            transition={{ duration: 0.9, type: "spring", stiffness: 120 }}
+            className="flex flex-col items-center bg-[#FAF6F0]/90 p-8 rounded-3xl border-2 border-[#E6DCCE] shadow-lg hover:border-[#C5A059] hover:shadow-2xl transition-all duration-500 group relative"
           >
             <div className="relative w-48 h-60 arch-frame border-2 border-[#C5A059] p-1 bg-white mb-6 shadow-md">
               <img 
@@ -71,27 +71,27 @@ export const CoupleSection: React.FC = () => {
               href={INVITATION_DATA.groom.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#C5A059] bg-white text-[#8C6A43] hover:bg-[#8C6A43] hover:text-white text-xs font-semibold tracking-wider transition-all shadow-sm active:scale-95"
+              className="mt-auto inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#C5A059] bg-white text-[#8C6A43] hover:bg-[#8C6A43] hover:text-white text-xs font-semibold tracking-wider transition-all shadow-sm active:scale-95"
             >
               <Instagram className="w-4 h-4 text-[#E1306C]" />
               <span>{INVITATION_DATA.groom.instagram}</span>
             </a>
           </motion.div>
 
-          {/* Ampersand Center Decor Badge */}
-          <div className="flex items-center justify-center my-2 md:my-0">
-            <span className="font-script text-5xl sm:text-6xl text-[#C5A059] drop-shadow-md bg-white px-5 py-2 rounded-full border-2 border-[#C5A059] shadow-xl animate-pulse">
+          {/* Center Ampersand Connector for Desktop */}
+          <div className="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none z-10">
+            <span className="w-14 h-14 rounded-full bg-white border-2 border-[#C5A059] flex items-center justify-center font-script text-4xl text-[#C5A059] shadow-xl">
               &amp;
             </span>
           </div>
 
           {/* Bride Card */}
           <motion.div
-            initial={{ opacity: 0, x: 40, scale: 0.95 }}
+            initial={{ opacity: 0, x: 40, scale: 0.94 }}
             whileInView={{ opacity: 1, x: 0, scale: 1 }}
             viewport={{ once: true }}
-            transition={{ duration: 0.8, type: "spring", stiffness: 120 }}
-            className="flex flex-col items-center bg-[#FAF6F0]/80 p-8 rounded-3xl border-2 border-[#E6DCCE] shadow-lg hover:border-[#C5A059] hover:shadow-2xl transition-all duration-500 group"
+            transition={{ duration: 0.9, type: "spring", stiffness: 120 }}
+            className="flex flex-col items-center bg-[#FAF6F0]/90 p-8 rounded-3xl border-2 border-[#E6DCCE] shadow-lg hover:border-[#C5A059] hover:shadow-2xl transition-all duration-500 group relative"
           >
             <div className="relative w-48 h-60 arch-frame border-2 border-[#C5A059] p-1 bg-white mb-6 shadow-md">
               <img 
@@ -123,7 +123,7 @@ export const CoupleSection: React.FC = () => {
               href={INVITATION_DATA.bride.instagramUrl}
               target="_blank"
               rel="noopener noreferrer"
-              className="inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#C5A059] bg-white text-[#8C6A43] hover:bg-[#8C6A43] hover:text-white text-xs font-semibold tracking-wider transition-all shadow-sm active:scale-95"
+              className="mt-auto inline-flex items-center gap-2 px-6 py-2.5 rounded-full border border-[#C5A059] bg-white text-[#8C6A43] hover:bg-[#8C6A43] hover:text-white text-xs font-semibold tracking-wider transition-all shadow-sm active:scale-95"
             >
               <Instagram className="w-4 h-4 text-[#E1306C]" />
               <span>{INVITATION_DATA.bride.instagram}</span>

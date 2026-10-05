@@ -19,7 +19,7 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
     // Trigger festive golden confetti
     try {
       confetti({
-        particleCount: 100,
+        particleCount: 120,
         spread: 80,
         origin: { y: 0.6 },
         colors: ['#C5A059', '#8C6A43', '#FFFFFF', '#E8B4B8', '#A65B49']
@@ -30,7 +30,7 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
 
     setTimeout(() => {
       onOpen();
-    }, 600);
+    }, 700);
   };
 
   return (
@@ -38,45 +38,61 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
       {isOpen && (
         <motion.div
           initial={{ opacity: 1 }}
-          exit={{ opacity: 0, y: '-100%', scale: 0.95 }}
-          transition={{ duration: 0.9, ease: [0.77, 0, 0.175, 1] }}
+          exit={{ opacity: 0, scale: 1.08, filter: 'blur(8px)' }}
+          transition={{ duration: 1.1, ease: [0.77, 0, 0.175, 1] }}
           className="fixed inset-0 z-50 flex items-center justify-center bg-[#FAF6F0] overflow-hidden"
         >
-          {/* Background image overlay */}
+          {/* Background image overlay with soft ambient glow */}
           <div className="absolute inset-0 z-0">
             <img 
-              src={INVITATION_DATA.groom.photo} 
+              src="./images/groom.jpg" 
               alt="Vintage background" 
               className="w-full h-full object-cover object-center filter blur-md opacity-25 scale-105"
             />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/85 to-[#FAF6F0]/70" />
+            <div className="absolute inset-0 bg-gradient-to-t from-[#FAF6F0] via-[#FAF6F0]/85 to-[#FAF6F0]/75" />
           </div>
 
-          {/* Real Scraped Botanical Vector Leaves */}
-          <img 
-            src="./images/bunga_top_left.webp" 
-            alt="Botanical top left leaf" 
-            className="absolute top-0 left-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway-tl"
+          {/* Clean High-Resolution Floral Corners (No Cutoffs) */}
+          <motion.img 
+            initial={{ opacity: 0, scale: 0.8, x: -20, y: -20 }}
+            animate={{ opacity: 0.95, scale: 1, x: 0, y: 0 }}
+            transition={{ duration: 1.2, ease: "easeOut" }}
+            src="./images/bunga_top_left_clean.webp" 
+            alt="Botanical top left" 
+            className="absolute -top-2 -left-2 w-36 sm:w-52 md:w-64 opacity-95 pointer-events-none z-10 animate-sway-tl"
           />
-          <img 
-            src="./images/bunga_top_right.webp" 
-            alt="Botanical top right leaf" 
-            className="absolute top-0 right-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway-tr"
+          <motion.img 
+            initial={{ opacity: 0, scale: 0.8, x: 20, y: -20 }}
+            animate={{ opacity: 0.95, scale: 1, x: 0, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.1, ease: "easeOut" }}
+            src="./images/bunga_top_right_clean.webp" 
+            alt="Botanical top right" 
+            className="absolute -top-2 -right-2 w-36 sm:w-52 md:w-64 opacity-95 pointer-events-none z-10 animate-sway-tr"
           />
-          <img 
-            src="./images/bunga_bottom_left.webp" 
-            alt="Botanical bottom left leaf" 
-            className="absolute bottom-0 left-0 w-28 sm:w-40 md:w-48 opacity-85 pointer-events-none z-10 animate-sway-bl"
+          <motion.img 
+            initial={{ opacity: 0, scale: 0.8, x: -20, y: 20 }}
+            animate={{ opacity: 0.9, scale: 1, x: 0, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.2, ease: "easeOut" }}
+            src="./images/bunga_bottom_left_clean.webp" 
+            alt="Botanical bottom left" 
+            className="absolute -bottom-2 -left-2 w-32 sm:w-44 md:w-56 opacity-90 pointer-events-none z-10 animate-sway-bl"
           />
-          <img 
-            src="./images/bunga_bottom_right.webp" 
-            alt="Botanical bottom right leaf" 
-            className="absolute bottom-0 right-0 w-28 sm:w-40 md:w-48 opacity-85 pointer-events-none z-10 animate-sway-br"
+          <motion.img 
+            initial={{ opacity: 0, scale: 0.8, x: 20, y: 20 }}
+            animate={{ opacity: 0.9, scale: 1, x: 0, y: 0 }}
+            transition={{ duration: 1.2, delay: 0.3, ease: "easeOut" }}
+            src="./images/bunga_bottom_right_clean.webp" 
+            alt="Botanical bottom right" 
+            className="absolute -bottom-2 -right-2 w-32 sm:w-44 md:w-56 opacity-90 pointer-events-none z-10 animate-sway-br"
           />
 
           {/* Envelope Card Container */}
-          <div className="relative z-10 max-w-md w-full mx-4 text-center px-6 py-10 bg-white/85 backdrop-blur-md rounded-3xl border-2 border-[#E6DCCE] shadow-2xl flex flex-col items-center">
-            
+          <motion.div 
+            initial={{ opacity: 0, y: 30, scale: 0.92 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{ duration: 1, delay: 0.2, ease: "easeOut" }}
+            className="relative z-10 max-w-md w-full mx-4 text-center px-6 py-10 bg-white/90 backdrop-blur-md rounded-3xl border-2 border-[#E6DCCE] shadow-2xl flex flex-col items-center"
+          >
             {/* Arch Photo Frame with Golden Filigree Rim */}
             <div className="relative w-44 h-56 mb-6 arch-frame border-2 border-[#C5A059] p-1 shadow-lg bg-white group">
               <img 
@@ -90,7 +106,7 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
                 className="absolute inset-0 w-full h-full object-contain pointer-events-none opacity-85"
               />
 
-              {/* Floating Butterfly Accent */}
+              {/* Floating Heart Accent */}
               <div className="absolute -top-3 -right-3 text-[#C5A059] animate-butterfly pointer-events-none">
                 <Heart className="w-6 h-6 fill-[#C5A059] opacity-90" />
               </div>
@@ -150,7 +166,7 @@ export const CoverModal: React.FC<CoverModalProps> = ({ guestName, isOpen, onOpe
               </button>
             </div>
 
-          </div>
+          </motion.div>
         </motion.div>
       )}
     </AnimatePresence>
