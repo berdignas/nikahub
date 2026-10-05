@@ -100,6 +100,5 @@ export const INVITATION_DATA = {
     watermark: "Made with ❤ by Punakawan Digital"
   },
   audio: "./audio/bgm.webm",
-  songTitle: "Christina Perri - A Thousand Years (Acoustic)"
+  songTitle: "Ed Sheeran - Perfect (Romantic Acoustic)"
 };
-
