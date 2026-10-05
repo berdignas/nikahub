@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build && cd \"produk/foto bersama/foto-bersama-maulidiyah-alfarisyi\" && npm install && npx vite build --outDir \"../../../dist/foto-maulidiyah-alfarisyi\" --emptyOutDir false && cd \"../../../produk/undangan digital/vintage-01\" && npm install && npx vite build --outDir \"../../../dist/undangan-vintage-01\" --emptyOutDir false",
+    "build": "tsc && vite build && cd \"produk/foto bersama/foto-bersama-maulidiyah-alfarisyi\" && npm install && npx vite build --outDir \"../../../dist/foto-maulidiyah-alfarisyi\" --emptyOutDir false && cd \"../../../produk/undangan digital/vintage-01\" && npm install && npx vite build --outDir \"../../../dist/undangan-vintage-01\" --emptyOutDir false && cd \"../../..\" && (python3 copy_all_dist_paths.py || python copy_all_dist_paths.py)",
     "preview": "vite preview"
   },
   "dependencies": {
