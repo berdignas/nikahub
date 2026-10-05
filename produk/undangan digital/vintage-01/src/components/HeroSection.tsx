@@ -3,6 +3,7 @@ import { motion } from 'framer-motion';
 import { Sparkles, Heart, Calendar, Clock, MapPin, PlusCircle } from 'lucide-react';
 import { INVITATION_DATA } from '../data/invitationData';
 import { BotanicalDivider } from './BotanicalFrame';
+import { GoldenLanterns } from './GoldenLanterns';
 
 export const HeroSection: React.FC = () => {
   const [timeLeft, setTimeLeft] = useState({
@@ -37,26 +38,20 @@ export const HeroSection: React.FC = () => {
   return (
     <section id="home" className="relative min-h-screen flex flex-col items-center justify-center pt-16 pb-20 px-4 text-center overflow-hidden bg-gradient-to-b from-[#FAF6F0] via-white to-[#F5EFE6]">
       
+      {/* Hanging Golden Vintage Moroccan Lanterns */}
+      <GoldenLanterns />
+
       {/* Top Left & Top Right Botanical Wreaths */}
       <img
         src="./images/bunga_top_left.webp"
         alt="Top Left Leaf"
-        className="absolute top-0 left-0 w-36 sm:w-52 md:w-64 opacity-90 pointer-events-none z-10 animate-sway-tl"
+        className="absolute top-0 left-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway-tl"
       />
       <img
         src="./images/bunga_top_right.webp"
         alt="Top Right Leaf"
-        className="absolute top-0 right-0 w-36 sm:w-52 md:w-64 opacity-90 pointer-events-none z-10 animate-sway-tr"
+        className="absolute top-0 right-0 w-32 sm:w-48 md:w-56 opacity-85 pointer-events-none z-10 animate-sway-tr"
       />
-
-      {/* Center Top Floral Crown Accent */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 z-10 pointer-events-none">
-        <img
-          src="./images/bunga_leaf_center.webp"
-          alt="Top Center Floral Crown"
-          className="w-28 sm:w-36 opacity-85 filter drop-shadow-sm animate-pulse"
-        />
-      </div>
 
       <motion.div 
         initial={{ opacity: 0 }}
@@ -69,7 +64,7 @@ export const HeroSection: React.FC = () => {
           initial={{ scale: 0, rotate: -180 }}
           animate={{ scale: 1, rotate: 0 }}
           transition={{ type: "spring", stiffness: 200, damping: 15, delay: 0.2 }}
-          className="w-20 h-20 rounded-full border-2 border-[#C5A059] flex items-center justify-center mb-6 bg-white/90 shadow-xl relative group"
+          className="w-20 h-20 rounded-full border-2 border-[#C5A059] flex items-center justify-center mb-6 bg-white/90 shadow-xl relative group mt-4"
         >
           <span className="font-serif text-2xl font-bold text-[#8C6A43] group-hover:scale-110 transition-transform">
             HA
@@ -117,7 +112,7 @@ export const HeroSection: React.FC = () => {
             className="absolute inset-0 w-full h-full object-contain pointer-events-none opacity-90"
           />
 
-          {/* Floating Butterfly Badge */}
+          {/* Floating Heart Badge */}
           <div className="absolute -top-4 -right-4 bg-white/90 p-2.5 rounded-full border border-[#C5A059] shadow-lg animate-butterfly">
             <Heart className="w-5 h-5 text-red-500 fill-red-500" />
           </div>
@@ -128,7 +123,7 @@ export const HeroSection: React.FC = () => {
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ delay: 0.8 }}
-          className="text-xs sm:text-sm text-[#66554B] max-w-md italic mb-6 px-4"
+          className="text-xs sm:text-sm text-[#66554B] max-w-md italic mb-6 px-4 font-light"
         >
           Kami berharap Anda menjadi bagian dari hari bahagia &amp; momen istimewa kami.
         </motion.p>
@@ -177,12 +172,12 @@ export const HeroSection: React.FC = () => {
       <img
         src="./images/bunga_bottom_left.webp"
         alt="Bottom Left Leaf"
-        className="absolute bottom-0 left-0 w-32 sm:w-48 md:w-56 opacity-90 pointer-events-none z-10 animate-sway-bl"
+        className="absolute bottom-0 left-0 w-28 sm:w-40 md:w-48 opacity-80 pointer-events-none z-10 animate-sway-bl"
       />
       <img
         src="./images/bunga_bottom_right.webp"
         alt="Bottom Right Leaf"
-        className="absolute bottom-0 right-0 w-32 sm:w-48 md:w-56 opacity-90 pointer-events-none z-10 animate-sway-br"
+        className="absolute bottom-0 right-0 w-28 sm:w-40 md:w-48 opacity-80 pointer-events-none z-10 animate-sway-br"
       />
     </section>
   );

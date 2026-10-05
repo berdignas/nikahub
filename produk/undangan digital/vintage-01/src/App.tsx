@@ -15,7 +15,8 @@ import { AudioPlayer } from './components/AudioPlayer';
 import { BottomNav } from './components/BottomNav';
 import { FallingPetals } from './components/FallingPetals';
 import { AnimatedDoves } from './components/AnimatedDoves';
-import { AnimatedButterflies } from './components/AnimatedButterflies';
+import { GoldenButterflies } from './components/GoldenButterflies';
+import { GoldenSparkles } from './components/GoldenSparkles';
 import { AutoScrollController } from './components/AutoScrollController';
 
 export default function App() {
@@ -40,11 +41,12 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#FAF6F0] text-[#3D312A] relative selection:bg-[#8C6A43] selection:text-white pb-16 overflow-x-hidden">
       
-      {/* Background Animated Elements (Petals, Butterflies & Doves of Love) */}
+      {/* Background Animated Elements (Petals, Golden Butterflies, Sparkles & Doves) */}
       <FallingPetals />
+      <GoldenSparkles />
       {!isCoverOpen && (
         <>
-          <AnimatedButterflies />
+          <GoldenButterflies />
           <AnimatedDoves />
         </>
       )}
