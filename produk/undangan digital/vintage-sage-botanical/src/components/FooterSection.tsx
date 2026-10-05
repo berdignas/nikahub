@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Heart } from 'lucide-react';
 import { invitationData } from '../data/invitationData';
+import { BotanicalCornerDecor } from './BotanicalCornerDecor';
 
 export const FooterSection: React.FC = () => {
   return (
@@ -12,13 +13,16 @@ export const FooterSection: React.FC = () => {
         style={{ backgroundImage: 'url(./assets/VINT04-COVER-PII.webp)' }}
       />
 
+      {/* Swaying Botanical Corners */}
+      <BotanicalCornerDecor showTop={true} showBottom={true} showMid={false} />
+
       <div className="relative z-10 max-w-[380px] mx-auto flex flex-col items-center">
         {/* Arched Closing Photo */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          whileInView={{ opacity: 1, scale: 1 }}
+          initial={{ opacity: 0, scale: 0.88, y: 20 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ type: 'spring', damping: 14, stiffness: 100 }}
           className="relative w-40 h-52 rounded-t-[90px] rounded-b-2xl p-1.5 bg-gradient-to-b from-[#C2A676] via-[#767D63] to-[#51583D] shadow-xl mb-6 overflow-hidden"
         >
           <div className="w-full h-full rounded-t-[84px] rounded-b-xl overflow-hidden bg-[#FAF9F5]">
@@ -36,7 +40,7 @@ export const FooterSection: React.FC = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
-          className="text-xs text-[#686561] leading-relaxed mb-6 font-light max-w-[320px]"
+          className="text-xs text-[#686561] leading-relaxed mb-4 font-light max-w-[320px]"
         >
           Merupakan suatu kehormatan dan kebahagiaan bagi kami, apabila Bapak/Ibu/Saudara/i berkenan hadir serta memberikan doa restu kepada kami.
         </motion.p>
@@ -56,7 +60,7 @@ export const FooterSection: React.FC = () => {
           <p className="font-serif italic text-xs text-[#767D63] tracking-widest uppercase mb-1">
             Kami yang berbahagia,
           </p>
-          <h3 className="font-serif text-3xl font-bold text-[#2C2B29] tracking-wide mb-3">
+          <h3 className="font-serif text-3xl font-bold text-[#2C2B29] tracking-wide mb-2">
             {invitationData.groom.name} & {invitationData.bride.name}
           </h3>
           <p className="text-xs font-serif text-[#51583D] font-medium">

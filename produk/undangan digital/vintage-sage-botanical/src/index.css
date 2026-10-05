@@ -2,6 +2,13 @@
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+  html {
+    scroll-behavior: smooth;
+    font-family: 'Montserrat', sans-serif;
+  }
+}
+
 :root {
   color-scheme: light;
   --sage-primary: #767D63;
@@ -26,57 +33,211 @@
   background: #767D63;
 }
 
-html {
-  scroll-behavior: smooth;
-}
-
-body {
-  margin: 0;
-  padding: 0;
-  background-color: #1A1D16;
-  font-family: 'Montserrat', sans-serif;
-  color: #3D3B38;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-/* Botanical Sway Animations */
-@keyframes sway-slow {
+/* VISIBLE Wind Sway Animations with proper pivot origins */
+@keyframes sway-top-left {
   0%, 100% {
     transform: rotate(0deg) translateY(0px) scale(1);
   }
-  50% {
-    transform: rotate(3deg) translateY(-8px) scale(1.02);
+  35% {
+    transform: rotate(6deg) translateY(4px) scale(1.03);
+  }
+  70% {
+    transform: rotate(-3deg) translateY(-2px) scale(0.98);
   }
 }
 
-@keyframes sway-reverse {
+@keyframes sway-top-right {
   0%, 100% {
     transform: rotate(0deg) translateY(0px) scale(1);
   }
-  50% {
-    transform: rotate(-3.5deg) translateY(-6px) scale(1.01);
+  40% {
+    transform: rotate(-6deg) translateY(4px) scale(1.03);
+  }
+  75% {
+    transform: rotate(3deg) translateY(-2px) scale(0.98);
   }
 }
 
-@keyframes float-gentle {
+@keyframes sway-bottom-left {
   0%, 100% {
-    transform: translateY(0px) scale(1);
+    transform: rotate(0deg) translateY(0px) scale(1);
   }
-  50% {
-    transform: translateY(-10px) scale(1.02);
+  30% {
+    transform: rotate(-5deg) translateY(-4px) scale(1.02);
+  }
+  65% {
+    transform: rotate(4deg) translateY(2px) scale(0.98);
   }
 }
 
-@keyframes pulse-gold {
+@keyframes sway-bottom-right {
   0%, 100% {
-    box-shadow: 0 0 0 0 rgba(194, 166, 118, 0.4);
+    transform: rotate(0deg) translateY(0px) scale(1);
   }
-  50% {
-    box-shadow: 0 0 0 12px rgba(194, 166, 118, 0);
+  45% {
+    transform: rotate(5deg) translateY(-4px) scale(1.02);
+  }
+  80% {
+    transform: rotate(-4deg) translateY(2px) scale(0.98);
   }
 }
 
+.animate-sway-tl {
+  transform-origin: top left;
+  animation: sway-top-left 5s ease-in-out infinite;
+}
+
+.animate-sway-tr {
+  transform-origin: top right;
+  animation: sway-top-right 5.5s ease-in-out infinite;
+}
+
+.animate-sway-bl {
+  transform-origin: bottom left;
+  animation: sway-bottom-left 5.2s ease-in-out infinite;
+}
+
+.animate-sway-br {
+  transform-origin: bottom right;
+  animation: sway-bottom-right 5.7s ease-in-out infinite;
+}
+
+/* Flying Birds / Doves Animations */
+@keyframes dove-fly-right {
+  0% {
+    transform: translateX(-25vw) translateY(0vh) scale(0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateX(125vw) translateY(-18vh) scale(1.05);
+    opacity: 0;
+  }
+}
+
+@keyframes dove-fly-left {
+  0% {
+    transform: translateX(125vw) translateY(0vh) scale(-0.7, 0.7);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.95;
+  }
+  85% {
+    opacity: 0.95;
+  }
+  100% {
+    transform: translateX(-25vw) translateY(-12vh) scale(-1.05, 1.05);
+    opacity: 0;
+  }
+}
+
+.animate-dove-right {
+  animation: dove-fly-right 16s ease-in-out infinite;
+}
+
+.animate-dove-left {
+  animation: dove-fly-left 20s ease-in-out infinite 6s;
+}
+
+/* Wing Fluttering */
+@keyframes wing-flap {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(-35deg);
+  }
+}
+
+.animate-wing {
+  transform-origin: bottom right;
+  animation: wing-flap 0.35s ease-in-out infinite alternate;
+}
+
+/* Butterfly 3D Flight */
+@keyframes butterfly-float-1 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(5deg) scale(1);
+  }
+  25% {
+    transform: translate(45px, -35px) rotate(15deg) scale(1.05);
+  }
+  50% {
+    transform: translate(20px, -70px) rotate(-8deg) scale(0.95);
+  }
+  75% {
+    transform: translate(-30px, -40px) rotate(-15deg) scale(1.02);
+  }
+}
+
+@keyframes butterfly-float-2 {
+  0%, 100% {
+    transform: translate(0, 0) rotate(-10deg) scale(0.95);
+  }
+  30% {
+    transform: translate(-40px, 30px) rotate(-20deg) scale(1.05);
+  }
+  60% {
+    transform: translate(-20px, 60px) rotate(8deg) scale(1);
+  }
+  85% {
+    transform: translate(25px, 25px) rotate(12deg) scale(0.9);
+  }
+}
+
+.animate-butterfly-1 {
+  animation: butterfly-float-1 9s ease-in-out infinite;
+}
+
+.animate-butterfly-2 {
+  animation: butterfly-float-2 11s ease-in-out infinite 2s;
+}
+
+/* Falling Petals */
+@keyframes fall-and-sway {
+  0% {
+    transform: translateY(-8vh) rotate(0deg) translateX(0px);
+    opacity: 0;
+  }
+  15% {
+    opacity: 0.9;
+  }
+  85% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateY(108vh) rotate(420deg) translateX(60px);
+    opacity: 0;
+  }
+}
+
+.animate-petal {
+  animation: fall-and-sway 9s linear infinite;
+}
+
+/* Golden Sparkles Floating */
+@keyframes sparkle-float {
+  0%, 100% {
+    transform: translateY(0px) scale(0.8);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translateY(-20px) scale(1.2);
+    opacity: 0.9;
+  }
+}
+
+.animate-sparkle {
+  animation: sparkle-float 4s ease-in-out infinite;
+}
+
+/* Slow spin for music vinyl */
 @keyframes spin-slow {
   from {
     transform: rotate(0deg);
@@ -86,6 +247,11 @@ body {
   }
 }
 
+.animate-spin-slow {
+  animation: spin-slow 12s linear infinite;
+}
+
+/* Shimmer Gold */
 @keyframes shimmer-gold {
   0% {
     background-position: -200% 0;
@@ -95,26 +261,6 @@ body {
   }
 }
 
-.animate-sway-slow {
-  animation: sway-slow 7s ease-in-out infinite;
-}
-
-.animate-sway-reverse {
-  animation: sway-reverse 8s ease-in-out infinite;
-}
-
-.animate-float-gentle {
-  animation: float-gentle 5s ease-in-out infinite;
-}
-
-.animate-pulse-gold {
-  animation: pulse-gold 2.5s infinite;
-}
-
-.animate-spin-slow {
-  animation: spin-slow 14s linear infinite;
-}
-
 .gold-shimmer-text {
   background: linear-gradient(90deg, #9C8157 0%, #E8D8BA 50%, #9C8157 100%);
   background-size: 200% auto;
@@ -122,31 +268,4 @@ body {
   -webkit-background-clip: text;
   background-clip: text;
   animation: shimmer-gold 6s linear infinite;
-}
-
-/* Vintage Arch Frame Mask */
-.arch-frame {
-  border-radius: 180px 180px 16px 16px;
-  overflow: hidden;
-}
-
-.arch-top-only {
-  border-radius: 200px 200px 0 0;
-}
-
-/* Paper Grain Texture Filter */
-.vintage-paper-bg {
-  background-color: #FAF9F5;
-  background-image: radial-gradient(#767D63 0.6px, transparent 0.6px), radial-gradient(#C2A676 0.6px, #FAF9F5 0.6px);
-  background-size: 24px 24px;
-  background-position: 0 0, 12px 12px;
-  background-opacity: 0.03;
-}
-
-/* Subtle card styling */
-.sage-card {
-  background: rgba(255, 255, 255, 0.94);
-  backdrop-filter: blur(8px);
-  border: 1px solid rgba(194, 166, 118, 0.35);
-  box-shadow: 0 10px 30px -5px rgba(81, 88, 61, 0.08);
 }

@@ -2,6 +2,8 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { Instagram, Heart } from 'lucide-react';
 import { invitationData } from '../data/invitationData';
+import { BotanicalCornerDecor } from './BotanicalCornerDecor';
+import { SideBotanicalVines } from './SideBotanicalVines';
 
 export const CoupleSection: React.FC = () => {
   return (
@@ -12,23 +14,27 @@ export const CoupleSection: React.FC = () => {
         style={{ backgroundImage: 'url(./assets/VINT04-COUPLED-PII.webp)' }}
       />
 
+      {/* Swaying Foliage Corners */}
+      <BotanicalCornerDecor showTop={false} showBottom={true} showMid={true} />
+      <SideBotanicalVines />
+
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 25, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ type: 'spring', damping: 14, stiffness: 100 }}
           className="mb-10"
         >
-          <span className="font-serif italic text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1">
+          <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1">
             Bride & Groom
           </span>
-          <h2 className="font-serif text-3xl font-semibold text-[#2C2B29] tracking-wide mb-3">
+          <h2 className="font-serif text-3xl font-semibold text-[#2C2B29] tracking-wide mb-2">
             Mempelai Bahagia
           </h2>
           <p className="text-xs text-[#686561] leading-relaxed max-w-[320px] mx-auto">
-            Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i untuk menghadiri hari bahagia kami:
+            Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan. Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i:
           </p>
           <div className="w-28 my-3 mx-auto opacity-75">
             <img src="./assets/G2-ornamen.png" alt="Divider" className="w-full h-auto" />
@@ -37,11 +43,11 @@ export const CoupleSection: React.FC = () => {
 
         {/* Groom Card */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.15 }}
-          className="w-full p-6 rounded-3xl bg-white/85 backdrop-blur-md border border-[#C2A676]/40 shadow-xl flex flex-col items-center mb-8"
+          transition={{ type: 'spring', damping: 14, stiffness: 90, delay: 0.15 }}
+          className="w-full p-6 rounded-3xl bg-white/90 backdrop-blur-md border border-[#C2A676]/40 shadow-xl flex flex-col items-center mb-8 relative"
         >
           {/* Arched Portrait Frame */}
           <div className="relative w-44 h-56 rounded-t-[100px] rounded-b-2xl p-1.5 bg-gradient-to-b from-[#C2A676] via-[#767D63] to-[#51583D] shadow-lg mb-5">
@@ -97,11 +103,11 @@ export const CoupleSection: React.FC = () => {
 
         {/* Bride Card */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.3 }}
-          className="w-full p-6 rounded-3xl bg-white/85 backdrop-blur-md border border-[#C2A676]/40 shadow-xl flex flex-col items-center mt-8"
+          transition={{ type: 'spring', damping: 14, stiffness: 90, delay: 0.3 }}
+          className="w-full p-6 rounded-3xl bg-white/90 backdrop-blur-md border border-[#C2A676]/40 shadow-xl flex flex-col items-center mt-8 relative"
         >
           {/* Arched Portrait Frame */}
           <div className="relative w-44 h-56 rounded-t-[100px] rounded-b-2xl p-1.5 bg-gradient-to-b from-[#C2A676] via-[#767D63] to-[#51583D] shadow-lg mb-5">

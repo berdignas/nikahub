@@ -2,6 +2,7 @@ import React from 'react';
 import { motion } from 'framer-motion';
 import { MapPin, Calendar, Clock, Navigation } from 'lucide-react';
 import { invitationData } from '../data/invitationData';
+import { BotanicalCornerDecor } from './BotanicalCornerDecor';
 
 export const EventSection: React.FC = () => {
   return (
@@ -12,16 +13,19 @@ export const EventSection: React.FC = () => {
         style={{ backgroundImage: 'url(./assets/VINT04-COVER-PII.webp)' }}
       />
 
+      {/* Swaying Foliage Corners */}
+      <BotanicalCornerDecor showTop={true} showBottom={true} showMid={false} />
+
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 25, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          transition={{ type: 'spring', damping: 14, stiffness: 100 }}
           className="mb-10"
         >
-          <span className="font-serif italic text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1">
+          <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1">
             Wedding Schedule
           </span>
           <h2 className="font-serif text-3xl font-semibold text-[#2C2B29] tracking-wide mb-2">
@@ -34,10 +38,10 @@ export const EventSection: React.FC = () => {
 
         {/* Akad Nikah Card */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.15 }}
+          transition={{ type: 'spring', damping: 14, stiffness: 90, delay: 0.15 }}
           className="w-full p-6 rounded-3xl bg-[#FAF9F5] border border-[#C2A676]/45 shadow-xl flex flex-col items-center mb-8 relative overflow-hidden"
         >
           {/* Top gold bar */}
@@ -82,10 +86,10 @@ export const EventSection: React.FC = () => {
 
         {/* Resepsi Pernikahan Card */}
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.3 }}
+          transition={{ type: 'spring', damping: 14, stiffness: 90, delay: 0.3 }}
           className="w-full p-6 rounded-3xl bg-[#FAF9F5] border border-[#C2A676]/45 shadow-xl flex flex-col items-center relative overflow-hidden"
         >
           {/* Top gold bar */}

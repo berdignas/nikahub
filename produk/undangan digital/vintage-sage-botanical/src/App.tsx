@@ -2,6 +2,10 @@ import React, { useState, useEffect } from 'react';
 import Lenis from 'lenis';
 import { CoverModal } from './components/CoverModal';
 import { BotanicalLeaves } from './components/BotanicalLeaves';
+import { AnimatedDoves } from './components/AnimatedDoves';
+import { AnimatedButterflies } from './components/AnimatedButterflies';
+import { GoldenSparkles } from './components/GoldenSparkles';
+import { FallingPetals } from './components/FallingPetals';
 import { HeroSection } from './components/HeroSection';
 import { AyatSection } from './components/AyatSection';
 import { CoupleSection } from './components/CoupleSection';
@@ -50,6 +54,19 @@ export const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-[#141610] flex justify-center items-center relative overflow-x-hidden">
+      {/* Global Animated Flying Doves (Burung Terbang) */}
+      <AnimatedDoves />
+
+      {/* Global Animated Butterflies (Kupu-kupu) */}
+      <AnimatedButterflies />
+
+      {/* Global Golden Sparkles & Floating Particles */}
+      <GoldenSparkles />
+
+      {/* Global Falling Petals & Leaves */}
+      <FallingPetals />
+      <BotanicalLeaves />
+
       {/* Desktop Background Landscape Canvas */}
       <div
         className="fixed inset-0 hidden lg:block bg-cover bg-center pointer-events-none opacity-45"
@@ -93,9 +110,6 @@ export const App: React.FC = () => {
 
       {/* Main Mobile Screen Envelope Container (Max Width 440px) */}
       <main className="relative w-full max-w-[440px] min-h-screen bg-[#FAF9F5] sm:my-6 sm:rounded-[36px] overflow-hidden shadow-2xl border sm:border-[#C2A676]/40 z-10">
-        {/* Floating Leaves Animation */}
-        <BotanicalLeaves />
-
         {/* Sections */}
         <HeroSection />
         <AyatSection />
