@@ -1,0 +1,37 @@
+<svg viewBox="0 0 300 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bqRose" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f5ded9"/>
+      <stop offset="100%" stop-color="#c98a81"/>
+    </linearGradient>
+    <linearGradient id="bqSage" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b8cdb7"/>
+      <stop offset="100%" stop-color="#516c52"/>
+    </linearGradient>
+    <linearGradient id="bqGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8e2b3"/>
+      <stop offset="100%" stop-color="#9a793c"/>
+    </linearGradient>
+  </defs>
+  {/* Fan of leaves */}
+  <path d="M150 150 C80 130 50 80 40 40 C70 50 120 90 150 150 Z" fill="url(#bqSage)" fill-opacity="0.8"/>
+  <path d="M150 150 C220 130 250 80 260 40 C230 50 180 90 150 150 Z" fill="url(#bqSage)" fill-opacity="0.8"/>
+  <path d="M150 150 C120 70 140 30 150 10 C160 30 180 70 150 150 Z" fill="url(#bqSage)" fill-opacity="0.9"/>
+  {/* Left Rose */}
+  <circle cx="100" cy="110" r="35" fill="url(#bqRose)" stroke="#b57970" stroke-width="0.8"/>
+  <circle cx="100" cy="110" r="22" fill="#ecd0cc" stroke="#a3635a" stroke-width="0.6"/>
+  <circle cx="100" cy="110" r="10" fill="#d49e96" />
+  {/* Right Rose */}
+  <circle cx="200" cy="110" r="35" fill="url(#bqRose)" stroke="#b57970" stroke-width="0.8"/>
+  <circle cx="200" cy="110" r="22" fill="#ecd0cc" stroke="#a3635a" stroke-width="0.6"/>
+  <circle cx="200" cy="110" r="10" fill="#d49e96" />
+  {/* Center Grand Bloom */}
+  <circle cx="150" cy="95" r="42" fill="url(#bqRose)" stroke="#a3635a" stroke-width="1"/>
+  <circle cx="150" cy="95" r="28" fill="#f5ded9" stroke="#b57970" stroke-width="0.7"/>
+  <circle cx="150" cy="95" r="14" fill="#dfba73" stroke="#9a793c" stroke-width="0.8"/>
+  {/* Gold Sprigs & Berries */}
+  <circle cx="85" cy="55" r="4" fill="url(#bqGold)"/>
+  <circle cx="70" cy="70" r="3" fill="url(#bqGold)"/>
+  <circle cx="215" cy="55" r="4" fill="url(#bqGold)"/>
+  <circle cx="230" cy="70" r="3" fill="url(#bqGold)"/>
+</svg>

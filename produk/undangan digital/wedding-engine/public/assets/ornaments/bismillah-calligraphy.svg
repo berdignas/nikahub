@@ -1,0 +1,19 @@
+<svg viewBox="0 0 500 120" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bismillahGold" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dfba73"/>
+      <stop offset="50%" stop-color="#c9a86a"/>
+      <stop offset="100%" stop-color="#9a793c"/>
+    </linearGradient>
+  </defs>
+  <path
+    d="M250,25 C265,18 285,15 305,18 C315,20 320,25 320,32 C320,40 310,48 295,50 C270,52 240,48 220,55 C200,62 185,75 165,82 C145,88 120,85 105,75 C95,68 95,58 105,52 C120,42 145,45 170,42 M200,30 C220,20 240,25 245,35 C250,45 235,55 215,58 M320,35 C345,30 370,40 385,55 C395,65 390,75 375,80 C350,88 320,78 300,68 M350,22 L355,10 M370,25 L375,12 M150,28 L155,15 M275,70 C285,72 295,78 295,85 C295,92 285,95 275,95 C265,95 255,90 255,82 C255,75 265,70 275,70 Z"
+    stroke="url(#bismillahGold)"
+    stroke-width="2.5"
+    stroke-linecap="round"
+    stroke-linejoin="round"
+  />
+  <circle cx="205" cy="72" r="3" fill="url(#bismillahGold)"/>
+  <circle cx="218" cy="75" r="3" fill="url(#bismillahGold)"/>
+  <circle cx="330" cy="85" r="3.5" fill="url(#bismillahGold)"/>
+</svg>

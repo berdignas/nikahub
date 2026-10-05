@@ -1,0 +1,31 @@
+<svg viewBox="0 0 150 250" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="eucLeaf1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b5c9b4"/>
+      <stop offset="100%" stop-color="#7a9679"/>
+    </linearGradient>
+    <linearGradient id="eucLeaf2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9ab399"/>
+      <stop offset="100%" stop-color="#5d785c"/>
+    </linearGradient>
+    <linearGradient id="eucStem" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#9a793c"/>
+      <stop offset="100%" stop-color="#7a5a46"/>
+    </linearGradient>
+  </defs>
+  {/* Curved Stem */}
+  <path d="M75 10 Q65 90 75 160 Q85 210 70 245" stroke="url(#eucStem)" stroke-width="2.2" stroke-linecap="round"/>
+  {/* Rounded Eucalyptus Leaves */}
+  <ellipse cx="50" cy="50" rx="20" ry="14" transform="rotate(-25 50 50)" fill="url(#eucLeaf1)" stroke="#516c52" stroke-width="0.6"/>
+  <path d="M50 38 L50 62" stroke="#415642" stroke-width="0.5" stroke-opacity="0.6"/>
+
+  <ellipse cx="100" cy="80" rx="22" ry="15" transform="rotate(30 100 80)" fill="url(#eucLeaf2)" stroke="#415642" stroke-width="0.6"/>
+  <path d="M90 70 L110 90" stroke="#364637" stroke-width="0.5" stroke-opacity="0.6"/>
+
+  <ellipse cx="45" cy="120" rx="24" ry="16" transform="rotate(-20 45 120)" fill="url(#eucLeaf1)" stroke="#516c52" stroke-width="0.6"/>
+  <ellipse cx="105" cy="155" rx="26" ry="17" transform="rotate(25 105 155)" fill="url(#eucLeaf2)" stroke="#415642" stroke-width="0.6"/>
+  <ellipse cx="55" cy="195" rx="24" ry="15" transform="rotate(-15 55 195)" fill="url(#eucLeaf1)" stroke="#516c52" stroke-width="0.6"/>
+  {/* Gold Berries */}
+  <circle cx="68" cy="72" r="3.5" fill="#dfba73" stroke="#9a793c" stroke-width="0.5"/>
+  <circle cx="82" cy="138" r="4" fill="#dfba73" stroke="#9a793c" stroke-width="0.5"/>
+</svg>

@@ -1,0 +1,87 @@
+@import url('https://fonts.googleapis.com/css2?family=Alex+Brush&family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,600&family=Montserrat:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --font-cormorant: 'Cormorant Garamond', Georgia, serif;
+  --font-alex-brush: 'Alex Brush', cursive;
+  --font-montserrat: 'Montserrat', sans-serif;
+  --color-gold: #c9a86a;
+  --color-gold-light: #f5e4b8;
+  --color-sage: #516c52;
+  --color-cream: #faf7f2;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: #faf7f2;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #c9a86a;
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #9a793c;
+}
+
+::selection {
+  background-color: #dfba73;
+  color: #2c221e;
+}
+
+html {
+  scroll-behavior: auto; /* Lenis handles smooth scrolling */
+  background-color: #faf8f5;
+  color: #2c221e;
+}
+
+body {
+  overflow-x: hidden;
+  font-family: var(--font-montserrat);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Lenis CSS */
+html.lenis, html.lenis body {
+  height: auto;
+}
+
+.lenis.lenis-smooth {
+  scroll-behavior: auto !important;
+}
+
+.lenis.lenis-smooth [data-lenis-prevent] {
+  overscroll-behavior: contain;
+}
+
+.lenis.lenis-stopped {
+  overflow: hidden;
+}
+
+.lenis.lenis-smooth iframe {
+  pointer-events: none;
+}
+
+/* Botanical Sway Keyframes Fallback */
+@keyframes naturalSway {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+}
+
+.animate-natural-sway {
+  animation: naturalSway 6s ease-in-out infinite;
+  transform-origin: top center;
+}

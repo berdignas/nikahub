@@ -1,0 +1,29 @@
+<svg viewBox="0 0 160 160" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <radialGradient id="waxGradient" cx="45%" cy="40%" r="60%">
+      <stop offset="0%" stop-color="#f8e2b3"/>
+      <stop offset="35%" stop-color="#dfba73"/>
+      <stop offset="70%" stop-color="#c9a86a"/>
+      <stop offset="100%" stop-color="#8a6428"/>
+    </radialGradient>
+    <filter id="waxShadow" x="-10%" y="-10%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="6" stdDeviation="6" flood-color="#4a3b2c" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+  {/* Wax Melt Edge */}
+  <path
+    d="M80 15 C100 12, 120 22, 132 38 C144 54, 150 75, 145 95 C140 115, 128 132, 110 142 C92 152, 70 150, 52 142 C34 134, 18 118, 15 98 C12 78, 22 58, 36 44 C50 30, 60 18, 80 15 Z"
+    fill="url(#waxGradient)"
+    filter="url(#waxShadow)"
+  />
+  {/* Inner Stamp Ring */}
+  <circle cx="80" cy="80" r="48" stroke="#8a6428" stroke-width="2.5" stroke-opacity="0.6" stroke-dasharray="3 2" fill="none"/>
+  <circle cx="80" cy="80" r="43" stroke="#f8e2b3" stroke-width="1.2" stroke-opacity="0.8" fill="none"/>
+  {/* Vintage Monogram (W & Flower) */}
+  <text x="80" y="88" font-family="serif" font-size="34" font-weight="bold" fill="#6d4c1b" text-anchor="middle" letter-spacing="1">
+    W
+  </text>
+  {/* Miniature laurels */}
+  <path d="M55 80 C50 68 60 56 70 56" stroke="#6d4c1b" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+  <path d="M105 80 C110 68 100 56 90 56" stroke="#6d4c1b" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+</svg>
