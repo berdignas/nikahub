@@ -6,7 +6,7 @@ import { BotanicalCornerDecor } from './BotanicalCornerDecor';
 
 export const EventSection: React.FC = () => {
   return (
-    <section id="event" className="relative py-16 px-6 bg-[#EEF0E9] text-center overflow-hidden">
+    <section id="event" className="relative py-18 px-6 bg-[#EEF0E9] text-center overflow-hidden">
       {/* Floral Backdrop */}
       <div
         className="absolute inset-0 bg-cover bg-top opacity-15 pointer-events-none mix-blend-multiply"
@@ -19,29 +19,29 @@ export const EventSection: React.FC = () => {
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 25, scale: 0.95 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', damping: 14, stiffness: 100 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           className="mb-10"
         >
-          <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1">
+          <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1 font-semibold">
             Wedding Schedule
           </span>
           <h2 className="font-serif text-3xl font-semibold text-[#2C2B29] tracking-wide mb-2">
             Rangkaian Acara
           </h2>
           <div className="w-24 my-2.5 mx-auto opacity-75">
-            <img src="./assets/G2-ornamen.png" alt="Divider" className="w-full h-auto" />
+            <img src="./assets/G2-ornamen.png" alt="" className="w-full h-auto" />
           </div>
         </motion.div>
 
         {/* Akad Nikah Card */}
         <motion.div
-          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', damping: 14, stiffness: 90, delay: 0.15 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
           className="w-full p-6 rounded-3xl bg-[#FAF9F5] border border-[#C2A676]/45 shadow-xl flex flex-col items-center mb-8 relative overflow-hidden"
         >
           {/* Top gold bar */}
@@ -86,10 +86,10 @@ export const EventSection: React.FC = () => {
 
         {/* Resepsi Pernikahan Card */}
         <motion.div
-          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          initial={{ opacity: 0, y: 50, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', damping: 14, stiffness: 90, delay: 0.3 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
           className="w-full p-6 rounded-3xl bg-[#FAF9F5] border border-[#C2A676]/45 shadow-xl flex flex-col items-center relative overflow-hidden"
         >
           {/* Top gold bar */}

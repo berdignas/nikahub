@@ -21,24 +21,24 @@ export const GallerySection: React.FC = () => {
   };
 
   return (
-    <section id="gallery" className="relative py-16 px-6 bg-[#EEF0E9] text-center overflow-hidden">
+    <section id="gallery" className="relative py-18 px-6 bg-[#EEF0E9] text-center overflow-hidden">
       <div className="relative z-10 max-w-[420px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           className="mb-10"
         >
-          <span className="font-serif italic text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1">
+          <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1 font-semibold">
             Our Memories
           </span>
           <h2 className="font-serif text-3xl font-semibold text-[#2C2B29] tracking-wide mb-2">
             Galeri Foto
           </h2>
           <div className="w-24 my-2.5 mx-auto opacity-75">
-            <img src="./assets/G2-ornamen.png" alt="Divider" className="w-full h-auto" />
+            <img src="./assets/G2-ornamen.png" alt="" className="w-full h-auto" />
           </div>
         </motion.div>
 
@@ -47,10 +47,10 @@ export const GallerySection: React.FC = () => {
           {invitationData.gallery.map((img, idx) => (
             <motion.div
               key={img.id}
-              initial={{ opacity: 0, scale: 0.9 }}
-              whileInView={{ opacity: 1, scale: 1 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: idx * 0.1 }}
+              initial={{ opacity: 0, scale: 0.88, y: 30 }}
+              whileInView={{ opacity: 1, scale: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.25 }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: (idx % 2) * 0.15 }}
               onClick={() => setActivePhoto(idx)}
               className="group relative rounded-2xl overflow-hidden shadow-md cursor-pointer border border-[#C2A676]/40 bg-white aspect-[3/4]"
             >

@@ -5,13 +5,13 @@ import { invitationData } from '../data/invitationData';
 
 export const LiveStreamSection: React.FC = () => {
   return (
-    <section className="relative py-12 px-6 bg-[#FAF9F5] text-center overflow-hidden border-t border-[#C2A676]/20">
+    <section className="relative py-14 px-6 bg-[#FAF9F5] text-center overflow-hidden border-t border-[#C2A676]/20">
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
           className="w-full p-6 rounded-3xl bg-gradient-to-br from-[#3D4730] to-[#2A3122] text-[#FAF9F5] border border-[#C2A676]/40 shadow-xl flex flex-col items-center"
         >
           {/* Pulsing Live Badge */}

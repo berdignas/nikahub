@@ -29,14 +29,14 @@ export const GiftSection: React.FC = () => {
   };
 
   return (
-    <section id="gift" className="relative py-16 px-6 bg-[#FAF9F5] text-center overflow-hidden">
+    <section id="gift" className="relative py-18 px-6 bg-[#FAF9F5] text-center overflow-hidden">
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           className="mb-10"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 text-[#51583D] text-xs font-semibold uppercase tracking-widest mb-3">
@@ -50,7 +50,7 @@ export const GiftSection: React.FC = () => {
             Doa restu Anda merupakan karunia yang sangat berarti bagi kami. Namun jika memberi adalah ungkapan tanda kasih, Anda dapat memberi kado secara digital atau fisik.
           </p>
           <div className="w-24 my-2.5 mx-auto opacity-75">
-            <img src="./assets/G2-ornamen.png" alt="Divider" className="w-full h-auto" />
+            <img src="./assets/G2-ornamen.png" alt="" className="w-full h-auto" />
           </div>
         </motion.div>
 
@@ -59,10 +59,10 @@ export const GiftSection: React.FC = () => {
           {invitationData.bankAccounts.map((card, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, y: 25 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: idx * 0.2 }}
+              initial={{ opacity: 0, y: 45, scale: 0.9 }}
+              whileInView={{ opacity: 1, y: 0, scale: 1 }}
+              viewport={{ once: true, amount: 0.3 }}
+              transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: idx * 0.15 }}
               className="relative w-full rounded-3xl p-6 text-left text-white shadow-xl overflow-hidden border border-[#C2A676]/40"
               style={{
                 backgroundImage: 'url(./assets/bg-bank-1-1-3-1-1.webp)',
@@ -112,7 +112,7 @@ export const GiftSection: React.FC = () => {
 
                   <button
                     onClick={() => handleCopyAccount(card.accountNumber, idx)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#E8D8BA] text-[#2C2B29] text-xs font-bold shadow hover:bg-white active:scale-95 transition-all"
+                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-full bg-[#E8D8BA] text-[#2C2B29] text-xs font-bold shadow hover:bg-white active:scale-95 transition-all"
                   >
                     {copiedIndex === idx ? (
                       <>
@@ -134,10 +134,10 @@ export const GiftSection: React.FC = () => {
 
         {/* Physical Gift Box */}
         <motion.div
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, y: 45, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1] }}
           className="w-full p-6 rounded-3xl bg-[#EEF0E9] border border-[#C2A676]/45 shadow-lg text-left"
         >
           <div className="flex items-center gap-3 mb-3">
@@ -154,7 +154,7 @@ export const GiftSection: React.FC = () => {
             </div>
           </div>
 
-          <div className="space-y-1 text-xs text-[#444241] mb-4 bg-white/80 p-4 rounded-2xl border border-[#C2A676]/30">
+          <div className="space-y-1 text-xs text-[#444241] mb-4 bg-white/85 p-4 rounded-2xl border border-[#C2A676]/30">
             <p className="font-semibold text-[#2C2B29]">
               Penerima: {invitationData.physicalGift.recipient}
             </p>

@@ -42,14 +42,14 @@ export const CountdownSection: React.FC = () => {
   )}&location=${encodeURIComponent(invitationData.resepsi.location)}`;
 
   return (
-    <section className="relative py-14 px-6 bg-[#FAF9F5] text-center overflow-hidden">
+    <section className="relative py-16 px-6 bg-[#FAF9F5] text-center overflow-hidden">
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           className="mb-8"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 text-[#51583D] text-xs font-semibold uppercase tracking-widest mb-3">
@@ -66,10 +66,10 @@ export const CountdownSection: React.FC = () => {
 
         {/* 4 Flip/Card Boxes */}
         <motion.div
-          initial={{ opacity: 0, scale: 0.95 }}
-          whileInView={{ opacity: 1, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          initial={{ opacity: 0, scale: 0.9, y: 40 }}
+          whileInView={{ opacity: 1, scale: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
           className="grid grid-cols-4 gap-2.5 w-full mb-8"
         >
           {[
@@ -85,7 +85,7 @@ export const CountdownSection: React.FC = () => {
               <span className="font-serif text-2xl sm:text-3xl font-bold text-[#51583D] tracking-wider">
                 {String(item.value).padStart(2, '0')}
               </span>
-              <span className="text-[10px] uppercase font-semibold text-[#767D63] tracking-wider mt-1">
+              <span className="text-[10px] uppercase font-bold text-[#767D63] tracking-wider mt-1">
                 {item.label}
               </span>
             </div>
@@ -94,10 +94,10 @@ export const CountdownSection: React.FC = () => {
 
         {/* Calendar Action Button */}
         <motion.div
-          initial={{ opacity: 0, y: 15 }}
+          initial={{ opacity: 0, y: 30 }}
           whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8, delay: 0.35 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: 0.25 }}
         >
           <a
             href={googleCalendarUrl}

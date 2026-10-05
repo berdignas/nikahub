@@ -7,7 +7,7 @@ import { SideBotanicalVines } from './SideBotanicalVines';
 
 export const CoupleSection: React.FC = () => {
   return (
-    <section id="couple" className="relative py-16 px-6 bg-[#FAF9F5] text-center overflow-hidden">
+    <section id="couple" className="relative py-18 px-6 bg-[#FAF9F5] text-center overflow-hidden">
       {/* Background Floral Overlay */}
       <div
         className="absolute inset-0 bg-cover bg-bottom opacity-20 pointer-events-none mix-blend-multiply"
@@ -21,13 +21,13 @@ export const CoupleSection: React.FC = () => {
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 25, scale: 0.95 }}
+          initial={{ opacity: 0, y: 40, scale: 0.92 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', damping: 14, stiffness: 100 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           className="mb-10"
         >
-          <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1">
+          <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1 font-semibold">
             Bride & Groom
           </span>
           <h2 className="font-serif text-3xl font-semibold text-[#2C2B29] tracking-wide mb-2">
@@ -37,16 +37,16 @@ export const CoupleSection: React.FC = () => {
             Maha Suci Allah yang telah menciptakan makhluk-Nya berpasang-pasangan. Tanpa mengurangi rasa hormat, kami bermaksud mengundang Bapak/Ibu/Saudara/i:
           </p>
           <div className="w-28 my-3 mx-auto opacity-75">
-            <img src="./assets/G2-ornamen.png" alt="Divider" className="w-full h-auto" />
+            <img src="./assets/G2-ornamen.png" alt="" className="w-full h-auto" />
           </div>
         </motion.div>
 
         {/* Groom Card */}
         <motion.div
-          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          initial={{ opacity: 0, y: 55, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', damping: 14, stiffness: 90, delay: 0.15 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
           className="w-full p-6 rounded-3xl bg-white/90 backdrop-blur-md border border-[#C2A676]/40 shadow-xl flex flex-col items-center mb-8 relative"
         >
           {/* Arched Portrait Frame */}
@@ -68,7 +68,7 @@ export const CoupleSection: React.FC = () => {
           <h3 className="font-serif text-2xl font-bold text-[#2C2B29] tracking-wide mb-1">
             {invitationData.groom.fullName}
           </h3>
-          <p className="text-xs text-[#767D63] uppercase tracking-widest font-medium mb-2">
+          <p className="text-xs text-[#767D63] uppercase tracking-widest font-semibold mb-2">
             — {invitationData.groom.role} —
           </p>
           <p className="text-sm font-serif font-medium text-[#444241]">
@@ -94,8 +94,8 @@ export const CoupleSection: React.FC = () => {
         <motion.div
           initial={{ scale: 0, rotate: -30 }}
           whileInView={{ scale: 1, rotate: 0 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', damping: 12, stiffness: 100 }}
+          viewport={{ once: true, amount: 0.4 }}
+          transition={{ type: 'spring', damping: 14, stiffness: 100 }}
           className="w-12 h-12 rounded-full bg-[#51583D] border-2 border-[#C2A676] flex items-center justify-center text-[#E8D8BA] shadow-lg my-[-16px] z-20"
         >
           <Heart className="w-5 h-5 fill-[#E8D8BA]" />
@@ -103,10 +103,10 @@ export const CoupleSection: React.FC = () => {
 
         {/* Bride Card */}
         <motion.div
-          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          initial={{ opacity: 0, y: 55, scale: 0.9 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
-          viewport={{ once: true }}
-          transition={{ type: 'spring', damping: 14, stiffness: 90, delay: 0.3 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
           className="w-full p-6 rounded-3xl bg-white/90 backdrop-blur-md border border-[#C2A676]/40 shadow-xl flex flex-col items-center mt-8 relative"
         >
           {/* Arched Portrait Frame */}
@@ -128,7 +128,7 @@ export const CoupleSection: React.FC = () => {
           <h3 className="font-serif text-2xl font-bold text-[#2C2B29] tracking-wide mb-1">
             {invitationData.bride.fullName}
           </h3>
-          <p className="text-xs text-[#767D63] uppercase tracking-widest font-medium mb-2">
+          <p className="text-xs text-[#767D63] uppercase tracking-widest font-semibold mb-2">
             — {invitationData.bride.role} —
           </p>
           <p className="text-sm font-serif font-medium text-[#444241]">

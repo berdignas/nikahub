@@ -5,24 +5,24 @@ import { invitationData } from '../data/invitationData';
 
 export const LoveStorySection: React.FC = () => {
   return (
-    <section id="story" className="relative py-16 px-6 bg-[#FAF9F5] text-center overflow-hidden">
+    <section id="story" className="relative py-18 px-6 bg-[#FAF9F5] text-center overflow-hidden">
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           className="mb-12"
         >
-          <span className="font-serif italic text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1">
+          <span className="font-serif italic text-xs sm:text-sm text-[#767D63] tracking-[0.25em] uppercase block mb-1 font-semibold">
             Our Love Journey
           </span>
           <h2 className="font-serif text-3xl font-semibold text-[#2C2B29] tracking-wide mb-2">
             Kisah Cinta Kami
           </h2>
           <div className="w-24 my-2.5 mx-auto opacity-75">
-            <img src="./assets/G2-ornamen.png" alt="Divider" className="w-full h-auto" />
+            <img src="./assets/G2-ornamen.png" alt="" className="w-full h-auto" />
           </div>
         </motion.div>
 
@@ -31,10 +31,10 @@ export const LoveStorySection: React.FC = () => {
           {invitationData.stories.map((item, idx) => (
             <motion.div
               key={idx}
-              initial={{ opacity: 0, x: 25 }}
+              initial={{ opacity: 0, x: 35 }}
               whileInView={{ opacity: 1, x: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.7, delay: idx * 0.2 }}
+              viewport={{ once: true, amount: 0.35 }}
+              transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1], delay: idx * 0.15 }}
               className="relative group"
             >
               {/* Timeline Golden Node */}
@@ -43,7 +43,7 @@ export const LoveStorySection: React.FC = () => {
               </div>
 
               {/* Story Content Card */}
-              <div className="p-5 rounded-2xl bg-white/90 border border-[#C2A676]/35 shadow-md hover:shadow-lg transition-shadow duration-300">
+              <div className="p-5 rounded-2xl bg-white/95 border border-[#C2A676]/40 shadow-md hover:shadow-lg transition-shadow duration-300">
                 <div className="inline-flex items-center gap-1.5 px-3 py-0.5 rounded-full bg-[#767D63]/15 text-[#51583D] text-[11px] font-bold tracking-wider mb-2">
                   <Sparkles className="w-3 h-3 text-[#C2A676]" />
                   <span>Tahun {item.year}</span>

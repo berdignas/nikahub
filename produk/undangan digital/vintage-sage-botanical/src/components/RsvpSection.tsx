@@ -117,14 +117,14 @@ export const RsvpSection: React.FC = () => {
   const totalUcapan = comments.length;
 
   return (
-    <section id="rsvp" className="relative py-16 px-6 bg-[#EEF0E9] text-center overflow-hidden">
+    <section id="rsvp" className="relative py-18 px-6 bg-[#EEF0E9] text-center overflow-hidden">
       <div className="relative z-10 max-w-[400px] mx-auto flex flex-col items-center">
         {/* Section Header */}
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, y: 35, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
           className="mb-8"
         >
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-[#767D63]/15 text-[#51583D] text-xs font-semibold uppercase tracking-widest mb-3">
@@ -138,33 +138,39 @@ export const RsvpSection: React.FC = () => {
             Konfirmasi kehadiran serta untaian doa dan harapan Anda sangat bermakna bagi kami.
           </p>
           <div className="w-24 my-2.5 mx-auto opacity-75">
-            <img src="./assets/G2-ornamen.png" alt="Divider" className="w-full h-auto" />
+            <img src="./assets/G2-ornamen.png" alt="" className="w-full h-auto" />
           </div>
         </motion.div>
 
         {/* Stats Pills */}
-        <div className="flex items-center justify-center gap-3 mb-6 w-full">
-          <div className="flex-1 py-2 px-4 rounded-2xl bg-white/80 border border-[#C2A676]/35 shadow-sm text-center">
+        <motion.div
+          initial={{ opacity: 0, y: 25 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true, amount: 0.35 }}
+          transition={{ duration: 1.1, delay: 0.1 }}
+          className="flex items-center justify-center gap-3 mb-6 w-full"
+        >
+          <div className="flex-1 py-2 px-4 rounded-2xl bg-white/85 border border-[#C2A676]/35 shadow-sm text-center">
             <p className="text-[10px] uppercase tracking-wider text-[#767D63] font-medium">
               Konfirmasi Hadir
             </p>
             <p className="font-serif text-xl font-bold text-[#51583D]">{totalHadir} Tamu</p>
           </div>
-          <div className="flex-1 py-2 px-4 rounded-2xl bg-white/80 border border-[#C2A676]/35 shadow-sm text-center">
+          <div className="flex-1 py-2 px-4 rounded-2xl bg-white/85 border border-[#C2A676]/35 shadow-sm text-center">
             <p className="text-[10px] uppercase tracking-wider text-[#767D63] font-medium">
               Total Ucapan
             </p>
             <p className="font-serif text-xl font-bold text-[#51583D]">{totalUcapan} Doa</p>
           </div>
-        </div>
+        </motion.div>
 
         {/* RSVP Form */}
         <motion.form
           onSubmit={handleSubmit}
-          initial={{ opacity: 0, y: 25 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.8 }}
+          initial={{ opacity: 0, y: 45, scale: 0.92 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
+          viewport={{ once: true, amount: 0.3 }}
+          transition={{ duration: 1.3, ease: [0.22, 1, 0.36, 1], delay: 0.15 }}
           className="w-full p-6 rounded-3xl bg-[#FAF9F5] border border-[#C2A676]/45 shadow-xl text-left mb-8 space-y-4"
         >
           {/* Input Name */}
@@ -288,9 +294,11 @@ export const RsvpSection: React.FC = () => {
           {comments.map((item) => (
             <motion.div
               key={item.id}
-              initial={{ opacity: 0, y: 15 }}
-              animate={{ opacity: 1, y: 0 }}
-              className="p-4 rounded-2xl bg-white/90 border border-[#C2A676]/30 shadow-sm text-left"
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true, amount: 0.2 }}
+              transition={{ duration: 0.8 }}
+              className="p-4 rounded-2xl bg-white/95 border border-[#C2A676]/35 shadow-sm text-left"
             >
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
