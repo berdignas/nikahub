@@ -131,12 +131,11 @@ export const Navbar: React.FC<NavbarProps> = ({
     onPageChange(notif.linkTo);
   };
 
-  // Hidden/Internal page 'checkout', 'admin-login', 'admin-dashboard' are NOT in navLinks
+  // Hidden/Internal pages ('checkout', 'admin-login', 'admin-dashboard', 'builder') are NOT in navLinks
   const navLinks: { id: ActivePage; label: string; icon: React.ElementType }[] = [
     { id: 'home', label: 'Beranda', icon: Home },
     { id: 'catalog', label: 'Katalog Layanan', icon: Store },
     { id: 'portfolio', label: 'Inspirasi Event', icon: Layers },
-    { id: 'builder', label: '✨ Mesin Undangan', icon: Sparkles },
     { id: 'contact', label: 'Konsultasi & Atelier', icon: PhoneCall },
   ];
 

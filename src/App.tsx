@@ -499,7 +499,6 @@ export function App() {
           <HomeView 
             onNavigateToCatalog={() => handleNavigate('catalog')}
             onNavigateToContact={() => handleNavigate('contact')}
-            onNavigateToBuilder={() => handleNavigate('builder')}
             featuredProducts={products}
             onSelectProduct={handleSelectProduct}
           />

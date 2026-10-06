@@ -21,7 +21,6 @@ import {
 interface HomeViewProps {
   onNavigateToCatalog: () => void;
   onNavigateToContact: () => void;
-  onNavigateToBuilder?: () => void;
   featuredProducts: WeddingProduct[];
   onSelectProduct: (product: WeddingProduct) => void;
 }
@@ -29,7 +28,6 @@ interface HomeViewProps {
 export const HomeView: React.FC<HomeViewProps> = ({
   onNavigateToCatalog,
   onNavigateToContact,
-  onNavigateToBuilder,
   featuredProducts,
   onSelectProduct,
 }) => {
@@ -110,16 +108,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
               >
                 Jadwalkan Sesi Konsultasi
               </button>
-
-              {onNavigateToBuilder && (
-                <button 
-                  onClick={onNavigateToBuilder}
-                  className="bg-emerald-900/90 hover:bg-emerald-800 text-champagne-300 border border-champagne-400/50 px-6 py-3.5 rounded-full font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md active:scale-98 cursor-pointer"
-                >
-                  <Sparkles className="w-4 h-4 text-champagne-400" />
-                  <span>✨ Mesin Undangan</span>
-                </button>
-              )}
             </div>
 
             <div className="grid grid-cols-3 gap-3 pt-6 mt-6 sm:mt-8 border-t border-white/15 max-w-md">

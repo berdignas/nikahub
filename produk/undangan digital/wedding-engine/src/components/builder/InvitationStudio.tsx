@@ -762,28 +762,28 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
   const activePaletteObj = COLOR_PALETTES.find((p) => p.id === project.activePalette) || COLOR_PALETTES[0];
 
   return (
-    <div className="flex flex-col w-full h-screen bg-[#141610] text-[#FAF9F5] overflow-hidden select-none">
+    <div className="flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-[#141610] text-[#FAF9F5] overflow-hidden select-none overscroll-none">
       {/* 1. TOP HEADER APP BAR (RESPONSIVE) */}
-      <header className="h-14 bg-[#1E2218] border-b border-[#C2A676]/30 px-2 sm:px-4 flex items-center justify-between shrink-0 z-30">
+      <header className="h-13 sm:h-14 bg-[#1E2218] border-b border-[#C2A676]/30 px-2 sm:px-4 flex items-center justify-between shrink-0 z-30">
         {/* Left: Branding & Project Title */}
-        <div className="flex items-center gap-2 sm:gap-3">
+        <div className="flex items-center gap-1.5 sm:gap-3">
           {onBackToHome && (
             <button
               onClick={onBackToHome}
-              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition shrink-0"
-              title="Kembali ke Katalog Utama"
+              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] text-[11px] sm:text-xs font-semibold flex items-center gap-1 border border-white/10 transition shrink-0"
+              title="Kembali ke Beranda"
             >
               <Store className="w-3.5 h-3.5" />
-              <span className="hidden sm:inline">Katalog</span>
+              <span className="hidden md:inline">Katalog</span>
             </button>
           )}
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#51583D] to-[#C2A676] flex items-center justify-center shadow shrink-0">
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FAF9F5]" />
           </div>
           <div>
-            <h1 className="font-serif font-bold text-xs sm:text-base text-[#FAF9F5] flex items-center gap-1.5">
-              <span>Studio Builder</span>
-              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#C2A676]/20 text-[#E8D8BA] border border-[#C2A676]/40 uppercase tracking-widest font-mono">
+            <h1 className="font-serif font-bold text-xs sm:text-base text-[#FAF9F5] flex items-center gap-1">
+              <span className="truncate max-w-[85px] sm:max-w-none">Studio Builder</span>
+              <span className="text-[9px] px-1 py-0.2 rounded-full bg-[#C2A676]/20 text-[#E8D8BA] border border-[#C2A676]/40 uppercase tracking-widest font-mono">
                 V2
               </span>
             </h1>
@@ -791,29 +791,29 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
           </div>
         </div>
 
-        {/* Center: Mode Toggles (Desktop only) */}
-        <div className="hidden sm:flex items-center bg-[#141610] p-1 rounded-xl border border-[#C2A676]/30">
+        {/* Center: Mode Toggles (Responsive on Mobile & Desktop) */}
+        <div className="flex items-center bg-[#141610] p-0.5 sm:p-1 rounded-xl border border-[#C2A676]/30 shrink-0">
           <button
             onClick={() => setPreviewMode('editor')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition-all ${
               previewMode === 'editor'
                 ? 'bg-[#51583D] text-[#FAF9F5] shadow'
                 : 'text-[#A0A694] hover:text-[#FAF9F5]'
             }`}
           >
-            <Edit3 className="w-3.5 h-3.5" />
-            <span>Mode Edit</span>
+            <Edit3 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
+            <span>Edit</span>
           </button>
           <button
             onClick={() => setPreviewMode('live')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+            className={`px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold flex items-center gap-1 sm:gap-1.5 transition-all ${
               previewMode === 'live'
                 ? 'bg-[#51583D] text-[#FAF9F5] shadow'
                 : 'text-[#A0A694] hover:text-[#FAF9F5]'
             }`}
           >
-            <Eye className="w-3.5 h-3.5 text-[#C2A676]" />
-            <span>Live Preview</span>
+            <Eye className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#C2A676]" />
+            <span>Preview</span>
           </button>
         </div>
 
@@ -872,12 +872,8 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
 
       {/* 2. MAIN WORKSPACE (RESPONSIVE ON MOBILE & DESKTOP) */}
       <div className="flex-1 flex overflow-hidden relative">
-        {/* === LEFT DOCK / TOOLBAR (TABS) === */}
-        <aside
-          className={`${
-            mobileTab === 'tools' ? 'flex' : 'hidden lg:flex'
-          } w-16 sm:w-20 bg-[#1A1D15] border-r border-[#C2A676]/20 flex flex-col items-center py-3 gap-2 shrink-0 z-20`}
-        >
+        {/* === LEFT DOCK / TOOLBAR (TABS - DESKTOP ONLY) === */}
+        <aside className="hidden lg:flex w-16 sm:w-20 bg-[#1A1D15] border-r border-[#C2A676]/20 flex flex-col items-center py-3 gap-2 shrink-0 z-20">
           {[
             { id: 'sections', label: 'Bagian', icon: Layers },
             { id: 'text', label: 'Teks', icon: Type },
@@ -906,22 +902,56 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
           })}
         </aside>
 
-        {/* === LEFT DRAWER / EXPANDABLE PALETTE === */}
+        {/* === LEFT DRAWER / EXPANDABLE PALETTE (FULL WIDTH ON MOBILE) === */}
         <aside
           className={`${
             mobileTab === 'tools' ? 'flex flex-1 w-full' : 'hidden lg:flex'
-          } w-full lg:w-72 bg-[#171A12] border-r border-[#C2A676]/20 flex flex-col shrink-0 z-10 overflow-y-auto p-4 space-y-4`}
+          } w-full lg:w-72 bg-[#171A12] border-r border-[#C2A676]/20 flex flex-col shrink-0 z-10 overflow-y-auto p-3 sm:p-4 pb-28 lg:pb-6 space-y-3 sm:space-y-4`}
         >
-          {/* Mobile Back to Canvas Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-white/10 lg:hidden shrink-0">
-            <button
-              onClick={() => setMobileTab('canvas')}
-              className="px-3 py-1.5 rounded-lg bg-[#51583D] text-[#FAF9F5] text-xs font-semibold flex items-center gap-1.5 shadow"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Kembali ke Kanvas</span>
-            </button>
-            <span className="text-[11px] font-mono text-[#E8D8BA]">Pilih Aset / Alat</span>
+          {/* Mobile Category Pill Bar (Only on Mobile/Android) */}
+          <div className="lg:hidden flex flex-col gap-2 pb-2 border-b border-white/10 shrink-0">
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-bold text-[#E8D8BA] flex items-center gap-1.5">
+                <Palette className="w-3.5 h-3.5 text-[#C2A676]" />
+                <span>Pilih Kategori Alat</span>
+              </span>
+              <button
+                onClick={() => setMobileTab('canvas')}
+                className="px-2.5 py-1 rounded-lg bg-[#51583D] text-[#FAF9F5] text-[11px] font-semibold flex items-center gap-1 shadow"
+              >
+                <ChevronLeft className="w-3.5 h-3.5" />
+                <span>Ke Kanvas</span>
+              </button>
+            </div>
+            {/* Horizontal Scrollable Categories */}
+            <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
+              {[
+                { id: 'sections', label: 'Bagian', icon: Layers },
+                { id: 'text', label: 'Teks', icon: Type },
+                { id: 'assets', label: 'Asset', icon: ImageIcon },
+                { id: 'shapes', label: 'Shape', icon: Square },
+                { id: 'animation', label: 'Animasi', icon: Sparkles },
+                { id: 'theme', label: 'Tema', icon: Palette },
+                { id: 'music', label: 'Musik', icon: Music },
+              ].map((item) => {
+                const Icon = item.icon;
+                const isActive = activeTab === item.id;
+                return (
+                  <button
+                    key={item.id}
+                    onClick={() => setActiveTab(item.id as any)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
+                      isActive
+                        ? 'bg-[#C2A676] text-[#1E2218] font-bold shadow-md'
+                        : 'bg-white/5 text-[#A0A694] hover:bg-white/10 hover:text-white'
+                    }`}
+                  >
+                    <Icon className="w-3.5 h-3.5" />
+                    <span>{item.label}</span>
+                  </button>
+                );
+              })}
+            </div>
           </div>
 
           {/* TAB 1: SECTIONS */}
@@ -1435,7 +1465,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
         <main
           className={`${
             mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'
-          } flex-1 bg-[#0F110B] relative flex flex-col items-center justify-start overflow-y-auto p-2 sm:p-6 pb-32 lg:pb-8 w-full`}
+          } flex-1 bg-[#0F110B] relative flex flex-col items-center justify-start overflow-y-auto p-1.5 sm:p-6 pb-28 lg:pb-8 w-full overscroll-contain`}
         >
           {/* Global Ambient Particles on Canvas */}
           {project.ambientEffect === 'petals' && (
@@ -1560,7 +1590,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
           )}
 
           {/* Smartphone Frame Simulation */}
-          <div className="relative w-full max-w-[420px] bg-[#FAF9F5] rounded-2xl sm:rounded-[44px] shadow-[0_0_80px_rgba(0,0,0,0.8)] border-2 sm:border-[10px] border-[#2A2E22] overflow-hidden my-auto shrink-0 transition-all">
+          <div className="relative w-full max-w-[420px] bg-[#FAF9F5] rounded-xl sm:rounded-[44px] shadow-2xl sm:shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-[#2A2E22]/60 sm:border-[10px] sm:border-[#2A2E22] overflow-hidden my-auto shrink-0 transition-all">
             {/* Phone Speaker Notch (Desktop/Tablet) */}
             <div className="hidden sm:flex absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 rounded-full bg-[#1A1D15] z-50 items-center justify-center">
               <div className="w-10 h-1.5 rounded-full bg-white/20" />
@@ -2651,8 +2681,8 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
         </aside>
       </div>
 
-      {/* 3. MOBILE BOTTOM NAVIGATION DOCK (ONLY ON MOBILE / TABLET) */}
-      <nav className="lg:hidden h-16 bg-[#171A12] border-t border-[#C2A676]/30 px-2 flex items-center justify-around shrink-0 z-40 backdrop-blur-md">
+      {/* 3. MOBILE BOTTOM NAVIGATION DOCK (OPTIMIZED FOR ANDROID GESTURES) */}
+      <nav className="lg:hidden min-h-[58px] pb-[calc(env(safe-area-inset-bottom,0px)+4px)] pt-1 bg-[#171A12] border-t border-[#C2A676]/30 px-1.5 flex items-center justify-around shrink-0 z-40 backdrop-blur-md">
         <button
           onClick={() => setMobileTab('canvas')}
           className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition ${
@@ -2701,7 +2731,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
           }`}
         >
           <Play className="w-4 h-4" />
-          <span className="text-[10px] leading-none">{previewMode === 'live' ? 'Editor' : 'Live Preview'}</span>
+          <span className="text-[10px] leading-none">{previewMode === 'live' ? 'Editor' : 'Preview'}</span>
         </button>
       </nav>
     </div>
