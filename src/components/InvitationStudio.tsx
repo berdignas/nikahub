@@ -162,6 +162,12 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
   const getLoopClass = (loopType?: LoopAnimationType) => {
     if (!loopType || loopType === 'none') return '';
     switch (loopType) {
+      case 'driftHorizontal': return 'anim-loop-driftHorizontal';
+      case 'driftVertical': return 'anim-loop-driftVertical';
+      case 'driftDiagonal': return 'anim-loop-driftDiagonal';
+      case 'flyAcross': return 'anim-loop-flyAcross';
+      case 'orbit': return 'anim-loop-orbit';
+      case 'wiggleMove': return 'anim-loop-wiggleMove';
       case 'spin': return 'anim-loop-spin';
       case 'spinReverse': return 'anim-loop-spinReverse';
       case 'float': return 'anim-loop-float';
@@ -472,6 +478,12 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
     // Only respond to primary click / touch
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
+
     const targetEl = document.getElementById(`canvas-el-${el.id}`);
     const rect = targetEl ? targetEl.getBoundingClientRect() : (e.currentTarget as HTMLElement).getBoundingClientRect();
     setTransformSession({
@@ -490,6 +502,11 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
 
   const startResize = (e: React.PointerEvent, handle: 'tl' | 'tr' | 'bl' | 'br') => {
     e.stopPropagation();
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
     const el = getSelectedElement();
     if (!el) return;
 
@@ -513,6 +530,11 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
 
   const startRotate = (e: React.PointerEvent) => {
     e.stopPropagation();
+    try {
+      (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
+    } catch {
+      // ignore
+    }
     const el = getSelectedElement();
     if (!el) return;
 
@@ -1300,6 +1322,26 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                           config: { type: 'spinIn' as AnimationType, duration: 1.4, delay: 0.1, loopType: 'none' as LoopAnimationType },
                         },
                         {
+                          label: '↔️ Geser Kiri-Kanan',
+                          desc: 'Drift Horizontal',
+                          config: { type: 'fadeUp' as AnimationType, duration: 1, delay: 0.1, loopType: 'driftHorizontal' as LoopAnimationType, loopDuration: 6, moveDistance: 35 },
+                        },
+                        {
+                          label: '↕️ Melayang Naik-Turun',
+                          desc: 'Drift Vertikal',
+                          config: { type: 'fadeUp' as AnimationType, duration: 1, delay: 0.1, loopType: 'driftVertical' as LoopAnimationType, loopDuration: 5, moveDistance: 30 },
+                        },
+                        {
+                          label: '🚀 Melintas Menyeberang',
+                          desc: 'Fly Across Screen',
+                          config: { type: 'fadeIn' as AnimationType, duration: 1, delay: 0.1, loopType: 'flyAcross' as LoopAnimationType, loopDuration: 8, moveDistance: 120 },
+                        },
+                        {
+                          label: '💫 Orbit Melingkar',
+                          desc: 'Orbit Circle Motion',
+                          config: { type: 'zoomIn' as AnimationType, duration: 1, delay: 0.1, loopType: 'orbit' as LoopAnimationType, loopDuration: 7, moveDistance: 25 },
+                        },
+                        {
                           label: '🌸 Bunga Berputar',
                           desc: 'Spin 360° Loop',
                           config: { type: 'spinIn' as AnimationType, duration: 1.2, delay: 0.1, loopType: 'spin' as LoopAnimationType, loopDuration: 8 },
@@ -1787,6 +1829,11 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                                   onPointerDown={(e) => startResize(e, 'br')}
                                   title="Tarik untuk mengubah ukuran (Kanan Bawah)"
                                 />
+
+                                {/* Live Coordinate Badge for selected element */}
+                                <div className="absolute -bottom-5 left-1/2 -translate-x-1/2 pointer-events-none z-40 bg-black/85 border border-[#C2A676]/40 text-[#E8D8BA] text-[9px] font-mono px-1.5 py-0.2 rounded shadow-md whitespace-nowrap">
+                                  X: {el.x} | Y: {el.y}
+                                </div>
                               </>
                             )}
 
@@ -1813,6 +1860,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                               className={`w-full h-full ${getLoopClass(el.animation?.loopType)}`}
                               style={{
                                 '--loop-duration': `${el.animation?.loopDuration || 8}s`,
+                                '--move-dist': `${el.animation?.moveDistance || 30}px`,
                               } as React.CSSProperties}
                             >
                               {/* TEXT ELEMENT */}
@@ -2300,25 +2348,143 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
 
               {/* 4. Position & Geometry */}
               <div className="space-y-3 pt-3 border-t border-white/10 mb-4">
-                <h4 className="text-xs font-bold text-[#E8D8BA] uppercase tracking-wider">Posisi & Ukuran</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#E8D8BA] uppercase tracking-wider flex items-center gap-1.5">
+                    <Move className="w-3.5 h-3.5 text-[#C2A676]" />
+                    <span>Posisi, Geser & Ukuran</span>
+                  </h4>
+                  {/* Quick Center Buttons */}
+                  <div className="flex items-center gap-1">
+                    <button
+                      onClick={() => updateSelectedElement({ x: 0 })}
+                      className="px-1.5 py-0.5 rounded bg-white/10 hover:bg-[#C2A676] hover:text-[#1E2218] text-[9px] text-[#E8D8BA] transition"
+                      title="Ratakan di tengah horizontal (X = 0)"
+                    >
+                      Tengah X
+                    </button>
+                    <button
+                      onClick={() => updateSelectedElement({ y: 0 })}
+                      className="px-1.5 py-0.5 rounded bg-white/10 hover:bg-[#C2A676] hover:text-[#1E2218] text-[9px] text-[#E8D8BA] transition"
+                      title="Ratakan di tengah vertikal (Y = 0)"
+                    >
+                      Tengah Y
+                    </button>
+                  </div>
+                </div>
 
+                {/* D-Pad Nudge & Layer Control Panel */}
+                <div className="p-2.5 rounded-xl bg-black/40 border border-white/10 space-y-2">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-[#A0A694]">Kontrol Geser Presisi (Nudge)</span>
+                    <span className="font-mono text-[#C2A676] font-semibold">
+                      X: {selectedElement.x}px | Y: {selectedElement.y}px
+                    </span>
+                  </div>
+
+                  {/* D-Pad Layout */}
+                  <div className="flex flex-col items-center gap-1 pt-1">
+                    <button
+                      onClick={() => updateSelectedElement({ y: (selectedElement.y || 0) - 5 })}
+                      className="w-16 py-1 rounded bg-[#2A2E22] hover:bg-[#51583D] active:scale-95 text-[#E8D8BA] text-xs flex items-center justify-center gap-1 border border-white/10 shadow transition"
+                      title="Geser Naik 5px"
+                    >
+                      <ArrowUp className="w-3.5 h-3.5" />
+                      <span className="text-[9px] font-mono">-5</span>
+                    </button>
+                    <div className="flex items-center gap-1.5">
+                      <button
+                        onClick={() => updateSelectedElement({ x: (selectedElement.x || 0) - 5 })}
+                        className="w-16 py-1 rounded bg-[#2A2E22] hover:bg-[#51583D] active:scale-95 text-[#E8D8BA] text-xs flex items-center justify-center gap-1 border border-white/10 shadow transition"
+                        title="Geser Kiri 5px"
+                      >
+                        <ArrowLeft className="w-3.5 h-3.5" />
+                        <span className="text-[9px] font-mono">-5</span>
+                      </button>
+                      <div className="w-14 py-1 text-center font-mono text-[10px] text-[#C2A676] bg-black/50 rounded border border-white/5 select-none">
+                        0,0
+                      </div>
+                      <button
+                        onClick={() => updateSelectedElement({ x: (selectedElement.x || 0) + 5 })}
+                        className="w-16 py-1 rounded bg-[#2A2E22] hover:bg-[#51583D] active:scale-95 text-[#E8D8BA] text-xs flex items-center justify-center gap-1 border border-white/10 shadow transition"
+                        title="Geser Kanan 5px"
+                      >
+                        <ArrowRight className="w-3.5 h-3.5" />
+                        <span className="text-[9px] font-mono">+5</span>
+                      </button>
+                    </div>
+                    <button
+                      onClick={() => updateSelectedElement({ y: (selectedElement.y || 0) + 5 })}
+                      className="w-16 py-1 rounded bg-[#2A2E22] hover:bg-[#51583D] active:scale-95 text-[#E8D8BA] text-xs flex items-center justify-center gap-1 border border-white/10 shadow transition"
+                      title="Geser Turun 5px"
+                    >
+                      <ArrowDown className="w-3.5 h-3.5" />
+                      <span className="text-[9px] font-mono">+5</span>
+                    </button>
+                  </div>
+
+                  {/* Layer Z-Index Order Buttons */}
+                  <div className="pt-2 border-t border-white/5 flex items-center justify-between text-[10px]">
+                    <span className="text-[#A0A694]">Urutan Lapisan (Layer Z)</span>
+                    <div className="flex items-center gap-1">
+                      <button
+                        onClick={() => updateSelectedElement({ zIndex: Math.max(1, (selectedElement.zIndex || 10) - 1) })}
+                        className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/15 text-[#E8D8BA] text-[9px] border border-white/10"
+                        title="Pindah ke lapisan belakang"
+                      >
+                        Mundur (-1)
+                      </button>
+                      <span className="font-mono text-[9px] text-[#C2A676] px-1">{selectedElement.zIndex || 10}</span>
+                      <button
+                        onClick={() => updateSelectedElement({ zIndex: (selectedElement.zIndex || 10) + 1 })}
+                        className="px-2 py-0.5 rounded bg-white/5 hover:bg-white/15 text-[#E8D8BA] text-[9px] border border-white/10"
+                        title="Pindah ke lapisan depan"
+                      >
+                        Maju (+1)
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Coordinate Number Inputs & Sliders */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
-                    <label className="block text-[10px] text-[#A0A694] mb-1">Posisi X ({selectedElement.x}px)</label>
+                    <div className="flex justify-between items-center text-[10px] text-[#A0A694] mb-1">
+                      <span>Posisi X</span>
+                      <span className="font-mono text-[#E8D8BA]">{selectedElement.x}px</span>
+                    </div>
                     <input
                       type="number"
                       value={selectedElement.x}
                       onChange={(e) => updateSelectedElement({ x: Number(e.target.value) })}
-                      className="w-full px-2 py-1 rounded bg-white/5 border border-white/10 text-xs"
+                      className="w-full px-2 py-1 rounded bg-white/5 border border-white/10 text-xs mb-1"
+                    />
+                    <input
+                      type="range"
+                      min="-250"
+                      max="250"
+                      value={selectedElement.x}
+                      onChange={(e) => updateSelectedElement({ x: Number(e.target.value) })}
+                      className="w-full accent-[#C2A676]"
                     />
                   </div>
                   <div>
-                    <label className="block text-[10px] text-[#A0A694] mb-1">Posisi Y ({selectedElement.y}px)</label>
+                    <div className="flex justify-between items-center text-[10px] text-[#A0A694] mb-1">
+                      <span>Posisi Y</span>
+                      <span className="font-mono text-[#E8D8BA]">{selectedElement.y}px</span>
+                    </div>
                     <input
                       type="number"
                       value={selectedElement.y}
                       onChange={(e) => updateSelectedElement({ y: Number(e.target.value) })}
-                      className="w-full px-2 py-1 rounded bg-white/5 border border-white/10 text-xs"
+                      className="w-full px-2 py-1 rounded bg-white/5 border border-white/10 text-xs mb-1"
+                    />
+                    <input
+                      type="range"
+                      min="-400"
+                      max="400"
+                      value={selectedElement.y}
+                      onChange={(e) => updateSelectedElement({ y: Number(e.target.value) })}
+                      className="w-full accent-[#C2A676]"
                     />
                   </div>
                 </div>
@@ -2508,70 +2674,136 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                     className="w-full px-2.5 py-1.5 rounded-lg bg-[#2A2E22] border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
                   >
                     <option value="none">🚫 Diam / Statis (Tanpa Loop)</option>
-                    <option value="spin">🌪️ Berputar 360° Terus-Menerus (Searah Jarum Jam)</option>
-                    <option value="spinReverse">🔄 Berputar 360° Terus-Menerus (Berlawanan Jarum Jam)</option>
-                    <option value="sway">🌿 Bergoyang Anggun (Bunga/Daun Tertiup Angin)</option>
-                    <option value="float">🕊️ Melayang Naik-Turun Halus (Floating)</option>
-                    <option value="pulse">💖 Berdenyut Detak Jantung (Heartbeat Pulse)</option>
-                    <option value="glow">✨ Kilauan Emas Berpendar (Golden Shimmer Glow)</option>
-                    <option value="bounce">🎈 Membal Lembut Naik-Turun</option>
-                    <option value="wobble">🎭 Goyang Goyang Ceria (Wobble)</option>
+                    <optgroup label="Gerakan Berpindah / Meluncur (Motion Path)">
+                      <option value="driftHorizontal">↔️ Geser Kiri-Kanan Mondar-Mandir (Horizontal Drift)</option>
+                      <option value="driftVertical">↕️ Melayang Naik-Turun (Vertical Drift)</option>
+                      <option value="driftDiagonal">↗️ Melayang Diagonal (Diagonal Drift)</option>
+                      <option value="flyAcross">🚀 Melintas Menyeberangi Layar (Fly Across)</option>
+                      <option value="orbit">💫 Bergerak Mengitari Orbit Melingkar (Circle Orbit)</option>
+                      <option value="wiggleMove">〰️ Gerakan Mengombak Santai (Wave Move)</option>
+                    </optgroup>
+                    <optgroup label="Gerakan Berputar, Goyang & Efek (Rotations & FX)">
+                      <option value="spin">🌪️ Berputar 360° Terus-Menerus (Searah Jarum Jam)</option>
+                      <option value="spinReverse">🔄 Berputar 360° Terus-Menerus (Berlawanan Jarum Jam)</option>
+                      <option value="sway">🌿 Bergoyang Anggun (Bunga/Daun Tertiup Angin)</option>
+                      <option value="float">🕊️ Melayang Naik-Turun Halus (Floating)</option>
+                      <option value="pulse">💖 Berdenyut Detak Jantung (Heartbeat Pulse)</option>
+                      <option value="glow">✨ Kilauan Emas Berpendar (Golden Shimmer Glow)</option>
+                      <option value="bounce">🎈 Membal Lembut Naik-Turun</option>
+                      <option value="wobble">🎭 Goyang Goyang Ceria (Wobble)</option>
+                    </optgroup>
                   </select>
                 </div>
 
-                {/* 5c. Looping Speed Control (Shown only if loopType != none) */}
+                {/* 5c. Looping Speed & Motion Distance Control (Shown only if loopType != none) */}
                 {(selectedElement.animation.loopType && selectedElement.animation.loopType !== 'none') && (
-                  <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 space-y-2">
-                    <div className="flex items-center justify-between text-[10px]">
-                      <span className="text-[#A0A694]">Kecepatan Putaran / Loop</span>
-                      <span className="font-mono text-[#E8D8BA]">
-                        {selectedElement.animation.loopDuration || 8}s / putaran
-                      </span>
+                  <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 space-y-3">
+                    {/* Kecepatan Loop */}
+                    <div className="space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-[#A0A694]">Kecepatan Putaran / Siklus</span>
+                        <span className="font-mono text-[#E8D8BA]">
+                          {selectedElement.animation.loopDuration || 8}s / siklus
+                        </span>
+                      </div>
+                      {/* Quick Speed Pills */}
+                      <div className="grid grid-cols-4 gap-1">
+                        {[
+                          { label: 'Sangat Lambat', sec: 16 },
+                          { label: 'Lambat', sec: 10 },
+                          { label: 'Sedang', sec: 6 },
+                          { label: 'Cepat', sec: 3 },
+                        ].map((spd) => (
+                          <button
+                            key={spd.sec}
+                            onClick={() => {
+                              updateSelectedElement({
+                                animation: {
+                                  ...selectedElement.animation,
+                                  loopDuration: spd.sec,
+                                },
+                              });
+                            }}
+                            className={`py-1 rounded text-[9px] font-medium transition ${
+                              (selectedElement.animation.loopDuration || 8) === spd.sec
+                                ? 'bg-[#C2A676] text-[#1E2218] font-bold'
+                                : 'bg-black/30 text-[#A0A694] hover:bg-white/10 hover:text-white'
+                            }`}
+                          >
+                            {spd.label}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="range"
+                        min="1.0"
+                        max="20.0"
+                        step="0.5"
+                        value={selectedElement.animation.loopDuration || 8}
+                        onChange={(e) =>
+                          updateSelectedElement({
+                            animation: {
+                              ...selectedElement.animation,
+                              loopDuration: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full accent-[#C2A676]"
+                      />
                     </div>
-                    {/* Quick Speed Pills */}
-                    <div className="grid grid-cols-4 gap-1">
-                      {[
-                        { label: 'Sangat Lambat', sec: 16 },
-                        { label: 'Lambat', sec: 10 },
-                        { label: 'Sedang', sec: 6 },
-                        { label: 'Cepat', sec: 3 },
-                      ].map((spd) => (
-                        <button
-                          key={spd.sec}
-                          onClick={() => {
-                            updateSelectedElement({
-                              animation: {
-                                ...selectedElement.animation,
-                                loopDuration: spd.sec,
-                              },
-                            });
-                          }}
-                          className={`py-1 rounded text-[9px] font-medium transition ${
-                            (selectedElement.animation.loopDuration || 8) === spd.sec
-                              ? 'bg-[#C2A676] text-[#1E2218] font-bold'
-                              : 'bg-black/30 text-[#A0A694] hover:bg-white/10 hover:text-white'
-                          }`}
-                        >
-                          {spd.label}
-                        </button>
-                      ))}
+
+                    {/* Jarak Gerak / Jangkauan Amplitudo (for motion loops or all loops) */}
+                    <div className="pt-2 border-t border-white/5 space-y-1.5">
+                      <div className="flex items-center justify-between text-[10px]">
+                        <span className="text-[#A0A694]">Jarak Jangkauan Gerakan</span>
+                        <span className="font-mono text-[#C2A676] font-semibold">
+                          {selectedElement.animation.moveDistance || 30}px
+                        </span>
+                      </div>
+                      <div className="grid grid-cols-4 gap-1">
+                        {[
+                          { label: 'Halus', dist: 15 },
+                          { label: 'Sedang', dist: 35 },
+                          { label: 'Jauh', dist: 70 },
+                          { label: 'Ekstrim', dist: 120 },
+                        ].map((d) => (
+                          <button
+                            key={d.dist}
+                            onClick={() => {
+                              updateSelectedElement({
+                                animation: {
+                                  ...selectedElement.animation,
+                                  moveDistance: d.dist,
+                                },
+                              });
+                            }}
+                            className={`py-1 rounded text-[9px] font-medium transition ${
+                              (selectedElement.animation.moveDistance || 30) === d.dist
+                                ? 'bg-[#C2A676] text-[#1E2218] font-bold'
+                                : 'bg-black/30 text-[#A0A694] hover:bg-white/10 hover:text-white'
+                            }`}
+                          >
+                            {d.label}
+                          </button>
+                        ))}
+                      </div>
+                      <input
+                        type="range"
+                        min="5"
+                        max="200"
+                        step="5"
+                        value={selectedElement.animation.moveDistance || 30}
+                        onChange={(e) =>
+                          updateSelectedElement({
+                            animation: {
+                              ...selectedElement.animation,
+                              moveDistance: Number(e.target.value),
+                            },
+                          })
+                        }
+                        className="w-full accent-[#C2A676]"
+                      />
                     </div>
-                    <input
-                      type="range"
-                      min="1.0"
-                      max="20.0"
-                      step="0.5"
-                      value={selectedElement.animation.loopDuration || 8}
-                      onChange={(e) =>
-                        updateSelectedElement({
-                          animation: {
-                            ...selectedElement.animation,
-                            loopDuration: Number(e.target.value),
-                          },
-                        })
-                      }
-                      className="w-full accent-[#C2A676]"
-                    />
                   </div>
                 )}
 

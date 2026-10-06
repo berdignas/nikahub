@@ -32,14 +32,20 @@ export type AnimationType =
 
 export type LoopAnimationType =
   | 'none'
-  | 'spin'        // Putar terus menerus 360° searah jarum jam
-  | 'spinReverse' // Putar terus menerus berlawanan arah jarum jam
-  | 'float'       // Melayang naik-turun halus
-  | 'sway'        // Bergoyang anggun kiri-kanan
-  | 'pulse'       // Berdenyut detak jantung
-  | 'glow'        // Berpendar kilau cahaya emas
-  | 'bounce'      // Membal halus
-  | 'wobble';     // Goyang getar riang
+  | 'driftHorizontal' // Bergerak bolak-balik kiri-kanan
+  | 'driftVertical'   // Bergerak naik-turun nyata
+  | 'driftDiagonal'   // Bergerak melayang diagonal
+  | 'flyAcross'       // Meluncur melintasi layar
+  | 'orbit'           // Bergerak mengorbit melingkar
+  | 'wiggleMove'      // Bergerak meliuk berombak
+  | 'spin'            // Putar terus menerus 360° searah jarum jam
+  | 'spinReverse'     // Putar terus menerus berlawanan arah jarum jam
+  | 'float'           // Melayang naik-turun halus
+  | 'sway'            // Bergoyang anggun kiri-kanan
+  | 'pulse'           // Berdenyut detak jantung
+  | 'glow'            // Berpendar kilau cahaya emas
+  | 'bounce'          // Membal halus
+  | 'wobble';         // Goyang getar riang
 
 export interface ElementAnimationConfig {
   type: AnimationType;
@@ -48,6 +54,7 @@ export interface ElementAnimationConfig {
   trigger: 'onScroll' | 'onLoad';
   loopType?: LoopAnimationType;
   loopDuration?: number; // seconds per cycle
+  moveDistance?: number; // distance in px for motion/drift (e.g. 15, 30, 60)
   easing?: 'ease' | 'linear' | 'ease-in-out' | 'spring';
 }
 
