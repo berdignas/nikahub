@@ -57,6 +57,17 @@ function WeddingInvitationApp() {
           contentRef={mainContentRef}
         />
 
+        {/* Floating Quick Action: Open Invitation Builder Studio */}
+        <div className="fixed top-4 right-4 z-50">
+          <a
+            href="/builder"
+            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1A1D15]/90 hover:bg-[#51583D] text-[#FAF9F5] text-xs font-semibold shadow-xl border border-[#C2A676]/60 backdrop-blur-md transition-all hover:scale-105"
+          >
+            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
+            <span>🎨 Mesin Pembuat Undangan (Studio)</span>
+          </a>
+        </div>
+
         {/* Global Ambient Floating Petals across the invitation */}
         <FloatingPetals count={18} type="mixed" className="fixed inset-0 pointer-events-none z-15" />
 

@@ -6,7 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build && cd \"produk/foto bersama/foto-bersama-maulidiyah-alfarisyi\" && npm install && npx vite build --outDir \"../../../dist/foto-maulidiyah-alfarisyi\" --emptyOutDir false && cd \"../../../produk/undangan digital/vintage-01\" && npm install && npx vite build --outDir \"../../../dist/undangan-vintage-01\" --emptyOutDir false && cd \"../vintage-sage-botanical\" && npm install && npx vite build --outDir \"../../../dist/undangan-vintage-sage-botanical\" --emptyOutDir false && cd \"../../..\" && (python3 copy_all_dist_paths.py || python copy_all_dist_paths.py)",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "engine:dev": "cd \"produk/undangan digital/wedding-engine\" && npm run dev",
+    "engine:build": "cd \"produk/undangan digital/wedding-engine\" && npm run build",
+    "engine:start": "cd \"produk/undangan digital/wedding-engine\" && npm run start"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.117.2",
