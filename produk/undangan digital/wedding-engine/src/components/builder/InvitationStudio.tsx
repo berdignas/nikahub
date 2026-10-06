@@ -41,6 +41,10 @@ import {
   FlipHorizontal,
   FlipVertical,
   Crop,
+  VolumeX,
+  Pause,
+  BookOpen,
+  FilePlus,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -57,6 +61,8 @@ import {
   ORNAMENT_LIBRARY,
   SHAPE_PRESETS,
   DEFAULT_INITIAL_PROJECT,
+  PAGE_TEMPLATES,
+  PageTemplate,
 } from '@/lib/builder/presets';
 import { FloatingPetals } from '@/components/animation/FloatingPetals';
 import { compressImage } from '@/lib/builder/imageCompression';
@@ -75,6 +81,13 @@ export const InvitationStudio: React.FC = () => {
   const [selectedElementId, setSelectedElementId] = useState<string | null>('el-cover-names');
   const [previewMode, setPreviewMode] = useState<'editor' | 'live'>('editor');
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+
+  // Page View Mode & Opening Screen State (Cover vs Content)
+  const [canvasViewMode, setCanvasViewMode] = useState<'cover' | 'content' | 'all'>('cover');
+  const [isInvitationOpened, setIsInvitationOpened] = useState<boolean>(false);
+  const [showAddPageModal, setShowAddPageModal] = useState<boolean>(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   // Asset upload local storage & Cloudflare R2
   const [uploadedAssets, setUploadedAssets] = useState<
@@ -602,6 +615,60 @@ export const InvitationStudio: React.FC = () => {
       setSelectedSectionId(updatedSections[0].id);
     }
   };
+
+  // Open & Close Invitation Handlers (Opening Screen Transition)
+  const handleOpenInvitation = () => {
+    setIsInvitationOpened(true);
+    if (audioRef.current && project.backgroundMusic.enabled && project.backgroundMusic.url) {
+      audioRef.current.play().then(() => setIsPlayingAudio(true)).catch(() => {});
+    }
+  };
+
+  const handleCloseInvitation = () => {
+    setIsInvitationOpened(false);
+  };
+
+  const toggleAudio = () => {
+    if (!audioRef.current) return;
+    if (isPlayingAudio) {
+      audioRef.current.pause();
+      setIsPlayingAudio(false);
+    } else {
+      audioRef.current.play().then(() => setIsPlayingAudio(true)).catch(() => {});
+    }
+  };
+
+  // Add new page from template
+  const handleSelectPageTemplate = (template: PageTemplate) => {
+    const newUid = `section-${Date.now()}`;
+    const newSection = template.defaultSection(newUid);
+    const updatedSections = [...project.sections, newSection];
+    handleUpdateProject({ ...project, sections: updatedSections });
+    setSelectedSectionId(newSection.id);
+    if (newSection.elements.length > 0) {
+      setSelectedElementId(newSection.elements[0].id);
+    } else {
+      setSelectedElementId(null);
+    }
+    setCanvasViewMode('content');
+    setShowAddPageModal(false);
+  };
+
+  // Split Sections: Cover (Opening Screen) vs Content (Inner Pages)
+  const coverSection =
+    project.sections.find((s) => s.type === 'cover' || s.id === 'section-cover') || project.sections[0];
+  const contentSections = project.sections.filter((s) => s.id !== coverSection?.id);
+
+  const displayedSections =
+    previewMode === 'live'
+      ? !isInvitationOpened
+        ? coverSection ? [coverSection] : []
+        : contentSections
+      : canvasViewMode === 'cover'
+      ? coverSection ? [coverSection] : []
+      : canvasViewMode === 'content'
+      ? contentSections
+      : project.sections.filter((s) => s.enabled);
 
   const selectedElement = getSelectedElement();
   const activePaletteObj = COLOR_PALETTES.find((p) => p.id === project.activePalette) || COLOR_PALETTES[0];
@@ -1170,6 +1237,123 @@ export const InvitationStudio: React.FC = () => {
             <FloatingPetals count={15} type="mixed" className="fixed inset-0 pointer-events-none z-10" />
           )}
 
+          {/* Background Audio Player */}
+          {project.backgroundMusic.url && (
+            <audio ref={audioRef} src={project.backgroundMusic.url} loop preload="auto" />
+          )}
+
+          {/* PAGE NAVIGATOR BAR & OPENING CONTROLS */}
+          {previewMode === 'editor' ? (
+            <div className="flex flex-col items-center gap-2 mb-3 w-full max-w-[420px]">
+              {/* Main Page Tabs */}
+              <div className="flex items-center gap-1.5 p-1 bg-[#1A1D15]/95 backdrop-blur-md rounded-2xl border border-[#C2A676]/30 shadow-xl w-full justify-between">
+                <button
+                  onClick={() => {
+                    setCanvasViewMode('cover');
+                    if (coverSection) setSelectedSectionId(coverSection.id);
+                  }}
+                  className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                    canvasViewMode === 'cover'
+                      ? 'bg-[#51583D] text-[#FAF9F5] shadow border border-[#C2A676]/50'
+                      : 'text-[#A0A694] hover:text-[#FAF9F5] hover:bg-white/5'
+                  }`}
+                >
+                  <span>💌 Sampul (Opening)</span>
+                </button>
+                <button
+                  onClick={() => {
+                    setCanvasViewMode('content');
+                    if (selectedSectionId === coverSection?.id && contentSections.length > 0) {
+                      setSelectedSectionId(contentSections[0].id);
+                    }
+                  }}
+                  className={`flex-1 py-1.5 px-2 rounded-xl text-xs font-semibold flex items-center justify-center gap-1.5 transition-all ${
+                    canvasViewMode === 'content'
+                      ? 'bg-[#51583D] text-[#FAF9F5] shadow border border-[#C2A676]/50'
+                      : 'text-[#A0A694] hover:text-[#FAF9F5] hover:bg-white/5'
+                  }`}
+                >
+                  <span>📜 Isi Undangan ({contentSections.length})</span>
+                </button>
+                <button
+                  onClick={() => setCanvasViewMode('all')}
+                  className={`py-1.5 px-2.5 rounded-xl text-xs font-medium flex items-center gap-1 transition-all ${
+                    canvasViewMode === 'all'
+                      ? 'bg-[#51583D] text-[#FAF9F5] shadow'
+                      : 'text-[#A0A694] hover:text-[#FAF9F5] hover:bg-white/5'
+                  }`}
+                  title="Lihat Semua Halaman Bersambung"
+                >
+                  <Layers className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Semua</span>
+                </button>
+                <button
+                  onClick={() => setShowAddPageModal(true)}
+                  className="py-1.5 px-2.5 rounded-xl text-xs font-semibold bg-[#C2A676] hover:bg-[#d8bd8d] text-[#1E2218] flex items-center gap-1 shadow transition shrink-0"
+                  title="Tambah Halaman Baru"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span className="hidden sm:inline">Halaman</span>
+                </button>
+              </div>
+
+              {/* Sub-Section Pills when viewing Content */}
+              {canvasViewMode === 'content' && contentSections.length > 0 && (
+                <div className="flex items-center gap-1.5 overflow-x-auto w-full py-1 px-1">
+                  {contentSections.map((sec, idx) => (
+                    <button
+                      key={sec.id}
+                      onClick={() => {
+                        setSelectedSectionId(sec.id);
+                        const el = document.getElementById(`section-container-${sec.id}`);
+                        el?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                      }}
+                      className={`px-2.5 py-1 rounded-xl text-[10px] font-medium whitespace-nowrap transition ${
+                        selectedSectionId === sec.id
+                          ? 'bg-[#C2A676] text-[#1E2218] font-bold shadow'
+                          : 'bg-white/5 text-[#E8D8BA] hover:bg-white/10'
+                      }`}
+                    >
+                      {idx + 1}. {sec.title}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <div className="flex items-center justify-between w-full max-w-[420px] p-2 bg-[#1A1D15]/90 backdrop-blur-md rounded-2xl border border-[#C2A676]/30 mb-3 text-xs shadow-xl">
+              <div className="flex items-center gap-2">
+                <span className={`w-2 h-2 rounded-full ${!isInvitationOpened ? 'bg-amber-400 animate-ping' : 'bg-emerald-400'}`} />
+                <span className="text-[#E8D8BA] font-semibold text-[11px]">
+                  {!isInvitationOpened ? '💌 Layar Sampul (Klik Tombol Buka Undangan)' : '📜 Undangan Terbuka'}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5">
+                {isInvitationOpened && (
+                  <button
+                    onClick={handleCloseInvitation}
+                    className="px-2.5 py-1 rounded-lg bg-white/10 hover:bg-white/20 text-[#FAF9F5] text-[10px] font-medium transition"
+                  >
+                    🔄 Tutup Sampul
+                  </button>
+                )}
+                {project.backgroundMusic.url && (
+                  <button
+                    onClick={toggleAudio}
+                    className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold flex items-center gap-1 transition ${
+                      isPlayingAudio
+                        ? 'bg-emerald-600/30 text-emerald-300 border border-emerald-500/30'
+                        : 'bg-white/10 text-[#A0A694]'
+                    }`}
+                  >
+                    {isPlayingAudio ? <Volume2 className="w-3 h-3" /> : <VolumeX className="w-3 h-3" />}
+                    <span>{isPlayingAudio ? 'Musik On' : 'Musik Off'}</span>
+                  </button>
+                )}
+              </div>
+            </div>
+          )}
+
           {/* Smartphone Frame Simulation */}
           <div className="relative w-full max-w-[420px] bg-[#FAF9F5] rounded-2xl sm:rounded-[44px] shadow-[0_0_80px_rgba(0,0,0,0.8)] border-2 sm:border-[10px] border-[#2A2E22] overflow-hidden my-auto shrink-0 transition-all">
             {/* Phone Speaker Notch (Desktop/Tablet) */}
@@ -1179,20 +1363,24 @@ export const InvitationStudio: React.FC = () => {
 
             {/* Canvas Sections Container */}
             <div className="w-full min-h-[680px] sm:min-h-[750px] flex flex-col pt-4 sm:pt-6 pb-20">
-              {project.sections
-                .filter((s) => s.enabled)
-                .map((sec) => (
+              {displayedSections.map((sec) => {
+                const isCoverFocus =
+                  sec.id === coverSection?.id &&
+                  (canvasViewMode === 'cover' || (previewMode === 'live' && !isInvitationOpened));
+
+                return (
                   <div
                     key={sec.id}
+                    id={`section-container-${sec.id}`}
                     onClick={() => setSelectedSectionId(sec.id)}
                     className={`relative w-full transition-all ${
                       selectedSectionId === sec.id && previewMode === 'editor'
                         ? 'ring-2 ring-[#C2A676] ring-inset'
                         : ''
-                    }`}
+                    } ${isCoverFocus ? 'min-h-[660px] sm:min-h-[720px] flex flex-col items-center justify-center' : ''}`}
                     style={{
                       backgroundColor: sec.backgroundColor,
-                      minHeight: `${sec.minHeight}px`,
+                      minHeight: isCoverFocus ? '660px' : `${sec.minHeight}px`,
                       paddingTop: `${sec.paddingY}px`,
                       paddingBottom: `${sec.paddingY}px`,
                     }}
@@ -1243,6 +1431,21 @@ export const InvitationStudio: React.FC = () => {
                                   <span className="font-semibold max-w-[80px] truncate text-[#E8D8BA] mr-1">
                                     {el.name}
                                   </span>
+                                  {/* Quick Open Content Transition Button */}
+                                  {(el.type === 'button' || el.name.toLowerCase().includes('buka')) && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setCanvasViewMode('content');
+                                        if (contentSections.length > 0) setSelectedSectionId(contentSections[0].id);
+                                      }}
+                                      className="px-2 py-0.5 rounded bg-[#C2A676] text-[#1E2218] font-bold flex items-center gap-1 shadow"
+                                      title="Buka / Alihkan ke Halaman Isi Undangan"
+                                    >
+                                      <Play className="w-2.5 h-2.5 fill-current" />
+                                      <span>Buka Isi ➔</span>
+                                    </button>
+                                  )}
                                   {/* Rotate +45 */}
                                   <button
                                     onClick={(e) => {
@@ -1412,6 +1615,17 @@ export const InvitationStudio: React.FC = () => {
                             {/* BUTTON ELEMENT */}
                             {el.type === 'button' && (
                               <button
+                                onClick={(e) => {
+                                  if (previewMode === 'live') {
+                                    e.stopPropagation();
+                                    if (
+                                      el.name.toLowerCase().includes('buka') ||
+                                      el.content.toLowerCase().includes('buka')
+                                    ) {
+                                      handleOpenInvitation();
+                                    }
+                                  }
+                                }}
                                 style={{
                                   fontFamily: el.fontFamily,
                                   fontSize: `${el.fontSize}px`,
@@ -1424,7 +1638,11 @@ export const InvitationStudio: React.FC = () => {
                                   borderRadius: `${el.borderRadius}px`,
                                   letterSpacing: `${el.letterSpacing}px`,
                                 }}
-                                className="w-full h-full flex items-center justify-center shadow-lg pointer-events-none select-none"
+                                className={`w-full h-full flex items-center justify-center shadow-lg transition-transform ${
+                                  previewMode === 'live'
+                                    ? 'pointer-events-auto cursor-pointer hover:scale-105 active:scale-95 shadow-2xl animate-pulse'
+                                    : 'pointer-events-none select-none'
+                                }`}
                               >
                                 {el.content}
                               </button>
@@ -1434,9 +1652,75 @@ export const InvitationStudio: React.FC = () => {
                       })}
                     </div>
                   </div>
-                ))}
+                );
+              })}
             </div>
           </div>
+
+          {/* MODAL TAMBAH HALAMAN BARU */}
+          <AnimatePresence>
+            {showAddPageModal && (
+              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                  className="w-full max-w-lg bg-[#1E2218] border border-[#C2A676]/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                >
+                  {/* Header */}
+                  <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-xl bg-[#51583D] flex items-center justify-center text-lg shadow">
+                        📄
+                      </div>
+                      <div>
+                        <h3 className="font-serif font-bold text-base text-[#FAF9F5]">Tambah Halaman Baru</h3>
+                        <p className="text-[11px] text-[#A0A694]">Pilih jenis halaman yang ingin ditambahkan ke undangan Anda</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowAddPageModal(false)}
+                      className="p-1.5 rounded-xl hover:bg-white/10 text-white/60 hover:text-white"
+                    >
+                      <X className="w-5 h-5" />
+                    </button>
+                  </div>
+
+                  {/* Template List */}
+                  <div className="p-4 sm:p-5 overflow-y-auto space-y-2.5">
+                    {PAGE_TEMPLATES.map((tmpl) => (
+                      <div
+                        key={tmpl.id}
+                        onClick={() => handleSelectPageTemplate(tmpl)}
+                        className="p-3.5 rounded-2xl bg-white/5 hover:bg-[#51583D]/40 border border-white/10 hover:border-[#C2A676]/60 transition-all cursor-pointer flex items-center justify-between group"
+                      >
+                        <div className="flex items-center gap-3">
+                          <span className="text-2xl p-2 rounded-xl bg-white/5 group-hover:scale-110 transition-transform">
+                            {tmpl.icon}
+                          </span>
+                          <div>
+                            <div className="flex items-center gap-2">
+                              <h4 className="font-semibold text-xs text-[#FAF9F5] group-hover:text-[#E8D8BA]">
+                                {tmpl.name}
+                              </h4>
+                              <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/10 text-[#C2A676] font-mono">
+                                {tmpl.category}
+                              </span>
+                            </div>
+                            <p className="text-[11px] text-[#A0A694] mt-0.5 line-clamp-1">{tmpl.description}</p>
+                          </div>
+                        </div>
+                        <button className="px-3 py-1.5 rounded-xl bg-[#51583D] group-hover:bg-[#C2A676] text-[#FAF9F5] group-hover:text-[#1E2218] text-xs font-bold transition flex items-center gap-1 shrink-0">
+                          <Plus className="w-3.5 h-3.5" />
+                          <span>Pilih</span>
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                </motion.div>
+              </div>
+            )}
+          </AnimatePresence>
 
           {/* FLOATING MOBILE NUDGE & QUICK ACTION DOCK (ACTIVE ON MOBILE WHEN ELEMENT SELECTED) */}
           {selectedElement && previewMode === 'editor' && (
@@ -1503,6 +1787,19 @@ export const InvitationStudio: React.FC = () => {
                   <Sliders className="w-3.5 h-3.5 text-[#E8D8BA]" />
                   <span className="text-[11px]">Edit</span>
                 </button>
+                {(selectedElement.type === 'button' || selectedElement.name.toLowerCase().includes('buka')) && (
+                  <button
+                    onClick={() => {
+                      setCanvasViewMode('content');
+                      if (contentSections.length > 0) setSelectedSectionId(contentSections[0].id);
+                    }}
+                    className="px-2.5 py-1.5 rounded-xl bg-[#C2A676] text-[#1E2218] text-xs font-bold flex items-center gap-1 shadow"
+                    title="Buka Halaman Isi Undangan"
+                  >
+                    <Play className="w-3.5 h-3.5 fill-current" />
+                    <span>Buka Isi</span>
+                  </button>
+                )}
                 <button
                   onClick={() => handleDuplicateElement(selectedElement)}
                   className="p-1.5 rounded-xl bg-white/5 active:bg-white/20 text-[#FAF9F5]"
@@ -1583,6 +1880,44 @@ export const InvitationStudio: React.FC = () => {
                       onChange={(e) => updateSelectedElement({ content: e.target.value })}
                       className="w-full px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676] resize-none"
                     />
+                  </div>
+                )}
+
+                {/* Button Action & Transition Controls */}
+                {selectedElement.type === 'button' && (
+                  <div className="p-3 rounded-2xl bg-[#51583D]/30 border border-[#C2A676]/40 flex flex-col gap-2 mt-3">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-[#E8D8BA]">Aksi Tombol</span>
+                      <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C2A676] text-[#1E2218] font-bold">
+                        Buka Undangan
+                      </span>
+                    </div>
+                    <p className="text-[10px] text-[#A0A694]">
+                      Tombol ini membuka layar sampul (opening), memutar musik latar, dan menampilkan seluruh isi undangan pengantin.
+                    </p>
+                    <div className="flex items-center gap-2 pt-1">
+                      <button
+                        onClick={() => {
+                          setCanvasViewMode('content');
+                          if (contentSections.length > 0) setSelectedSectionId(contentSections[0].id);
+                        }}
+                        className="flex-1 py-1.5 px-3 rounded-xl bg-[#C2A676] hover:bg-[#d8bd8d] text-[#1E2218] text-xs font-bold flex items-center justify-center gap-1.5 shadow transition"
+                      >
+                        <Play className="w-3.5 h-3.5 fill-current" />
+                        <span>Buka Isi Undangan ➔</span>
+                      </button>
+                      <button
+                        onClick={() => {
+                          setPreviewMode('live');
+                          setIsInvitationOpened(false);
+                        }}
+                        className="py-1.5 px-2.5 rounded-xl bg-white/10 hover:bg-white/20 text-[#FAF9F5] text-xs font-semibold flex items-center gap-1 transition"
+                        title="Uji Coba di Live Preview"
+                      >
+                        <Eye className="w-3.5 h-3.5 text-[#C2A676]" />
+                        <span>Uji Live</span>
+                      </button>
+                    </div>
                   </div>
                 )}
               </div>
