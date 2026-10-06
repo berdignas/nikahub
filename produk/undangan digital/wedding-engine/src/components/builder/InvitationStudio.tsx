@@ -31,10 +31,14 @@ import {
   Volume2,
   Flower2,
   ChevronRight,
-  ChevronDown,
   Loader2,
   Cloud,
   HardDrive,
+  ChevronLeft,
+  ArrowLeft,
+  ArrowRight,
+  Move,
+  X,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -77,6 +81,15 @@ export const InvitationStudio: React.FC = () => {
   const [isUploading, setIsUploading] = useState<boolean>(false);
   const [useSmartCompression, setUseSmartCompression] = useState<boolean>(true);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
+
+  // Mobile Navigation State
+  const [mobileTab, setMobileTab] = useState<'canvas' | 'tools' | 'inspector'>('canvas');
+  const [touchDragStart, setTouchDragStart] = useState<{
+    x: number;
+    y: number;
+    elX: number;
+    elY: number;
+  } | null>(null);
 
   // Load from LocalStorage on mount
   useEffect(() => {
@@ -314,6 +327,57 @@ export const InvitationStudio: React.FC = () => {
 
     handleUpdateProject({ ...project, sections: updatedSections });
     setSelectedElementId(newElement.id);
+    setMobileTab('canvas');
+  };
+
+  // Mobile precision touch nudge & resize helpers
+  const nudgeElement = (dx: number, dy: number) => {
+    const el = getSelectedElement();
+    if (!el) return;
+    updateSelectedElement({
+      x: (el.x || 0) + dx,
+      y: (el.y || 0) + dy,
+    });
+  };
+
+  const resizeElement = (dw: number, dh: number) => {
+    const el = getSelectedElement();
+    if (!el) return;
+    const currentW = typeof el.width === 'number' ? el.width : 120;
+    const currentH = typeof el.height === 'number' ? el.height : 40;
+    updateSelectedElement({
+      width: Math.max(20, currentW + dw),
+      height: Math.max(20, currentH + dh),
+    });
+  };
+
+  // Mobile direct touch dragging
+  const handleTouchStart = (e: React.TouchEvent, el: CanvasElement, secId: string) => {
+    setSelectedElementId(el.id);
+    setSelectedSectionId(secId);
+    if (previewMode !== 'editor') return;
+    const touch = e.touches[0];
+    setTouchDragStart({
+      x: touch.clientX,
+      y: touch.clientY,
+      elX: el.x || 0,
+      elY: el.y || 0,
+    });
+  };
+
+  const handleTouchMove = (e: React.TouchEvent, el: CanvasElement) => {
+    if (!touchDragStart || previewMode !== 'editor' || selectedElementId !== el.id) return;
+    const touch = e.touches[0];
+    const dx = touch.clientX - touchDragStart.x;
+    const dy = touch.clientY - touchDragStart.y;
+    updateSelectedElement({
+      x: Math.round(touchDragStart.elX + dx),
+      y: Math.round(touchDragStart.elY + dy),
+    });
+  };
+
+  const handleTouchEnd = () => {
+    setTouchDragStart(null);
   };
 
   // Delete element
@@ -390,26 +454,26 @@ export const InvitationStudio: React.FC = () => {
 
   return (
     <div className="flex flex-col w-full h-screen bg-[#141610] text-[#FAF9F5] overflow-hidden select-none">
-      {/* 1. TOP HEADER APP BAR */}
-      <header className="h-14 bg-[#1E2218] border-b border-[#C2A676]/30 px-4 flex items-center justify-between shrink-0 z-30">
+      {/* 1. TOP HEADER APP BAR (RESPONSIVE) */}
+      <header className="h-14 bg-[#1E2218] border-b border-[#C2A676]/30 px-2 sm:px-4 flex items-center justify-between shrink-0 z-30">
         {/* Left: Branding & Project Title */}
-        <div className="flex items-center gap-3">
-          <div className="w-8 h-8 rounded-full bg-gradient-to-tr from-[#51583D] to-[#C2A676] flex items-center justify-center shadow">
-            <Sparkles className="w-4 h-4 text-[#FAF9F5]" />
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#51583D] to-[#C2A676] flex items-center justify-center shadow shrink-0">
+            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FAF9F5]" />
           </div>
           <div>
-            <h1 className="font-serif font-bold text-sm sm:text-base text-[#FAF9F5] flex items-center gap-2">
-              <span>Studio Pembuat Undangan</span>
-              <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C2A676]/20 text-[#E8D8BA] border border-[#C2A676]/40 uppercase tracking-widest font-mono">
-                Engine V2
+            <h1 className="font-serif font-bold text-xs sm:text-base text-[#FAF9F5] flex items-center gap-1.5">
+              <span>Studio Builder</span>
+              <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-[#C2A676]/20 text-[#E8D8BA] border border-[#C2A676]/40 uppercase tracking-widest font-mono">
+                V2
               </span>
             </h1>
-            <p className="text-[10px] text-[#A0A694]">Drag, tempel, ganti font, warna, & animasi sesuka hati</p>
+            <p className="hidden md:block text-[10px] text-[#A0A694]">Drag, tempel, font & animasi sesuka hati</p>
           </div>
         </div>
 
-        {/* Center: Mode Toggles (Editor vs Live Preview) */}
-        <div className="flex items-center bg-[#141610] p-1 rounded-xl border border-[#C2A676]/30">
+        {/* Center: Mode Toggles (Desktop only) */}
+        <div className="hidden sm:flex items-center bg-[#141610] p-1 rounded-xl border border-[#C2A676]/30">
           <button
             onClick={() => setPreviewMode('editor')}
             className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
@@ -419,7 +483,7 @@ export const InvitationStudio: React.FC = () => {
             }`}
           >
             <Edit3 className="w-3.5 h-3.5" />
-            <span>Mode Studio Edit</span>
+            <span>Mode Edit</span>
           </button>
           <button
             onClick={() => setPreviewMode('live')}
@@ -430,45 +494,45 @@ export const InvitationStudio: React.FC = () => {
             }`}
           >
             <Eye className="w-3.5 h-3.5 text-[#C2A676]" />
-            <span>Live Preview HP</span>
+            <span>Live Preview</span>
           </button>
         </div>
 
         {/* Right: Actions (Undo, Redo, Save, Export, Import) */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {/* Undo / Redo */}
           <button
             onClick={handleUndo}
             disabled={historyIndex <= 0}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 transition"
+            className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 transition"
             title="Undo"
           >
-            <Undo2 className="w-4 h-4" />
+            <Undo2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
           <button
             onClick={handleRedo}
             disabled={historyIndex >= history.length - 1}
-            className="p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 transition"
+            className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 disabled:opacity-30 transition"
             title="Redo"
           >
-            <Redo2 className="w-4 h-4" />
+            <Redo2 className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
           </button>
 
-          <div className="h-4 w-[1px] bg-white/10 mx-1" />
+          <div className="h-4 w-[1px] bg-white/10 mx-0.5 sm:mx-1" />
 
           {/* Save Status / Button */}
           <button
             onClick={handleSave}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-[#51583D] hover:bg-[#65744F] text-[#FAF9F5] text-xs font-semibold border border-[#C2A676]/40 shadow transition"
+            className="inline-flex items-center gap-1 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#51583D] hover:bg-[#65744F] text-[#FAF9F5] text-xs font-semibold border border-[#C2A676]/40 shadow transition"
           >
-            <Save className="w-3.5 h-3.5 text-[#E8D8BA]" />
-            <span>{saveStatus || 'Simpan'}</span>
+            <Save className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#E8D8BA]" />
+            <span className="hidden sm:inline">{saveStatus || 'Simpan'}</span>
           </button>
 
           {/* Export JSON */}
           <button
             onClick={handleExportJSON}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium border border-white/10 transition"
+            className="inline-flex items-center gap-1 p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium border border-white/10 transition"
             title="Download Desain Undangan (JSON)"
           >
             <Download className="w-3.5 h-3.5 text-[#C2A676]" />
@@ -477,7 +541,7 @@ export const InvitationStudio: React.FC = () => {
 
           {/* Import JSON */}
           <label
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium border border-white/10 cursor-pointer transition"
+            className="inline-flex items-center gap-1 p-1.5 sm:px-3 sm:py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-xs font-medium border border-white/10 cursor-pointer transition"
             title="Upload Desain Undangan (JSON)"
           >
             <Upload className="w-3.5 h-3.5 text-[#C2A676]" />
@@ -487,10 +551,14 @@ export const InvitationStudio: React.FC = () => {
         </div>
       </header>
 
-      {/* 2. MAIN WORKSPACE (LEFT TOOLBAR + CENTER CANVAS + RIGHT INSPECTOR) */}
-      <div className="flex-1 flex overflow-hidden">
+      {/* 2. MAIN WORKSPACE (RESPONSIVE ON MOBILE & DESKTOP) */}
+      <div className="flex-1 flex overflow-hidden relative">
         {/* === LEFT DOCK / TOOLBAR (TABS) === */}
-        <aside className="w-16 sm:w-20 bg-[#1A1D15] border-r border-[#C2A676]/20 flex flex-col items-center py-3 gap-2 shrink-0 z-20">
+        <aside
+          className={`${
+            mobileTab === 'tools' ? 'flex' : 'hidden lg:flex'
+          } w-16 sm:w-20 bg-[#1A1D15] border-r border-[#C2A676]/20 flex flex-col items-center py-3 gap-2 shrink-0 z-20`}
+        >
           {[
             { id: 'sections', label: 'Bagian', icon: Layers },
             { id: 'text', label: 'Teks', icon: Type },
@@ -520,7 +588,23 @@ export const InvitationStudio: React.FC = () => {
         </aside>
 
         {/* === LEFT DRAWER / EXPANDABLE PALETTE === */}
-        <aside className="w-64 sm:w-72 bg-[#171A12] border-r border-[#C2A676]/20 flex flex-col shrink-0 z-10 overflow-y-auto p-4 space-y-4">
+        <aside
+          className={`${
+            mobileTab === 'tools' ? 'flex flex-1 w-full' : 'hidden lg:flex'
+          } w-full lg:w-72 bg-[#171A12] border-r border-[#C2A676]/20 flex flex-col shrink-0 z-10 overflow-y-auto p-4 space-y-4`}
+        >
+          {/* Mobile Back to Canvas Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-white/10 lg:hidden shrink-0">
+            <button
+              onClick={() => setMobileTab('canvas')}
+              className="px-3 py-1.5 rounded-lg bg-[#51583D] text-[#FAF9F5] text-xs font-semibold flex items-center gap-1.5 shadow"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Kembali ke Kanvas</span>
+            </button>
+            <span className="text-[11px] font-mono text-[#E8D8BA]">Pilih Aset / Alat</span>
+          </div>
+
           {/* TAB 1: SECTIONS */}
           {activeTab === 'sections' && (
             <div>
@@ -922,21 +1006,25 @@ export const InvitationStudio: React.FC = () => {
         </aside>
 
         {/* === CENTER: MOBILE PREVIEW CANVAS === */}
-        <main className="flex-1 bg-[#0F110B] relative flex flex-col items-center justify-start overflow-y-auto p-4 sm:p-8">
+        <main
+          className={`${
+            mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'
+          } flex-1 bg-[#0F110B] relative flex flex-col items-center justify-start overflow-y-auto p-2 sm:p-6 pb-32 lg:pb-8 w-full`}
+        >
           {/* Global Ambient Particles on Canvas */}
           {project.ambientEffect === 'petals' && (
             <FloatingPetals count={15} type="mixed" className="fixed inset-0 pointer-events-none z-10" />
           )}
 
           {/* Smartphone Frame Simulation */}
-          <div className="relative w-full max-w-[420px] bg-[#FAF9F5] rounded-[44px] shadow-[0_0_80px_rgba(0,0,0,0.8)] border-[10px] border-[#2A2E22] overflow-hidden my-auto shrink-0 transition-all">
-            {/* Phone Speaker Notch */}
-            <div className="absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 rounded-full bg-[#1A1D15] z-50 flex items-center justify-center">
+          <div className="relative w-full max-w-[420px] bg-[#FAF9F5] rounded-2xl sm:rounded-[44px] shadow-[0_0_80px_rgba(0,0,0,0.8)] border-2 sm:border-[10px] border-[#2A2E22] overflow-hidden my-auto shrink-0 transition-all">
+            {/* Phone Speaker Notch (Desktop/Tablet) */}
+            <div className="hidden sm:flex absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 rounded-full bg-[#1A1D15] z-50 items-center justify-center">
               <div className="w-10 h-1.5 rounded-full bg-white/20" />
             </div>
 
             {/* Canvas Sections Container */}
-            <div className="w-full min-h-[750px] flex flex-col pt-6 pb-20">
+            <div className="w-full min-h-[680px] sm:min-h-[750px] flex flex-col pt-4 sm:pt-6 pb-20">
               {project.sections
                 .filter((s) => s.enabled)
                 .map((sec) => (
@@ -975,9 +1063,12 @@ export const InvitationStudio: React.FC = () => {
                               setSelectedElementId(el.id);
                               setSelectedSectionId(sec.id);
                             }}
+                            onTouchStart={(e) => handleTouchStart(e, el, sec.id)}
+                            onTouchMove={(e) => handleTouchMove(e, el)}
+                            onTouchEnd={handleTouchEnd}
                             className={`relative transition-transform select-none cursor-pointer ${
                               isSelected
-                                ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent'
+                                ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent z-30'
                                 : 'hover:ring-1 hover:ring-[#C2A676]/60'
                             }`}
                             style={{
@@ -988,9 +1079,9 @@ export const InvitationStudio: React.FC = () => {
                               opacity: el.opacity,
                             }}
                           >
-                            {/* Selected Action Floating Toolbar */}
+                            {/* Selected Action Floating Toolbar (Desktop) */}
                             {isSelected && (
-                              <div className="absolute -top-9 left-1/2 -translate-x-1/2 z-50 bg-[#2A2E22] px-2 py-1 rounded-lg border border-[#C2A676]/60 shadow-xl flex items-center gap-1.5 text-white">
+                              <div className="hidden sm:flex absolute -top-9 left-1/2 -translate-x-1/2 z-50 bg-[#2A2E22] px-2 py-1 rounded-lg border border-[#C2A676]/60 shadow-xl items-center gap-1.5 text-white">
                                 <span className="text-[10px] font-medium max-w-[100px] truncate text-[#E8D8BA]">
                                   {el.name}
                                 </span>
@@ -1109,10 +1200,116 @@ export const InvitationStudio: React.FC = () => {
                 ))}
             </div>
           </div>
+
+          {/* FLOATING MOBILE NUDGE & QUICK ACTION DOCK (ACTIVE ON MOBILE WHEN ELEMENT SELECTED) */}
+          {selectedElement && previewMode === 'editor' && (
+            <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 bg-[#1E2218]/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-[#C2A676]/60 shadow-2xl flex items-center gap-2 max-w-[95vw]">
+              {/* D-Pad Directional Nudges */}
+              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl">
+                <button
+                  onClick={() => nudgeElement(-5, 0)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 active:bg-[#C2A676] text-white"
+                  title="Geser Kiri"
+                >
+                  <ArrowLeft className="w-3.5 h-3.5" />
+                </button>
+                <div className="flex flex-col gap-1">
+                  <button
+                    onClick={() => nudgeElement(0, -5)}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 active:bg-[#C2A676] text-white"
+                    title="Geser Atas"
+                  >
+                    <ArrowUp className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => nudgeElement(0, 5)}
+                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 active:bg-[#C2A676] text-white"
+                    title="Geser Bawah"
+                  >
+                    <ArrowDown className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <button
+                  onClick={() => nudgeElement(5, 0)}
+                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 active:bg-[#C2A676] text-white"
+                  title="Geser Kanan"
+                >
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </button>
+              </div>
+
+              {/* Size Adjusters */}
+              <div className="flex flex-col gap-1 bg-black/40 p-1 rounded-xl">
+                <button
+                  onClick={() => resizeElement(10, 5)}
+                  className="px-2 py-0.5 text-[10px] font-bold rounded bg-white/10 active:bg-[#C2A676] text-white"
+                  title="Perbesar"
+                >
+                  + Size
+                </button>
+                <button
+                  onClick={() => resizeElement(-10, -5)}
+                  className="px-2 py-0.5 text-[10px] font-bold rounded bg-white/10 active:bg-[#C2A676] text-white"
+                  title="Perkecil"
+                >
+                  - Size
+                </button>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex items-center gap-1 pl-1 border-l border-white/10">
+                <button
+                  onClick={() => setMobileTab('inspector')}
+                  className="px-2.5 py-1.5 rounded-xl bg-[#51583D] active:bg-[#65744F] text-[#FAF9F5] text-xs font-semibold flex items-center gap-1 shadow"
+                  title="Pengaturan Elemen"
+                >
+                  <Sliders className="w-3.5 h-3.5 text-[#E8D8BA]" />
+                  <span className="text-[11px]">Edit</span>
+                </button>
+                <button
+                  onClick={() => handleDuplicateElement(selectedElement)}
+                  className="p-1.5 rounded-xl bg-white/5 active:bg-white/20 text-[#FAF9F5]"
+                  title="Duplikat"
+                >
+                  <Copy className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => handleDeleteElement(selectedElement.id)}
+                  className="p-1.5 rounded-xl bg-rose-500/20 active:bg-rose-500/40 text-rose-300"
+                  title="Hapus"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  onClick={() => setSelectedElementId(null)}
+                  className="p-1.5 rounded-xl bg-white/5 text-white/50 hover:text-white"
+                  title="Tutup Seleksi"
+                >
+                  <X className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
+          )}
         </main>
 
         {/* === RIGHT PROPERTY INSPECTOR === */}
-        <aside className="w-72 sm:w-80 bg-[#171A12] border-l border-[#C2A676]/20 flex flex-col shrink-0 z-20 overflow-y-auto p-4 space-y-4">
+        <aside
+          className={`${
+            mobileTab === 'inspector' ? 'flex flex-1 w-full' : 'hidden lg:flex'
+          } w-full lg:w-80 bg-[#171A12] border-l border-[#C2A676]/20 flex flex-col shrink-0 z-20 overflow-y-auto p-4 pb-28 lg:pb-8 space-y-4`}
+        >
+          {/* Mobile Back Header */}
+          <div className="flex items-center justify-between pb-3 border-b border-white/10 lg:hidden shrink-0">
+            <button
+              onClick={() => setMobileTab('canvas')}
+              className="px-3 py-1.5 rounded-lg bg-[#51583D] text-[#FAF9F5] text-xs font-semibold flex items-center gap-1.5 shadow"
+            >
+              <ChevronLeft className="w-4 h-4" />
+              <span>Selesai & Lihat Kanvas</span>
+            </button>
+            <span className="text-xs font-mono text-[#E8D8BA]">Pengaturan Elemen</span>
+          </div>
+
           {selectedElement ? (
             <div>
               <div className="flex items-center justify-between pb-3 border-b border-white/10 mb-4">
@@ -1400,6 +1597,60 @@ export const InvitationStudio: React.FC = () => {
           )}
         </aside>
       </div>
+
+      {/* 3. MOBILE BOTTOM NAVIGATION DOCK (ONLY ON MOBILE / TABLET) */}
+      <nav className="lg:hidden h-16 bg-[#171A12] border-t border-[#C2A676]/30 px-2 flex items-center justify-around shrink-0 z-40 backdrop-blur-md">
+        <button
+          onClick={() => setMobileTab('canvas')}
+          className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition ${
+            mobileTab === 'canvas'
+              ? 'text-[#E8D8BA] bg-[#51583D]/40 font-bold'
+              : 'text-[#A0A694] hover:text-[#FAF9F5]'
+          }`}
+        >
+          <Smartphone className="w-4 h-4" />
+          <span className="text-[10px] leading-none">Kanvas</span>
+        </button>
+
+        <button
+          onClick={() => setMobileTab('tools')}
+          className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition ${
+            mobileTab === 'tools'
+              ? 'text-[#E8D8BA] bg-[#51583D]/40 font-bold'
+              : 'text-[#A0A694] hover:text-[#FAF9F5]'
+          }`}
+        >
+          <Palette className="w-4 h-4" />
+          <span className="text-[10px] leading-none">Alat & Aset</span>
+        </button>
+
+        <button
+          onClick={() => setMobileTab('inspector')}
+          className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition relative ${
+            mobileTab === 'inspector'
+              ? 'text-[#E8D8BA] bg-[#51583D]/40 font-bold'
+              : 'text-[#A0A694] hover:text-[#FAF9F5]'
+          }`}
+        >
+          <Sliders className="w-4 h-4" />
+          <span className="text-[10px] leading-none">Edit Elemen</span>
+          {selectedElementId && (
+            <span className="absolute top-1.5 right-1/4 w-2 h-2 rounded-full bg-[#C2A676] animate-ping" />
+          )}
+        </button>
+
+        <button
+          onClick={() => setPreviewMode(previewMode === 'live' ? 'editor' : 'live')}
+          className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition ${
+            previewMode === 'live'
+              ? 'text-emerald-300 bg-emerald-950/50 font-bold border border-emerald-500/30'
+              : 'text-[#A0A694] hover:text-[#FAF9F5]'
+          }`}
+        >
+          <Play className="w-4 h-4" />
+          <span className="text-[10px] leading-none">{previewMode === 'live' ? 'Editor' : 'Live Preview'}</span>
+        </button>
+      </nav>
     </div>
   );
 };

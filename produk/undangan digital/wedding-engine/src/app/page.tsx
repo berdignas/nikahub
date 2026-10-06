@@ -58,13 +58,13 @@ function WeddingInvitationApp() {
         />
 
         {/* Floating Quick Action: Open Invitation Builder Studio */}
-        <div className="fixed top-4 right-4 z-50">
+        <div className="fixed top-3 right-3 sm:top-4 sm:right-4 z-50">
           <a
             href="/builder"
-            className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-[#1A1D15]/90 hover:bg-[#51583D] text-[#FAF9F5] text-xs font-semibold shadow-xl border border-[#C2A676]/60 backdrop-blur-md transition-all hover:scale-105"
+            className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-4 sm:py-2 rounded-full bg-[#1A1D15]/90 hover:bg-[#51583D] text-[#FAF9F5] text-[11px] sm:text-xs font-semibold shadow-xl border border-[#C2A676]/60 backdrop-blur-md transition-all hover:scale-105"
           >
             <span className="w-2 h-2 rounded-full bg-emerald-400 animate-ping" />
-            <span>🎨 Mesin Pembuat Undangan (Studio)</span>
+            <span>🎨 <span className="hidden sm:inline">Mesin Pembuat </span>Studio</span>
           </a>
         </div>
 
