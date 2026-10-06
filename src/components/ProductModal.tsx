@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { WeddingProduct } from '../types';
+import { VideoPlayer } from '../lib/videoUtils';
 import { 
   X, 
   Star, 
@@ -10,7 +11,10 @@ import {
   ShieldCheck, 
   ShoppingBag, 
   MessageSquare,
-  Sparkles
+  Sparkles,
+  Play,
+  Film,
+  Image as ImageIcon
 } from 'lucide-react';
 
 interface ProductModalProps {
@@ -26,6 +30,7 @@ export const ProductModal: React.FC<ProductModalProps> = ({
 }) => {
   const [selectedImage, setSelectedImage] = useState<string>('');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [mediaMode, setMediaMode] = useState<'image' | 'video'>('image');
 
   if (!product) return null;
 
@@ -83,35 +88,86 @@ export const ProductModal: React.FC<ProductModalProps> = ({
               
               {/* Media Gallery */}
               <div className="flex flex-col gap-3">
+                {/* Switcher Tab if Product has both Video & Photos */}
+                {product.videoUrl && (
+                  <div className="flex items-center gap-2 p-1 bg-emerald-950/5 rounded-xl text-xs font-semibold">
+                    <button
+                      type="button"
+                      onClick={() => setMediaMode('image')}
+                      className={`flex-1 py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                        mediaMode === 'image'
+                          ? 'bg-emerald-950 text-sand shadow-xs font-bold'
+                          : 'text-emerald-900/70 hover:text-emerald-950'
+                      }`}
+                    >
+                      <ImageIcon className="w-3.5 h-3.5" />
+                      <span>Galeri Foto ({product.gallery?.length || 1})</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setMediaMode('video')}
+                      className={`flex-1 py-1.5 px-3 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+                        mediaMode === 'video'
+                          ? 'bg-emerald-950 text-sand shadow-xs font-bold'
+                          : 'text-emerald-900/70 hover:text-emerald-950'
+                      }`}
+                    >
+                      <Film className="w-3.5 h-3.5 text-champagne-400" />
+                      <span>Video Dokumentasi</span>
+                    </button>
+                  </div>
+                )}
+
                 <div className="relative aspect-[4/3] rounded-2xl overflow-hidden bg-emerald-950 shadow-md">
-                  <img 
-                    src={currentImg} 
-                    alt={product.title} 
-                    className="w-full h-full object-cover"
-                  />
-                  <div className="absolute top-3 left-3">
+                  {mediaMode === 'video' && product.videoUrl ? (
+                    <VideoPlayer url={product.videoUrl} autoPlay className="w-full h-full object-cover" />
+                  ) : (
+                    <img 
+                      src={currentImg} 
+                      alt={product.title} 
+                      className="w-full h-full object-cover"
+                    />
+                  )}
+                  <div className="absolute top-3 left-3 z-10 pointer-events-none">
                     <span className="px-3 py-1 rounded-full bg-emerald-950/80 backdrop-blur-md text-sand text-[11px] font-semibold uppercase tracking-wider">
                       {product.categoryLabel}
                     </span>
                   </div>
                 </div>
 
-                {/* Thumbnails */}
-                {product.gallery.length > 1 && (
-                  <div className="flex items-center gap-2 overflow-x-auto pb-1">
-                    {product.gallery.map((img, i) => (
-                      <button
-                        key={i}
-                        onClick={() => setSelectedImage(img)}
-                        className={`relative w-20 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${
-                          currentImg === img ? 'border-champagne-500 scale-95' : 'border-transparent opacity-70 hover:opacity-100'
-                        }`}
-                      >
-                        <img src={img} alt="" className="w-full h-full object-cover" />
-                      </button>
-                    ))}
-                  </div>
-                )}
+                {/* Thumbnails (Photos & Video) */}
+                <div className="flex items-center gap-2 overflow-x-auto pb-1">
+                  {/* Video Thumbnail Button if available */}
+                  {product.videoUrl && (
+                    <button
+                      type="button"
+                      onClick={() => setMediaMode('video')}
+                      className={`relative w-20 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all flex flex-col items-center justify-center bg-emerald-950 text-sand ${
+                        mediaMode === 'video' ? 'border-champagne-500 scale-95 ring-2 ring-champagne-400' : 'border-transparent opacity-80 hover:opacity-100'
+                      }`}
+                    >
+                      <Play className="w-5 h-5 text-champagne-400 mb-0.5" />
+                      <span className="text-[9px] font-bold tracking-wider uppercase">Video</span>
+                    </button>
+                  )}
+
+                  {/* Photo Thumbnails */}
+                  {(product.gallery || [product.image]).map((img, i) => (
+                    <button
+                      key={i}
+                      type="button"
+                      onClick={() => {
+                        setSelectedImage(img);
+                        setMediaMode('image');
+                      }}
+                      className={`relative w-20 h-14 rounded-lg overflow-hidden shrink-0 border-2 transition-all ${
+                        mediaMode === 'image' && currentImg === img ? 'border-champagne-500 scale-95' : 'border-transparent opacity-70 hover:opacity-100'
+                      }`}
+                    >
+                      <img src={img} alt="" className="w-full h-full object-cover" />
+                    </button>
+                  ))}
+                </div>
 
                 {/* In-House Guarantee Info */}
                 <div className="mt-4 p-4 rounded-2xl bg-champagne-50 border border-champagne-200/60 flex flex-col gap-2 text-xs text-emerald-950">

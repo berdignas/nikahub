@@ -24,11 +24,16 @@ import {
   DollarSign,
   Upload,
   Image as ImageIcon,
-  Crop
+  Crop,
+  Images,
+  Film,
+  Video,
+  Play
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { WeddingProduct, ProductCategory } from '../types';
 import { ImageCropperModal } from './ImageCropperModal';
+import { VideoPlayer } from '../lib/videoUtils';
 import { 
   fetchOrdersFromSupabase, 
   updateOrderStatusInSupabase, 
@@ -114,11 +119,23 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState<WeddingProduct | null>(null);
 
-  // Image Upload & Compression & Adjustment State
+  // Image & Video Upload & Compression & Adjustment State
   const fileInputRef = React.useRef<HTMLInputElement>(null);
+  const galleryFileInputRef = React.useRef<HTMLInputElement>(null);
+  const videoFileInputRef = React.useRef<HTMLInputElement>(null);
+
   const [isCompressing, setIsCompressing] = useState(false);
   const [compressionInfo, setCompressionInfo] = useState<string | null>(null);
   const [isCropperOpen, setIsCropperOpen] = useState<boolean>(false);
+
+  // Gallery multi-upload state
+  const [isUploadingGallery, setIsUploadingGallery] = useState(false);
+  const [galleryUploadInfo, setGalleryUploadInfo] = useState<string | null>(null);
+  const [manualGalleryUrl, setManualGalleryUrl] = useState('');
+
+  // Video upload state
+  const [isUploadingVideo, setIsUploadingVideo] = useState(false);
+  const [videoUploadInfo, setVideoUploadInfo] = useState<string | null>(null);
 
   // Close admin modals when phone back button is pressed
   React.useEffect(() => {
@@ -163,6 +180,99 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       setCompressionInfo('⚠️ Gagal mengompres, menggunakan file asli.');
     } finally {
       setIsCompressing(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = '';
+      }
+    }
+  };
+
+  // Multi-photo gallery uploader
+  const handleGalleryFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) return;
+
+    try {
+      setIsUploadingGallery(true);
+      const newUrls: string[] = [];
+      const total = files.length;
+
+      for (let i = 0; i < total; i++) {
+        const file = files[i];
+        setGalleryUploadInfo(`⏳ Mengompres & mengunggah foto (${i + 1}/${total}): ${file.name}...`);
+
+        const compressedDataUrl = await compressImageFile(file, 1200, 1200, 0.75);
+        const uploadedUrl = await uploadImageToSupabaseStorage(compressedDataUrl, 'gallery');
+        newUrls.push(uploadedUrl || compressedDataUrl);
+      }
+
+      setFormData(prev => ({
+        ...prev,
+        gallery: [...(prev.gallery || []), ...newUrls]
+      }));
+      setGalleryUploadInfo(`✅ Berhasil menambahkan ${newUrls.length} foto ke galeri produk!`);
+    } catch (err: any) {
+      console.error('Gallery upload failed:', err);
+      setGalleryUploadInfo(`⚠️ Gagal mengunggah foto: ${err.message || 'Terjadi kesalahan'}`);
+    } finally {
+      setIsUploadingGallery(false);
+      if (galleryFileInputRef.current) {
+        galleryFileInputRef.current.value = '';
+      }
+    }
+  };
+
+  const handleAddManualGalleryUrl = () => {
+    if (!manualGalleryUrl.trim()) return;
+    setFormData(prev => ({
+      ...prev,
+      gallery: [...(prev.gallery || []), manualGalleryUrl.trim()]
+    }));
+    setManualGalleryUrl('');
+  };
+
+  const handleRemoveGalleryImage = (indexToRemove: number) => {
+    setFormData(prev => ({
+      ...prev,
+      gallery: (prev.gallery || []).filter((_, idx) => idx !== indexToRemove)
+    }));
+  };
+
+  const handleSetGalleryAsCover = (imgUrl: string) => {
+    setFormData(prev => ({
+      ...prev,
+      image: imgUrl
+    }));
+  };
+
+  // Video uploader (file upload)
+  const handleVideoFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const sizeMb = file.size / (1024 * 1024);
+    if (sizeMb > 100) {
+      alert('Ukuran video melebihi 100 MB. Disarankan menggunakan link YouTube / Vimeo / Google Drive untuk durasi panjang.');
+      return;
+    }
+
+    try {
+      setIsUploadingVideo(true);
+      setVideoUploadInfo(`⏳ Mengunggah video (${sizeMb.toFixed(1)} MB) ke Supabase Storage CDN...`);
+      const uploadedUrl = await uploadImageToSupabaseStorage(file, 'video');
+      if (uploadedUrl) {
+        setFormData(prev => ({ ...prev, videoUrl: uploadedUrl }));
+        setVideoUploadInfo(`✅ Video berhasil diunggah (${sizeMb.toFixed(1)} MB)!`);
+      } else {
+        setVideoUploadInfo('⚠️ Gagal mengunggah ke penyimpanan cloud.');
+      }
+    } catch (err: any) {
+      console.error('Video upload failed:', err);
+      setVideoUploadInfo(`⚠️ Gagal mengunggah video: ${err.message || 'Terjadi kesalahan'}`);
+    } finally {
+      setIsUploadingVideo(false);
+      if (videoFileInputRef.current) {
+        videoFileInputRef.current.value = '';
+      }
     }
   };
 
@@ -177,6 +287,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     originalPrice: number;
     vendorName: string;
     image: string;
+    gallery: string[];
+    videoUrl: string;
     location: string;
     liveDemoUrl?: string;
     description: string;
@@ -192,6 +304,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
     originalPrice: 18000000,
     vendorName: 'NikaHub Official Production',
     image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80',
+    gallery: [],
+    videoUrl: '',
     location: 'Jakarta Selatan',
     liveDemoUrl: '',
     description: 'Fasilitas tenda dekorasi VIP lengkap dengan pendingin dan panggung.',
@@ -327,6 +441,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
   const openAddModal = () => {
     setEditingProduct(null);
+    setGalleryUploadInfo(null);
+    setVideoUploadInfo(null);
     setFormData({
       title: '',
       category: 'tenda',
@@ -336,6 +452,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       originalPrice: 18000000,
       vendorName: 'NikaHub Official Production',
       image: 'https://images.unsplash.com/photo-1519167758481-83f550bb49b3?auto=format&fit=crop&w=1200&q=80',
+      gallery: [],
+      videoUrl: '',
       location: 'Jakarta Selatan',
       liveDemoUrl: '',
       description: 'Fasilitas komplit kelas VIP dari NikaHub Atelier.',
@@ -348,6 +466,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
 
   const openEditModal = (product: WeddingProduct) => {
     setEditingProduct(product);
+    setGalleryUploadInfo(null);
+    setVideoUploadInfo(null);
+    const extraGallery = Array.isArray(product.gallery)
+      ? product.gallery.filter(g => g && g !== product.image)
+      : [];
+
     setFormData({
       id: product.id,
       title: product.title,
@@ -358,6 +482,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
       originalPrice: product.originalPrice || product.price,
       vendorName: product.vendorName,
       image: product.image,
+      gallery: extraGallery,
+      videoUrl: product.videoUrl || '',
       location: product.location,
       liveDemoUrl: product.liveDemoUrl || '',
       description: product.description,
@@ -392,6 +518,12 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         }
       }
 
+      // Build consolidated gallery array (cover is first, followed by additional photos)
+      const finalGallery = [
+        finalImageUrl,
+        ...(formData.gallery || []).filter(g => g && g !== finalImageUrl)
+      ];
+
       let targetProduct: WeddingProduct;
 
       if (editingProduct) {
@@ -406,6 +538,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           originalPrice: Number(formData.originalPrice),
           vendorName: formData.vendorName.trim(),
           image: finalImageUrl,
+          gallery: finalGallery,
+          videoUrl: formData.videoUrl?.trim() || undefined,
           location: finalLocation,
           liveDemoUrl: formData.liveDemoUrl?.trim() || undefined,
           description: formData.description.trim(),
@@ -432,7 +566,8 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
           rating: 5.0,
           reviewCount: 1,
           image: finalImageUrl,
-          gallery: [finalImageUrl],
+          gallery: finalGallery,
+          videoUrl: formData.videoUrl?.trim() || undefined,
           vendorName: formData.vendorName.trim(),
           location: finalLocation,
           liveDemoUrl: formData.liveDemoUrl?.trim() || undefined,
@@ -1161,13 +1296,16 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                   </div>
                 )}
 
-                {/* IMAGE UPLOADER WITH PREVIEW BUTTON */}
+                {/* 1. COVER IMAGE UPLOADER */}
                 <div className="p-4 rounded-2xl bg-emerald-50/60 border border-emerald-950/10 space-y-3">
                   <div className="flex items-center justify-between">
                     <label className="block font-bold text-emerald-950 text-xs flex items-center gap-1.5">
                       <ImageIcon className="w-4 h-4 text-champagne-600" />
-                      Masukkan Foto Sampul Produk *
+                      <span>Foto Sampul Utama Produk *</span>
                     </label>
+                    <span className="text-[10px] text-emerald-800 font-semibold bg-emerald-100/60 px-2 py-0.5 rounded-full">
+                      Thumbnail Kartu Katalog
+                    </span>
                   </div>
 
                   <div className="flex flex-col sm:flex-row items-center gap-3">
@@ -1178,7 +1316,7 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-950 text-sand hover:bg-emerald-900 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95 shadow-sm"
                     >
                       <Upload className="w-4 h-4 text-champagne-400" />
-                      <span>{isCompressing ? 'Mengompres...' : 'Pilih Foto dari HP/Laptop'}</span>
+                      <span>{isCompressing ? 'Mengompres...' : 'Pilih Foto Sampul'}</span>
                     </button>
                     <input
                       ref={fileInputRef}
@@ -1214,11 +1352,199 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
                       <button
                         type="button"
                         onClick={() => setIsCropperOpen(true)}
-                        className="w-full py-3 rounded-xl font-bold bg-white text-emerald-950 border-2 border-emerald-950 hover:bg-emerald-50 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm"
+                        className="w-full py-2.5 rounded-xl font-bold bg-white text-emerald-950 border-2 border-emerald-950 hover:bg-emerald-50 transition-colors cursor-pointer flex items-center justify-center gap-2 shadow-sm text-xs"
                       >
-                        <Crop className="w-5 h-5 text-emerald-700" />
-                        <span>Lihat & Sesuaikan Foto (Preview)</span>
+                        <Crop className="w-4 h-4 text-emerald-700" />
+                        <span>Lihat & Sesuaikan Foto Sampul (Preview/Crop)</span>
                       </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* 2. MULTI-PHOTO GALLERY UPLOADER */}
+                <div className="p-4 rounded-2xl bg-champagne-50/50 border border-champagne-200 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <label className="block font-bold text-emerald-950 text-xs flex items-center gap-1.5">
+                      <Images className="w-4 h-4 text-champagne-700" />
+                      <span>Galeri Multi-Foto Tambahan (Bisa Banyak Foto)</span>
+                    </label>
+                    <span className="text-[10px] text-champagne-800 font-bold bg-champagne-100 px-2.5 py-0.5 rounded-full self-start sm:self-auto">
+                      {formData.gallery?.length || 0} Foto Tambahan Tersedia
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-gray-600">
+                    Unggah beberapa foto dokumentasi dekorasi, riasan, atau gaun sekaligus untuk memukau calon pengantin di halaman detail.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => galleryFileInputRef.current?.click()}
+                      disabled={isUploadingGallery}
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-champagne-700 text-white hover:bg-champagne-800 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95 shadow-sm"
+                    >
+                      <Upload className="w-4 h-4 text-champagne-200" />
+                      <span>{isUploadingGallery ? 'Mengunggah Foto...' : 'Pilih Banyak Foto Sekaligus'}</span>
+                    </button>
+                    <input
+                      ref={galleryFileInputRef}
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      disabled={isUploadingGallery}
+                      onChange={handleGalleryFileUpload}
+                      className="hidden"
+                    />
+
+                    <div className="flex-1 w-full flex items-center gap-2">
+                      <input
+                        type="text"
+                        value={manualGalleryUrl}
+                        onChange={(e) => setManualGalleryUrl(e.target.value)}
+                        placeholder="Atau tempel URL Foto tambahan..."
+                        className="flex-1 px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-white"
+                      />
+                      <button
+                        type="button"
+                        onClick={handleAddManualGalleryUrl}
+                        disabled={!manualGalleryUrl.trim()}
+                        className="px-3.5 py-2 rounded-xl bg-emerald-950 text-sand hover:bg-emerald-900 font-bold text-xs cursor-pointer disabled:opacity-40"
+                      >
+                        Tambah
+                      </button>
+                    </div>
+                  </div>
+
+                  {galleryUploadInfo && (
+                    <p className="text-[11px] font-semibold text-champagne-900 bg-white px-3 py-1.5 rounded-lg border border-champagne-200">
+                      {galleryUploadInfo}
+                    </p>
+                  )}
+
+                  {/* Thumbnail List of Gallery Photos */}
+                  {formData.gallery && formData.gallery.length > 0 ? (
+                    <div className="pt-2">
+                      <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 gap-2.5">
+                        {formData.gallery.map((imgUrl, idx) => (
+                          <div 
+                            key={idx} 
+                            className="group relative aspect-square rounded-xl overflow-hidden bg-gray-100 border border-gray-200 shadow-xs"
+                          >
+                            <img 
+                              src={imgUrl} 
+                              alt={`Galeri ${idx + 1}`} 
+                              className="w-full h-full object-cover" 
+                            />
+                            
+                            {/* Hover / Action Overlay */}
+                            <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-1.5">
+                              <button
+                                type="button"
+                                title="Jadikan Foto Sampul"
+                                onClick={() => handleSetGalleryAsCover(imgUrl)}
+                                className="self-start p-1 rounded-md bg-champagne-400 text-emerald-950 hover:bg-champagne-300 transition-colors"
+                              >
+                                <Sparkles className="w-3 h-3" />
+                              </button>
+                              
+                              <button
+                                type="button"
+                                title="Hapus Foto dari Galeri"
+                                onClick={() => handleRemoveGalleryImage(idx)}
+                                className="self-end p-1 rounded-md bg-rose-600 text-white hover:bg-rose-700 transition-colors"
+                              >
+                                <Trash2 className="w-3 h-3" />
+                              </button>
+                            </div>
+
+                            <span className="absolute bottom-1 left-1 px-1.5 py-0.5 rounded-md bg-black/70 text-white text-[9px] font-mono">
+                              #{idx + 1}
+                            </span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="p-3 rounded-xl border border-dashed border-champagne-300 text-center text-xs text-gray-500 bg-white/50">
+                      Belum ada foto tambahan di galeri. Klik <strong>"Pilih Banyak Foto Sekaligus"</strong> untuk menambahkan beberapa foto.
+                    </div>
+                  )}
+                </div>
+
+                {/* 3. VIDEO UPLOADER & EMBED MANAGER */}
+                <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 space-y-3">
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1">
+                    <label className="block font-bold text-emerald-950 text-xs flex items-center gap-1.5">
+                      <Film className="w-4 h-4 text-emerald-700" />
+                      <span>Video Teaser / Dokumentasi Sinematik (Opsional)</span>
+                    </label>
+                    <span className="text-[10px] text-emerald-800 font-semibold bg-emerald-100/70 px-2 py-0.5 rounded-full self-start sm:self-auto">
+                      YouTube, Drive, Vimeo, atau MP4
+                    </span>
+                  </div>
+
+                  <p className="text-[11px] text-gray-600">
+                    Bisa unggah file video langsung (MP4/WebM) atau masukkan tautan video YouTube (Shorts/Watch), Vimeo, atau Google Drive.
+                  </p>
+
+                  <div className="flex flex-col sm:flex-row items-center gap-2.5">
+                    <button
+                      type="button"
+                      onClick={() => videoFileInputRef.current?.click()}
+                      disabled={isUploadingVideo}
+                      className="w-full sm:w-auto px-4 py-2.5 rounded-xl bg-emerald-950 text-sand hover:bg-emerald-900 font-bold text-xs flex items-center justify-center gap-2 cursor-pointer transition-transform active:scale-95 shadow-sm"
+                    >
+                      <Video className="w-4 h-4 text-champagne-400" />
+                      <span>{isUploadingVideo ? 'Mengunggah Video...' : 'Pilih File Video (MP4)'}</span>
+                    </button>
+                    <input
+                      ref={videoFileInputRef}
+                      type="file"
+                      accept="video/*"
+                      disabled={isUploadingVideo}
+                      onChange={handleVideoFileUpload}
+                      className="hidden"
+                    />
+
+                    <div className="flex-1 w-full">
+                      <input
+                        type="text"
+                        value={formData.videoUrl}
+                        onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                        placeholder="Contoh: https://www.youtube.com/watch?v=... atau https://youtu.be/..."
+                        className="w-full px-3 py-2 rounded-xl border border-gray-200 text-xs focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  {videoUploadInfo && (
+                    <p className="text-[11px] font-semibold text-emerald-900 bg-white px-3 py-1.5 rounded-lg border border-emerald-200">
+                      {videoUploadInfo}
+                    </p>
+                  )}
+
+                  {/* Video Live Preview */}
+                  {formData.videoUrl && (
+                    <div className="pt-2 space-y-2">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-bold text-emerald-950 flex items-center gap-1.5">
+                          <Play className="w-3.5 h-3.5 text-champagne-600" />
+                          Preview Pemutar Video:
+                        </span>
+                        <button
+                          type="button"
+                          onClick={() => setFormData(prev => ({ ...prev, videoUrl: '' }))}
+                          className="text-rose-600 hover:text-rose-700 font-bold text-[11px] flex items-center gap-1 cursor-pointer"
+                        >
+                          <Trash2 className="w-3 h-3" />
+                          <span>Hapus Video</span>
+                        </button>
+                      </div>
+
+                      <div className="relative aspect-video rounded-xl overflow-hidden bg-black shadow-md border border-gray-200 max-h-64 mx-auto">
+                        <VideoPlayer url={formData.videoUrl} className="w-full h-full object-contain" />
+                      </div>
                     </div>
                   )}
                 </div>

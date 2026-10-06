@@ -40,9 +40,13 @@ CREATE TABLE IF NOT EXISTS public.products (
     description TEXT,
     availability TEXT DEFAULT 'ready',
     live_demo_url TEXT,
+    video_url TEXT,
     created_at TIMESTAMPTZ DEFAULT NOW(),
     updated_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+-- Migration safety: Add video_url column if table already exists
+ALTER TABLE public.products ADD COLUMN IF NOT EXISTS video_url TEXT;
 
 -- Index pencarian cepat untuk produk
 CREATE INDEX IF NOT EXISTS idx_products_category ON public.products(category);

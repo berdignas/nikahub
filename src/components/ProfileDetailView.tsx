@@ -20,8 +20,10 @@ import {
   X,
   Clock,
   Award,
-  ExternalLink
+  ExternalLink,
+  Film
 } from 'lucide-react';
+import { VideoPlayer } from '../lib/videoUtils';
 
 interface ProfileDetailViewProps {
   product: WeddingProduct;
@@ -398,6 +400,31 @@ export const ProfileDetailView: React.FC<ProfileDetailViewProps> = ({
                   <a href={product.liveDemoUrl} target="_blank" rel="noreferrer" className="font-bold text-emerald-950 underline hover:text-champagne-700">
                     Buka URL Langsung ↗
                   </a>
+                </div>
+              </div>
+            )}
+
+            {/* Cinematic Video Showcase Section */}
+            {product.videoUrl && (
+              <div className="bg-white rounded-[2.5rem] p-6 sm:p-8 border border-emerald-950/10 shadow-sm overflow-hidden">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4 pb-4 border-b border-gray-100">
+                  <div>
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-champagne-700 block mb-1 flex items-center gap-1.5">
+                      <Film className="w-3.5 h-3.5 text-champagne-600" />
+                      Teaser & Dokumentasi Video Sinematik
+                    </span>
+                    <h2 className="font-serif text-2xl sm:text-3xl font-bold text-emerald-950">
+                      Highlight Karya Video Resmi
+                    </h2>
+                  </div>
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-900 text-xs font-semibold">
+                    <Sparkles className="w-3 h-3 text-champagne-600" />
+                    <span>Resolusi High-Definition (HD/4K)</span>
+                  </div>
+                </div>
+
+                <div className="relative aspect-video rounded-2xl overflow-hidden bg-black shadow-md">
+                  <VideoPlayer url={product.videoUrl} className="w-full h-full object-cover" />
                 </div>
               </div>
             )}

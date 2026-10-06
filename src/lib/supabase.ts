@@ -74,7 +74,8 @@ export function mapProductFromDb(row: any): WeddingProduct {
     includes: includesArr.length ? includesArr : ['Fasilitas Standar NikaHub Atelier'],
     description: row.description || '',
     availability: (row.availability || 'ready') as 'ready' | 'limited' | 'booked',
-    liveDemoUrl: row.live_demo_url || row.liveDemoUrl || undefined
+    liveDemoUrl: row.live_demo_url || row.liveDemoUrl || undefined,
+    videoUrl: row.video_url || row.videoUrl || undefined
   };
 }
 
@@ -92,6 +93,7 @@ export function mapProductToDb(prod: WeddingProduct): any {
     review_count: prod.reviewCount || 0,
     image: prod.image,
     gallery: prod.gallery || [prod.image],
+    video_url: prod.videoUrl || null,
     vendor_name: prod.vendorName,
     talent_name: prod.talentName || null,
     talent_role: prod.talentRole || null,
@@ -155,9 +157,20 @@ export async function fetchProductsFromSupabase(): Promise<WeddingProduct[]> {
 export async function saveProductToSupabase(product: WeddingProduct): Promise<{ success: boolean; error?: string }> {
   try {
     const payload = mapProductToDb(product);
-    const { error } = await supabase
+    let { error } = await supabase
       .from('products')
       .upsert(payload, { onConflict: 'id' });
+
+    // If column "video_url" does not exist in user's Supabase schema, retry without it
+    if (error && (error.message?.includes('video_url') || (error as any).code === '42703')) {
+      console.warn('Column video_url might not exist yet, falling back to saving without video_url column');
+      const fallbackPayload = { ...payload };
+      delete fallbackPayload.video_url;
+      const retryResult = await supabase
+        .from('products')
+        .upsert(fallbackPayload, { onConflict: 'id' });
+      error = retryResult.error;
+    }
 
     if (error) {
       console.error('Supabase save product error:', error);

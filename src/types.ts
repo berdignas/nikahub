@@ -52,6 +52,7 @@ export interface WeddingProduct {
   description: string;
   availability: 'ready' | 'limited' | 'booked';
   liveDemoUrl?: string;
+  videoUrl?: string;
 }
 
 export interface BookingItem {
