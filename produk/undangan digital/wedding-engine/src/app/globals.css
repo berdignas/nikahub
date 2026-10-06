@@ -65,3 +65,114 @@ body {
   animation: naturalSway 6s ease-in-out infinite;
   transform-origin: top center;
 }
+
+/* Studio Element Looping Animations */
+@keyframes studio-spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes studio-spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+@keyframes studio-float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes studio-sway {
+  0%, 100% {
+    transform: rotate(-6deg);
+  }
+  50% {
+    transform: rotate(6deg);
+  }
+}
+
+@keyframes studio-pulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes studio-glow {
+  0%, 100% {
+    filter: drop-shadow(0 0 3px rgba(194, 166, 118, 0.4));
+  }
+  50% {
+    filter: drop-shadow(0 0 16px rgba(194, 166, 118, 0.95)) brightness(1.1);
+  }
+}
+
+@keyframes studio-bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-8px);
+  }
+}
+
+@keyframes studio-wobble {
+  0%, 100% {
+    transform: rotate(0deg);
+  }
+  25% {
+    transform: rotate(-5deg);
+  }
+  75% {
+    transform: rotate(5deg);
+  }
+}
+
+.anim-loop-spin {
+  animation: studio-spin var(--loop-duration, 8s) linear infinite;
+  transform-origin: center center;
+}
+
+.anim-loop-spinReverse {
+  animation: studio-spin-reverse var(--loop-duration, 8s) linear infinite;
+  transform-origin: center center;
+}
+
+.anim-loop-float {
+  animation: studio-float var(--loop-duration, 3.5s) ease-in-out infinite;
+}
+
+.anim-loop-sway {
+  animation: studio-sway var(--loop-duration, 3.5s) ease-in-out infinite;
+  transform-origin: bottom center;
+}
+
+.anim-loop-pulse {
+  animation: studio-pulse var(--loop-duration, 2.5s) ease-in-out infinite;
+}
+
+.anim-loop-glow {
+  animation: studio-glow var(--loop-duration, 2.5s) ease-in-out infinite;
+}
+
+.anim-loop-bounce {
+  animation: studio-bounce var(--loop-duration, 2s) ease-in-out infinite;
+}
+
+.anim-loop-wobble {
+  animation: studio-wobble var(--loop-duration, 2.5s) ease-in-out infinite;
+}

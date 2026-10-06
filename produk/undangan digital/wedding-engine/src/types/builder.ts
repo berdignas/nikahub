@@ -15,11 +15,41 @@ export type AnimationType =
   | 'fadeIn'
   | 'fadeUp'
   | 'fadeDown'
+  | 'fadeLeft'
+  | 'fadeRight'
   | 'zoomIn'
+  | 'zoomOut'
   | 'bounce'
+  | 'bounceIn'
+  | 'spinIn'
+  | 'flipInX'
+  | 'flipInY'
+  | 'blurIn'
+  | 'elasticIn'
   | 'sway'
   | 'float'
   | 'pulse';
+
+export type LoopAnimationType =
+  | 'none'
+  | 'spin'        // Putar terus menerus 360° searah jarum jam
+  | 'spinReverse' // Putar terus menerus berlawanan arah jarum jam
+  | 'float'       // Melayang naik-turun halus
+  | 'sway'        // Bergoyang anggun kiri-kanan
+  | 'pulse'       // Berdenyut detak jantung
+  | 'glow'        // Berpendar kilau cahaya emas
+  | 'bounce'      // Membal halus
+  | 'wobble';     // Goyang getar riang
+
+export interface ElementAnimationConfig {
+  type: AnimationType;
+  duration: number; // seconds
+  delay: number; // seconds
+  trigger: 'onScroll' | 'onLoad';
+  loopType?: LoopAnimationType;
+  loopDuration?: number; // seconds per cycle
+  easing?: 'ease' | 'linear' | 'ease-in-out' | 'spring';
+}
 
 export type ShapeType =
   | 'rectangle'
@@ -71,12 +101,7 @@ export interface CanvasElement {
   // Shape-specific
   shapeType?: ShapeType;
   // Animation
-  animation: {
-    type: AnimationType;
-    duration: number; // seconds
-    delay: number; // seconds
-    trigger: 'onScroll' | 'onLoad';
-  };
+  animation: ElementAnimationConfig;
 }
 
 export interface BuilderSection {

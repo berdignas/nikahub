@@ -36,8 +36,10 @@ import {
   HardDrive,
   ChevronLeft,
   ArrowLeft,
+  ArrowRight,
   Move,
   X,
+  Store,
   FlipHorizontal,
   FlipVertical,
   Crop,
@@ -45,6 +47,11 @@ import {
   Pause,
   BookOpen,
   FilePlus,
+  RefreshCw,
+  Wind,
+  Heart,
+  Sun,
+  Activity,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -53,8 +60,9 @@ import {
   GlobalProjectConfig,
   ElementType,
   AnimationType,
+  LoopAnimationType,
   ShapeType,
-} from '@/types/builder';
+} from '../types/builder';
 import {
   FONT_OPTIONS,
   COLOR_PALETTES,
@@ -63,11 +71,16 @@ import {
   DEFAULT_INITIAL_PROJECT,
   PAGE_TEMPLATES,
   PageTemplate,
-} from '@/lib/builder/presets';
-import { FloatingPetals } from '@/components/animation/FloatingPetals';
-import { compressImage } from '@/lib/builder/imageCompression';
+} from '../lib/builder/presets';
+import { FloatingPetals } from './FloatingPetals';
+import { compressImage } from '../lib/builder/imageCompression';
+import { uploadImageToSupabaseStorage } from '../lib/supabase';
 
-export const InvitationStudio: React.FC = () => {
+interface InvitationStudioProps {
+  onBackToHome?: () => void;
+}
+
+export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome }) => {
   // Main Project State
   const [project, setProject] = useState<GlobalProjectConfig>(DEFAULT_INITIAL_PROJECT);
   const [history, setHistory] = useState<GlobalProjectConfig[]>([]);
@@ -81,6 +94,85 @@ export const InvitationStudio: React.FC = () => {
   const [selectedElementId, setSelectedElementId] = useState<string | null>('el-cover-names');
   const [previewMode, setPreviewMode] = useState<'editor' | 'live'>('editor');
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
+
+  // Animation Test & Interactive Preview Key
+  const [animPreviewKey, setAnimPreviewKey] = useState<number>(0);
+  const triggerPreviewAnimation = () => {
+    setAnimPreviewKey((k) => k + 1);
+  };
+
+  // Entrance & Looping Animation Helpers
+  const getEntranceInitial = (type?: AnimationType) => {
+    switch (type) {
+      case 'fadeIn': return { opacity: 0 };
+      case 'fadeUp': return { opacity: 0, y: 35 };
+      case 'fadeDown': return { opacity: 0, y: -35 };
+      case 'fadeLeft': return { opacity: 0, x: -35 };
+      case 'fadeRight': return { opacity: 0, x: 35 };
+      case 'zoomIn': return { opacity: 0, scale: 0.65 };
+      case 'zoomOut': return { opacity: 0, scale: 1.35 };
+      case 'bounce':
+      case 'bounceIn': return { opacity: 0, scale: 0.3 };
+      case 'spinIn': return { opacity: 0, scale: 0.2, rotate: -360 };
+      case 'flipInX': return { opacity: 0, rotateX: 90 };
+      case 'flipInY': return { opacity: 0, rotateY: 90 };
+      case 'blurIn': return { opacity: 0, filter: 'blur(12px)', scale: 0.9 };
+      case 'elasticIn': return { opacity: 0, scale: 0 };
+      case 'sway': return { opacity: 0, rotate: -15 };
+      case 'float': return { opacity: 0, y: 20 };
+      case 'pulse': return { opacity: 0, scale: 0.85 };
+      case 'none':
+      default: return { opacity: 1 };
+    }
+  };
+
+  const getEntranceAnimate = (type?: AnimationType) => {
+    switch (type) {
+      case 'fadeIn': return { opacity: 1 };
+      case 'fadeUp': return { opacity: 1, y: 0 };
+      case 'fadeDown': return { opacity: 1, y: 0 };
+      case 'fadeLeft': return { opacity: 1, x: 0 };
+      case 'fadeRight': return { opacity: 1, x: 0 };
+      case 'zoomIn': return { opacity: 1, scale: 1 };
+      case 'zoomOut': return { opacity: 1, scale: 1 };
+      case 'bounce':
+      case 'bounceIn': return { opacity: 1, scale: [0.3, 1.1, 0.95, 1] };
+      case 'spinIn': return { opacity: 1, scale: 1, rotate: 0 };
+      case 'flipInX': return { opacity: 1, rotateX: 0 };
+      case 'flipInY': return { opacity: 1, rotateY: 0 };
+      case 'blurIn': return { opacity: 1, filter: 'blur(0px)', scale: 1 };
+      case 'elasticIn': return { opacity: 1, scale: 1 };
+      case 'sway': return { opacity: 1, rotate: 0 };
+      case 'float': return { opacity: 1, y: 0 };
+      case 'pulse': return { opacity: 1, scale: 1 };
+      case 'none':
+      default: return { opacity: 1 };
+    }
+  };
+
+  const getEntranceEase = (type?: AnimationType) => {
+    switch (type) {
+      case 'spinIn': return [0.34, 1.4, 0.64, 1];
+      case 'elasticIn': return [0.175, 0.885, 0.32, 1.275];
+      case 'zoomIn': return [0.16, 1, 0.3, 1];
+      default: return 'easeOut';
+    }
+  };
+
+  const getLoopClass = (loopType?: LoopAnimationType) => {
+    if (!loopType || loopType === 'none') return '';
+    switch (loopType) {
+      case 'spin': return 'anim-loop-spin';
+      case 'spinReverse': return 'anim-loop-spinReverse';
+      case 'float': return 'anim-loop-float';
+      case 'sway': return 'anim-loop-sway';
+      case 'pulse': return 'anim-loop-pulse';
+      case 'glow': return 'anim-loop-glow';
+      case 'bounce': return 'anim-loop-bounce';
+      case 'wobble': return 'anim-loop-wobble';
+      default: return '';
+    }
+  };
 
   // Page View Mode & Opening Screen State (Cover vs Content)
   const [canvasViewMode, setCanvasViewMode] = useState<'cover' | 'content' | 'all'>('cover');
@@ -99,7 +191,6 @@ export const InvitationStudio: React.FC = () => {
 
   // Mobile Navigation State
   const [mobileTab, setMobileTab] = useState<'canvas' | 'tools' | 'inspector'>('canvas');
-  // Universal Pointer Transformation Session (Move, Resize, Rotate)
   const [transformSession, setTransformSession] = useState<{
     mode: 'move' | 'resize' | 'rotate';
     handle?: 'tl' | 'tr' | 'bl' | 'br';
@@ -220,25 +311,19 @@ export const InvitationStudio: React.FC = () => {
           });
         }
 
-        const formData = new FormData();
-        formData.append('file', fileToUpload);
+        // 1. Direct Cloud Upload via Supabase Storage
+        const publicUrl = await uploadImageToSupabaseStorage(fileToUpload, 'wedding-asset');
 
-        const res = await fetch('/api/upload', {
-          method: 'POST',
-          body: formData,
-        });
-
-        if (res.ok) {
-          const data = await res.json();
+        if (publicUrl && publicUrl.startsWith('http')) {
           const assetInfo = {
             name: rawFile.name,
-            url: data.url,
-            storage: data.storage,
-            size: data.size,
+            url: publicUrl,
+            storage: 'cloud-storage',
+            size: fileToUpload.size,
           };
           newUploaded.push(assetInfo);
         } else {
-          // Fallback to local base64 if api fails
+          // 2. Fallback to local Base64 URL
           const reader = new FileReader();
           await new Promise<void>((resolve) => {
             reader.onload = (ev) => {
@@ -246,6 +331,7 @@ export const InvitationStudio: React.FC = () => {
                 name: rawFile.name,
                 url: ev.target?.result as string,
                 storage: 'local-memory',
+                size: fileToUpload.size,
               });
               resolve();
             };
@@ -333,10 +419,12 @@ export const InvitationStudio: React.FC = () => {
       zIndex: 10,
       shadow: 'none',
       animation: elementData.animation || {
-        type: 'fadeUp',
+        type: elementData.type === 'flower' ? 'spinIn' : 'fadeUp',
         duration: 1.4,
         delay: 0.2,
         trigger: 'onScroll',
+        loopType: elementData.type === 'flower' ? 'sway' : 'none',
+        loopDuration: 6,
       },
       ...elementData,
     };
@@ -679,6 +767,16 @@ export const InvitationStudio: React.FC = () => {
       <header className="h-14 bg-[#1E2218] border-b border-[#C2A676]/30 px-2 sm:px-4 flex items-center justify-between shrink-0 z-30">
         {/* Left: Branding & Project Title */}
         <div className="flex items-center gap-2 sm:gap-3">
+          {onBackToHome && (
+            <button
+              onClick={onBackToHome}
+              className="px-2.5 py-1.5 rounded-xl bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] text-xs font-semibold flex items-center gap-1.5 border border-white/10 transition shrink-0"
+              title="Kembali ke Katalog Utama"
+            >
+              <Store className="w-3.5 h-3.5" />
+              <span className="hidden sm:inline">Katalog</span>
+            </button>
+          )}
           <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#51583D] to-[#C2A676] flex items-center justify-center shadow shrink-0">
             <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FAF9F5]" />
           </div>
@@ -1126,31 +1224,138 @@ export const InvitationStudio: React.FC = () => {
             </div>
           )}
 
-          {/* TAB 5: GLOBAL PARTICLES & AMBIENT ANIMATION */}
+          {/* TAB 5: ANIMATION STUDIO & PRESETS */}
           {activeTab === 'animation' && (
             <div className="space-y-4">
-              <h3 className="font-serif font-bold text-sm text-[#E8D8BA]">Efek Animasi Partikel</h3>
-              <p className="text-[11px] text-[#A0A694]">Pilih efek partikel yang melayang di seluruh undangan:</p>
-              <div className="space-y-2">
-                {[
-                  { id: 'petals', label: '🌸 Kelopak Bunga Gugur (Falling Petals)' },
-                  { id: 'butterflies', label: '🦋 Kupu-kupu Terbang (Animated Butterflies)' },
-                  { id: 'sparkles', label: '✨ Kilauan Emas (Golden Sparkles)' },
-                  { id: 'doves', label: '🕊️ Burung Merpati Terbang (Flying Doves)' },
-                  { id: 'none', label: '🚫 Tanpa Efek Partikel' },
-                ].map((item) => (
-                  <button
-                    key={item.id}
-                    onClick={() => handleUpdateProject({ ...project, ambientEffect: item.id as any })}
-                    className={`w-full p-2.5 rounded-xl border text-left text-xs font-semibold transition ${
-                      project.ambientEffect === item.id
-                        ? 'bg-[#51583D] border-[#C2A676] text-[#FAF9F5] shadow'
-                        : 'bg-white/5 border-white/5 text-[#A0A694] hover:bg-white/10'
-                    }`}
-                  >
-                    {item.label}
-                  </button>
-                ))}
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-serif font-bold text-sm text-[#E8D8BA]">Studio Animasi & Gerakan</h3>
+                  <p className="text-[10px] text-[#A0A694]">Atur efek masuk, putaran, dan partikel suasana</p>
+                </div>
+                <button
+                  onClick={triggerPreviewAnimation}
+                  className="px-2.5 py-1 rounded-lg bg-[#C2A676] text-[#1E2218] text-xs font-bold flex items-center gap-1 shadow hover:bg-[#D4BC8B] transition"
+                  title="Putar ulang semua animasi di layar"
+                >
+                  <RefreshCw className="w-3 h-3" />
+                  <span>Uji Animasi</span>
+                </button>
+              </div>
+
+              {/* Selected Element Quick Animation Presets */}
+              <div className="p-3 rounded-xl bg-white/5 border border-white/10 space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <span className="text-[11px] font-bold text-[#FAF9F5] flex items-center gap-1.5 truncate max-w-[170px]">
+                    <Sparkles className="w-3 h-3 text-[#C2A676] shrink-0" />
+                    {selectedElement ? `Elemen: ${selectedElement.name}` : 'Pilih Elemen di HP'}
+                  </span>
+                  {selectedElement && (
+                    <button
+                      onClick={() => setMobileTab('inspector')}
+                      className="text-[10px] text-[#C2A676] hover:underline"
+                    >
+                      Detail ➔
+                    </button>
+                  )}
+                </div>
+
+                {selectedElement ? (
+                  <>
+                    <p className="text-[10px] text-[#A0A694]">Preset Gerakan 1-Klik untuk elemen ini:</p>
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {[
+                        {
+                          label: '🌪️ Masuk Berputar',
+                          desc: 'Spin in 360°',
+                          config: { type: 'spinIn' as AnimationType, duration: 1.4, delay: 0.1, loopType: 'none' as LoopAnimationType },
+                        },
+                        {
+                          label: '🌸 Bunga Berputar',
+                          desc: 'Spin 360° Loop',
+                          config: { type: 'spinIn' as AnimationType, duration: 1.2, delay: 0.1, loopType: 'spin' as LoopAnimationType, loopDuration: 8 },
+                        },
+                        {
+                          label: '🌿 Daun Tertiup Angin',
+                          desc: 'Sway Anggun',
+                          config: { type: 'fadeUp' as AnimationType, duration: 1.2, delay: 0.2, loopType: 'sway' as LoopAnimationType, loopDuration: 3.5 },
+                        },
+                        {
+                          label: '🕊️ Melayang Santai',
+                          desc: 'Smooth Float',
+                          config: { type: 'fadeUp' as AnimationType, duration: 1.2, delay: 0.2, loopType: 'float' as LoopAnimationType, loopDuration: 4 },
+                        },
+                        {
+                          label: '💖 Detak Jantung',
+                          desc: 'Heartbeat Pulse',
+                          config: { type: 'bounceIn' as AnimationType, duration: 1, delay: 0.1, loopType: 'pulse' as LoopAnimationType, loopDuration: 2 },
+                        },
+                        {
+                          label: '✨ Kilauan Emas',
+                          desc: 'Golden Shimmer',
+                          config: { type: 'blurIn' as AnimationType, duration: 1.2, delay: 0.2, loopType: 'glow' as LoopAnimationType, loopDuration: 3 },
+                        },
+                        {
+                          label: '🎈 Membal Lembut',
+                          desc: 'Gentle Bounce',
+                          config: { type: 'bounceIn' as AnimationType, duration: 1, delay: 0.1, loopType: 'bounce' as LoopAnimationType, loopDuration: 2.2 },
+                        },
+                        {
+                          label: '🎭 Goyang Ceria',
+                          desc: 'Wobble Motion',
+                          config: { type: 'bounceIn' as AnimationType, duration: 1, delay: 0.1, loopType: 'wobble' as LoopAnimationType, loopDuration: 2.5 },
+                        },
+                      ].map((preset, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => {
+                            updateSelectedElement({
+                              animation: {
+                                ...selectedElement.animation,
+                                ...preset.config,
+                              },
+                            });
+                            triggerPreviewAnimation();
+                          }}
+                          className="p-2 rounded-lg bg-black/40 hover:bg-[#51583D]/50 border border-white/5 hover:border-[#C2A676] text-left transition"
+                        >
+                          <div className="text-[11px] font-semibold text-[#FAF9F5] leading-tight">{preset.label}</div>
+                          <div className="text-[9px] text-[#A0A694] mt-0.5">{preset.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </>
+                ) : (
+                  <p className="text-[11px] text-[#A0A694] italic py-2 text-center">
+                    Klik teks, ornamen, atau foto di HP untuk langsung menerapkan animasi gerak.
+                  </p>
+                )}
+              </div>
+
+              {/* Efek Partikel Suasana Global */}
+              <div className="space-y-2 pt-2 border-t border-white/10">
+                <h4 className="text-xs font-bold text-[#E8D8BA]">Efek Partikel Suasana (Ambient)</h4>
+                <p className="text-[10px] text-[#A0A694]">Efek partikel yang berhamburan di seluruh layar undangan:</p>
+                <div className="space-y-1.5">
+                  {[
+                    { id: 'petals', label: '🌸 Kelopak Bunga Gugur (Falling Petals)' },
+                    { id: 'butterflies', label: '🦋 Kupu-kupu Terbang (Animated Butterflies)' },
+                    { id: 'sparkles', label: '✨ Kilauan Emas (Golden Sparkles)' },
+                    { id: 'doves', label: '🕊️ Burung Merpati Terbang (Flying Doves)' },
+                    { id: 'none', label: '🚫 Tanpa Efek Partikel' },
+                  ].map((item) => (
+                    <button
+                      key={item.id}
+                      onClick={() => handleUpdateProject({ ...project, ambientEffect: item.id as any })}
+                      className={`w-full p-2 rounded-xl border text-left text-xs font-semibold transition ${
+                        project.ambientEffect === item.id
+                          ? 'bg-[#51583D] border-[#C2A676] text-[#FAF9F5] shadow'
+                          : 'bg-white/5 border-white/5 text-[#A0A694] hover:bg-white/10'
+                      }`}
+                    >
+                      {item.label}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           )}
@@ -1469,6 +1674,18 @@ export const InvitationStudio: React.FC = () => {
                                   >
                                     <FlipHorizontal className="w-3 h-3" />
                                   </button>
+                                  {/* Test Animation */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      triggerPreviewAnimation();
+                                    }}
+                                    className="px-1.5 py-0.5 rounded bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] flex items-center gap-0.5"
+                                    title="Uji Animasi Elemen Ini"
+                                  >
+                                    <RefreshCw className="w-2.5 h-2.5" />
+                                    <span>Anim</span>
+                                  </button>
                                   {/* Crop / Fit Toggle (for images/decor) */}
                                   {(el.type === 'image' || el.type === 'flower' || el.type === 'ornament') && (
                                     <button
@@ -1543,110 +1760,136 @@ export const InvitationStudio: React.FC = () => {
                               </>
                             )}
 
-                            {/* TEXT ELEMENT */}
-                            {el.type === 'text' && (
-                              <div
-                                style={{
-                                  fontFamily: el.fontFamily,
-                                  fontSize: `${el.fontSize}px`,
-                                  fontWeight: el.fontWeight,
-                                  fontStyle: el.fontStyle,
-                                  textAlign: el.textAlign,
-                                  letterSpacing: `${el.letterSpacing}px`,
-                                  lineHeight: el.lineHeight,
-                                  color: el.textColor,
-                                  backgroundColor: el.backgroundColor,
-                                  borderColor: el.borderColor,
-                                  borderWidth: `${el.borderWidth}px`,
-                                  borderStyle: el.borderStyle,
-                                  borderRadius: `${el.borderRadius}px`,
-                                }}
-                                className="w-full h-full flex items-center justify-center p-1 whitespace-pre-line pointer-events-none select-none"
-                              >
-                                {el.content}
-                              </div>
-                            )}
-
-                            {/* IMAGE / FLOWER / ORNAMENT ELEMENT */}
-                            {(el.type === 'image' || el.type === 'flower' || el.type === 'ornament' || el.type === 'bismillah') && (
-                              <div
-                                className="w-full h-full flex items-center justify-center overflow-hidden pointer-events-none"
-                                style={{
-                                  borderRadius: `${el.borderRadius}px`,
-                                  borderWidth: `${el.borderWidth}px`,
-                                  borderColor: el.borderColor,
-                                  borderStyle: el.borderStyle,
-                                }}
-                              >
-                                <img
-                                  src={el.content}
-                                  alt={el.name}
-                                  draggable={false}
+                            {/* ANIMATED ELEMENT WRAPPER (Entrance Motion + Continuous Loop) */}
+                            <motion.div
+                              key={`${el.id}-${animPreviewKey}`}
+                              initial={getEntranceInitial(el.animation?.type)}
+                              animate={getEntranceAnimate(el.animation?.type)}
+                              whileInView={
+                                previewMode === 'live' && el.animation?.trigger === 'onScroll'
+                                  ? getEntranceAnimate(el.animation?.type)
+                                  : undefined
+                              }
+                              viewport={
+                                previewMode === 'live' && el.animation?.trigger === 'onScroll'
+                                  ? { once: true, amount: 0.3 }
+                                  : undefined
+                              }
+                              transition={{
+                                duration: el.animation?.duration ?? 1.2,
+                                delay: previewMode === 'live' ? (el.animation?.delay ?? 0.1) : 0.05,
+                                ease: getEntranceEase(el.animation?.type) as any,
+                              }}
+                              className={`w-full h-full ${getLoopClass(el.animation?.loopType)}`}
+                              style={{
+                                '--loop-duration': `${el.animation?.loopDuration || 8}s`,
+                              } as React.CSSProperties}
+                            >
+                              {/* TEXT ELEMENT */}
+                              {el.type === 'text' && (
+                                <div
                                   style={{
-                                    objectFit: el.objectFit || 'contain',
-                                    transform: `scaleX(${el.flipX ? -1 : 1}) scaleY(${el.flipY ? -1 : 1})`,
+                                    fontFamily: el.fontFamily,
+                                    fontSize: `${el.fontSize}px`,
+                                    fontWeight: el.fontWeight,
+                                    fontStyle: el.fontStyle,
+                                    textAlign: el.textAlign,
+                                    letterSpacing: `${el.letterSpacing}px`,
+                                    lineHeight: el.lineHeight,
+                                    color: el.textColor,
+                                    backgroundColor: el.backgroundColor,
+                                    borderColor: el.borderColor,
+                                    borderWidth: `${el.borderWidth}px`,
+                                    borderStyle: el.borderStyle,
+                                    borderRadius: `${el.borderRadius}px`,
                                   }}
-                                  className="w-full h-full pointer-events-none select-none"
-                                />
-                              </div>
-                            )}
+                                  className="w-full h-full flex items-center justify-center p-1 whitespace-pre-line pointer-events-none select-none"
+                                >
+                                  {el.content}
+                                </div>
+                              )}
 
-                            {/* SHAPE ELEMENT */}
-                            {el.type === 'shape' && (
-                              <div
-                                style={{
-                                  backgroundColor: el.backgroundColor,
-                                  borderColor: el.borderColor,
-                                  borderWidth: `${el.borderWidth}px`,
-                                  borderStyle: el.borderStyle,
-                                  borderRadius: `${el.borderRadius}px`,
-                                  color: el.textColor,
-                                  fontFamily: el.fontFamily,
-                                  fontSize: `${el.fontSize}px`,
-                                  fontWeight: el.fontWeight,
-                                  textAlign: el.textAlign,
-                                }}
-                                className="w-full h-full flex items-center justify-center p-3 whitespace-pre-line shadow-sm pointer-events-none select-none"
-                              >
-                                {el.content}
-                              </div>
-                            )}
+                              {/* IMAGE / FLOWER / ORNAMENT ELEMENT */}
+                              {(el.type === 'image' || el.type === 'flower' || el.type === 'ornament' || el.type === 'bismillah') && (
+                                <div
+                                  className="w-full h-full flex items-center justify-center overflow-hidden pointer-events-none"
+                                  style={{
+                                    borderRadius: `${el.borderRadius}px`,
+                                    borderWidth: `${el.borderWidth}px`,
+                                    borderColor: el.borderColor,
+                                    borderStyle: el.borderStyle,
+                                  }}
+                                >
+                                  <img
+                                    src={el.content}
+                                    alt={el.name}
+                                    draggable={false}
+                                    style={{
+                                      objectFit: el.objectFit || 'contain',
+                                      transform: `scaleX(${el.flipX ? -1 : 1}) scaleY(${el.flipY ? -1 : 1})`,
+                                    }}
+                                    className="w-full h-full pointer-events-none select-none"
+                                  />
+                                </div>
+                              )}
 
-                            {/* BUTTON ELEMENT */}
-                            {el.type === 'button' && (
-                              <button
-                                onClick={(e) => {
-                                  if (previewMode === 'live') {
-                                    e.stopPropagation();
-                                    if (
-                                      el.name.toLowerCase().includes('buka') ||
-                                      el.content.toLowerCase().includes('buka')
-                                    ) {
-                                      handleOpenInvitation();
+                              {/* SHAPE ELEMENT */}
+                              {el.type === 'shape' && (
+                                <div
+                                  style={{
+                                    backgroundColor: el.backgroundColor,
+                                    borderColor: el.borderColor,
+                                    borderWidth: `${el.borderWidth}px`,
+                                    borderStyle: el.borderStyle,
+                                    borderRadius: `${el.borderRadius}px`,
+                                    color: el.textColor,
+                                    fontFamily: el.fontFamily,
+                                    fontSize: `${el.fontSize}px`,
+                                    fontWeight: el.fontWeight,
+                                    textAlign: el.textAlign,
+                                  }}
+                                  className="w-full h-full flex items-center justify-center p-3 whitespace-pre-line shadow-sm pointer-events-none select-none"
+                                >
+                                  {el.content}
+                                </div>
+                              )}
+
+                              {/* BUTTON ELEMENT */}
+                              {el.type === 'button' && (
+                                <button
+                                  onClick={(e) => {
+                                    if (previewMode === 'live') {
+                                      e.stopPropagation();
+                                      if (
+                                        el.name.toLowerCase().includes('buka') ||
+                                        el.content.toLowerCase().includes('buka')
+                                      ) {
+                                        handleOpenInvitation();
+                                      }
                                     }
-                                  }
-                                }}
-                                style={{
-                                  fontFamily: el.fontFamily,
-                                  fontSize: `${el.fontSize}px`,
-                                  fontWeight: el.fontWeight,
-                                  color: el.textColor,
-                                  backgroundColor: el.backgroundColor,
-                                  borderColor: el.borderColor,
-                                  borderWidth: `${el.borderWidth}px`,
-                                  borderStyle: el.borderStyle,
-                                  borderRadius: `${el.borderRadius}px`,
-                                  letterSpacing: `${el.letterSpacing}px`,
-                                }}
-                                className={`w-full h-full flex items-center justify-center shadow-lg transition-transform ${
-                                  previewMode === 'live'
-                                    ? 'pointer-events-auto cursor-pointer hover:scale-105 active:scale-95 shadow-2xl animate-pulse'
-                                    : 'pointer-events-none select-none'
-                                }`}
-                              >
-                                {el.content}
-                              </button>
-                            )}
+                                  }}
+                                  style={{
+                                    fontFamily: el.fontFamily,
+                                    fontSize: `${el.fontSize}px`,
+                                    fontWeight: el.fontWeight,
+                                    color: el.textColor,
+                                    backgroundColor: el.backgroundColor,
+                                    borderColor: el.borderColor,
+                                    borderWidth: `${el.borderWidth}px`,
+                                    borderStyle: el.borderStyle,
+                                    borderRadius: `${el.borderRadius}px`,
+                                    letterSpacing: `${el.letterSpacing}px`,
+                                  }}
+                                  className={`w-full h-full flex items-center justify-center shadow-lg transition-transform ${
+                                    previewMode === 'live'
+                                      ? 'pointer-events-auto cursor-pointer hover:scale-105 active:scale-95 shadow-2xl animate-pulse'
+                                      : 'pointer-events-none select-none'
+                                  }`}
+                                >
+                                  {el.content}
+                                </button>
+                              )}
+                            </motion.div>
                           </div>
                         );
                       })}
@@ -2153,76 +2396,245 @@ export const InvitationStudio: React.FC = () => {
                 )}
               </div>
 
-              {/* 5. Animation Controls */}
+              {/* 5. Comprehensive Animation Controls */}
               <div className="space-y-3 pt-3 border-t border-white/10">
-                <h4 className="text-xs font-bold text-[#E8D8BA] uppercase tracking-wider">Animasi Masuk</h4>
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#E8D8BA] uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#C2A676]" />
+                    <span>Animasi & Gerakan</span>
+                  </h4>
+                  <button
+                    onClick={triggerPreviewAnimation}
+                    className="px-2 py-0.5 rounded bg-[#C2A676] text-[#1E2218] text-[10px] font-bold flex items-center gap-1 shadow hover:bg-[#D4BC8B] transition"
+                    title="Uji animasi elemen ini sekarang"
+                  >
+                    <RefreshCw className="w-2.5 h-2.5" />
+                    <span>Uji Animasi</span>
+                  </button>
+                </div>
 
+                {/* 5a. Entrance Animation */}
                 <div>
-                  <label className="block text-[10px] text-[#A0A694] mb-1">Tipe Animasi</label>
+                  <label className="block text-[10px] text-[#A0A694] mb-1 font-medium">Animasi Masuk (Entrance)</label>
                   <select
                     value={selectedElement.animation.type}
-                    onChange={(e) =>
+                    onChange={(e) => {
                       updateSelectedElement({
-                        animation: { ...selectedElement.animation, type: e.target.value as AnimationType },
-                      })
-                    }
-                    className="w-full px-2.5 py-1.5 rounded-lg bg-[#2A2E22] border border-white/10 text-xs text-[#FAF9F5]"
+                        animation: {
+                          ...selectedElement.animation,
+                          type: e.target.value as AnimationType,
+                        },
+                      });
+                      triggerPreviewAnimation();
+                    }}
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-[#2A2E22] border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
                   >
-                    <option value="none">Tanpa Animasi</option>
-                    <option value="fadeIn">Fade In (Muncul Halus)</option>
-                    <option value="fadeUp">Fade Up (Meluncur Naik dari Bawah)</option>
-                    <option value="fadeDown">Fade Down (Meluncur Turun)</option>
-                    <option value="zoomIn">Zoom In (Membesar Lembut)</option>
-                    <option value="bounce">Bounce In (Membal Cantik)</option>
-                    <option value="sway">Sway (Bergoyang Alami)</option>
-                    <option value="float">Floating (Melayang Santai)</option>
-                    <option value="pulse">Pulse (Detak Lembut)</option>
+                    <option value="none">🚫 Tanpa Animasi</option>
+                    <optgroup label="Geser & Memudar (Slide & Fade)">
+                      <option value="fadeUp">⬆️ Fade Up (Meluncur Naik dari Bawah)</option>
+                      <option value="fadeDown">⬇️ Fade Down (Meluncur Turun dari Atas)</option>
+                      <option value="fadeIn">✨ Fade In (Memudar Lembut)</option>
+                      <option value="fadeLeft">⬅️ Fade Left (Meluncur dari Kiri)</option>
+                      <option value="fadeRight">➡️ Fade Right (Meluncur dari Kanan)</option>
+                    </optgroup>
+                    <optgroup label="Pop & Skala (Scale & Bounce)">
+                      <option value="zoomIn">🔍 Zoom In (Membesar Lembut)</option>
+                      <option value="zoomOut">🔎 Zoom Out (Menciut Halus)</option>
+                      <option value="bounceIn">🎈 Bounce In (Membal Cantik)</option>
+                      <option value="elasticIn">⚡ Elastic Spring (Membal Elastis)</option>
+                    </optgroup>
+                    <optgroup label="Putaran & 3D (Spins & Flips)">
+                      <option value="spinIn">🌪️ Spin In (Masuk Sambil Berputar 360°)</option>
+                      <option value="flipInX">🔄 3D Flip Horizontal</option>
+                      <option value="flipInY">🔃 3D Flip Vertikal</option>
+                    </optgroup>
+                    <optgroup label="Sinematik & Estetis">
+                      <option value="blurIn">🌫️ Blur to Clear (Fokus Sinematik)</option>
+                      <option value="sway">🌿 Sway (Masuk Bergoyang)</option>
+                      <option value="float">🕊️ Float (Masuk Melayang)</option>
+                      <option value="pulse">💖 Pulse (Masuk Berdenyut)</option>
+                    </optgroup>
                   </select>
                 </div>
 
+                {/* 5b. Continuous Looping Animation */}
+                <div>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] text-[#A0A694] font-medium">Gerakan Berkelanjutan (Looping)</label>
+                    <span className="text-[9px] text-[#C2A676]">Bergerak terus-menerus</span>
+                  </div>
+                  <select
+                    value={selectedElement.animation.loopType || 'none'}
+                    onChange={(e) => {
+                      updateSelectedElement({
+                        animation: {
+                          ...selectedElement.animation,
+                          loopType: e.target.value as LoopAnimationType,
+                          loopDuration: selectedElement.animation.loopDuration || 8,
+                        },
+                      });
+                      triggerPreviewAnimation();
+                    }}
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-[#2A2E22] border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
+                  >
+                    <option value="none">🚫 Diam / Statis (Tanpa Loop)</option>
+                    <option value="spin">🌪️ Berputar 360° Terus-Menerus (Searah Jarum Jam)</option>
+                    <option value="spinReverse">🔄 Berputar 360° Terus-Menerus (Berlawanan Jarum Jam)</option>
+                    <option value="sway">🌿 Bergoyang Anggun (Bunga/Daun Tertiup Angin)</option>
+                    <option value="float">🕊️ Melayang Naik-Turun Halus (Floating)</option>
+                    <option value="pulse">💖 Berdenyut Detak Jantung (Heartbeat Pulse)</option>
+                    <option value="glow">✨ Kilauan Emas Berpendar (Golden Shimmer Glow)</option>
+                    <option value="bounce">🎈 Membal Lembut Naik-Turun</option>
+                    <option value="wobble">🎭 Goyang Goyang Ceria (Wobble)</option>
+                  </select>
+                </div>
+
+                {/* 5c. Looping Speed Control (Shown only if loopType != none) */}
+                {(selectedElement.animation.loopType && selectedElement.animation.loopType !== 'none') && (
+                  <div className="p-2.5 rounded-lg bg-white/5 border border-white/10 space-y-2">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-[#A0A694]">Kecepatan Putaran / Loop</span>
+                      <span className="font-mono text-[#E8D8BA]">
+                        {selectedElement.animation.loopDuration || 8}s / putaran
+                      </span>
+                    </div>
+                    {/* Quick Speed Pills */}
+                    <div className="grid grid-cols-4 gap-1">
+                      {[
+                        { label: 'Sangat Lambat', sec: 16 },
+                        { label: 'Lambat', sec: 10 },
+                        { label: 'Sedang', sec: 6 },
+                        { label: 'Cepat', sec: 3 },
+                      ].map((spd) => (
+                        <button
+                          key={spd.sec}
+                          onClick={() => {
+                            updateSelectedElement({
+                              animation: {
+                                ...selectedElement.animation,
+                                loopDuration: spd.sec,
+                              },
+                            });
+                          }}
+                          className={`py-1 rounded text-[9px] font-medium transition ${
+                            (selectedElement.animation.loopDuration || 8) === spd.sec
+                              ? 'bg-[#C2A676] text-[#1E2218] font-bold'
+                              : 'bg-black/30 text-[#A0A694] hover:bg-white/10 hover:text-white'
+                          }`}
+                        >
+                          {spd.label}
+                        </button>
+                      ))}
+                    </div>
+                    <input
+                      type="range"
+                      min="1.0"
+                      max="20.0"
+                      step="0.5"
+                      value={selectedElement.animation.loopDuration || 8}
+                      onChange={(e) =>
+                        updateSelectedElement({
+                          animation: {
+                            ...selectedElement.animation,
+                            loopDuration: Number(e.target.value),
+                          },
+                        })
+                      }
+                      className="w-full accent-[#C2A676]"
+                    />
+                  </div>
+                )}
+
+                {/* 5d. Timing (Duration & Delay) */}
                 <div className="grid grid-cols-2 gap-2">
                   <div>
                     <label className="block text-[10px] text-[#A0A694] mb-1">
-                      Durasi ({selectedElement.animation.duration}s)
+                      Durasi Masuk ({selectedElement.animation.duration || 1.2}s)
                     </label>
                     <input
                       type="range"
-                      min="0.4"
-                      max="3.0"
+                      min="0.3"
+                      max="3.5"
                       step="0.1"
-                      value={selectedElement.animation.duration}
-                      onChange={(e) =>
+                      value={selectedElement.animation.duration || 1.2}
+                      onChange={(e) => {
                         updateSelectedElement({
                           animation: {
                             ...selectedElement.animation,
                             duration: Number(e.target.value),
                           },
-                        })
-                      }
+                        });
+                        triggerPreviewAnimation();
+                      }}
                       className="w-full accent-[#C2A676]"
                     />
                   </div>
                   <div>
                     <label className="block text-[10px] text-[#A0A694] mb-1">
-                      Delay ({selectedElement.animation.delay}s)
+                      Delay Masuk ({selectedElement.animation.delay || 0}s)
                     </label>
                     <input
                       type="range"
                       min="0"
-                      max="2.0"
+                      max="4.0"
                       step="0.1"
-                      value={selectedElement.animation.delay}
-                      onChange={(e) =>
+                      value={selectedElement.animation.delay || 0}
+                      onChange={(e) => {
                         updateSelectedElement({
                           animation: {
                             ...selectedElement.animation,
                             delay: Number(e.target.value),
                           },
-                        })
-                      }
+                        });
+                        triggerPreviewAnimation();
+                      }}
                       className="w-full accent-[#C2A676]"
                     />
                   </div>
+                </div>
+
+                {/* 5e. Trigger Mode (onScroll vs onLoad) */}
+                <div>
+                  <label className="block text-[10px] text-[#A0A694] mb-1">Pemicu Animasi (Trigger)</label>
+                  <div className="grid grid-cols-2 gap-1.5">
+                    <button
+                      onClick={() =>
+                        updateSelectedElement({
+                          animation: {
+                            ...selectedElement.animation,
+                            trigger: 'onScroll',
+                          },
+                        })
+                      }
+                      className={`px-2 py-1.5 rounded-lg border text-[11px] font-medium transition flex items-center justify-center gap-1 ${
+                        (selectedElement.animation.trigger || 'onScroll') === 'onScroll'
+                          ? 'bg-[#C2A676] text-[#1E2218] border-[#C2A676] font-bold shadow'
+                          : 'bg-white/5 border-white/10 text-[#A0A694] hover:bg-white/10'
+                      }`}
+                    >
+                      <span>📜 Saat Discroll</span>
+                    </button>
+                    <button
+                      onClick={() =>
+                        updateSelectedElement({
+                          animation: {
+                            ...selectedElement.animation,
+                            trigger: 'onLoad',
+                          },
+                        })
+                      }
+                      className={`px-2 py-1.5 rounded-lg border text-[11px] font-medium transition flex items-center justify-center gap-1 ${
+                        selectedElement.animation.trigger === 'onLoad'
+                          ? 'bg-[#C2A676] text-[#1E2218] border-[#C2A676] font-bold shadow'
+                          : 'bg-white/5 border-white/10 text-[#A0A694] hover:bg-white/10'
+                      }`}
+                    >
+                      <span>⚡ Langsung Dimuat</span>
+                    </button>
+                  </div>
+                  <p className="text-[9px] text-[#A0A694]/80 mt-1 italic">
+                    *Rekomendasi mobile: "Saat Discroll" agar elemen baru muncul ketika digulir ke tengah layar.
+                  </p>
                 </div>
               </div>
             </div>
