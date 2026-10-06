@@ -32,6 +32,9 @@ import {
   Flower2,
   ChevronRight,
   ChevronDown,
+  Loader2,
+  Cloud,
+  HardDrive,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -50,6 +53,7 @@ import {
   DEFAULT_INITIAL_PROJECT,
 } from '@/lib/builder/presets';
 import { FloatingPetals } from '@/components/animation/FloatingPetals';
+import { compressImage } from '@/lib/builder/imageCompression';
 
 export const InvitationStudio: React.FC = () => {
   // Main Project State
@@ -66,8 +70,13 @@ export const InvitationStudio: React.FC = () => {
   const [previewMode, setPreviewMode] = useState<'editor' | 'live'>('editor');
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
-  // Asset upload local storage
-  const [uploadedAssets, setUploadedAssets] = useState<Array<{ name: string; url: string }>>([]);
+  // Asset upload local storage & Cloudflare R2
+  const [uploadedAssets, setUploadedAssets] = useState<
+    Array<{ name: string; url: string; storage?: string; size?: number }>
+  >([]);
+  const [isUploading, setIsUploading] = useState<boolean>(false);
+  const [useSmartCompression, setUseSmartCompression] = useState<boolean>(true);
+  const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   // Load from LocalStorage on mount
   useEffect(() => {
@@ -154,26 +163,81 @@ export const InvitationStudio: React.FC = () => {
     reader.readAsText(file);
   };
 
-  // File Uploader for user assets
-  const handleUploadAsset = (e: React.ChangeEvent<HTMLInputElement>) => {
+  // File Uploader for user assets with smart compression & Cloudflare R2
+  const handleUploadAsset = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) return;
 
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader();
-      reader.onload = (ev) => {
-        const base64Url = ev.target?.result as string;
-        const newAsset = { name: file.name, url: base64Url };
-        const updatedAssets = [newAsset, ...uploadedAssets];
-        setUploadedAssets(updatedAssets);
-        try {
-          localStorage.setItem('nikahhub_user_uploaded_assets', JSON.stringify(updatedAssets));
-        } catch {
-          // ignore
+    setIsUploading(true);
+    setUploadStatus('Mengompresi & mengupload aset...');
+
+    const newUploaded: Array<{ name: string; url: string; storage?: string; size?: number }> = [];
+
+    for (const rawFile of Array.from(files)) {
+      try {
+        let fileToUpload = rawFile;
+        if (useSmartCompression) {
+          fileToUpload = await compressImage(rawFile, {
+            maxWidth: 1920,
+            maxHeight: 1920,
+            quality: 0.85,
+          });
         }
-      };
-      reader.readAsDataURL(file);
-    });
+
+        const formData = new FormData();
+        formData.append('file', fileToUpload);
+
+        const res = await fetch('/api/upload', {
+          method: 'POST',
+          body: formData,
+        });
+
+        if (res.ok) {
+          const data = await res.json();
+          const assetInfo = {
+            name: rawFile.name,
+            url: data.url,
+            storage: data.storage,
+            size: data.size,
+          };
+          newUploaded.push(assetInfo);
+        } else {
+          // Fallback to local base64 if api fails
+          const reader = new FileReader();
+          await new Promise<void>((resolve) => {
+            reader.onload = (ev) => {
+              newUploaded.push({
+                name: rawFile.name,
+                url: ev.target?.result as string,
+                storage: 'local-memory',
+              });
+              resolve();
+            };
+            reader.readAsDataURL(fileToUpload);
+          });
+        }
+      } catch (err) {
+        console.error('Error uploading asset:', err);
+      }
+    }
+
+    if (newUploaded.length > 0) {
+      const updatedAssets = [...newUploaded, ...uploadedAssets];
+      setUploadedAssets(updatedAssets);
+      try {
+        localStorage.setItem('nikahhub_user_uploaded_assets', JSON.stringify(updatedAssets));
+      } catch {
+        // ignore
+      }
+      setUploadStatus(`Berhasil upload ${newUploaded.length} aset!`);
+    } else {
+      setUploadStatus('Gagal mengupload aset.');
+    }
+
+    setIsUploading(false);
+    setTimeout(() => setUploadStatus(null), 3000);
+    // Reset file input
+    e.target.value = '';
   };
 
   // Helper to find selected element
@@ -588,26 +652,75 @@ export const InvitationStudio: React.FC = () => {
           {activeTab === 'assets' && (
             <div className="space-y-4">
               <div>
-                <h3 className="font-serif font-bold text-sm text-[#E8D8BA] mb-2">Upload Asset Sendiri</h3>
-                <label className="w-full py-4 border-2 border-dashed border-[#C2A676]/50 rounded-2xl flex flex-col items-center justify-center cursor-pointer hover:bg-white/5 transition">
-                  <Upload className="w-6 h-6 text-[#C2A676] mb-1" />
-                  <span className="text-xs font-semibold text-[#FAF9F5]">Pilih Gambar dari Komputer/HP</span>
-                  <span className="text-[10px] text-[#A0A694]">PNG, WebP, JPG (Transparan disarankan)</span>
+                <div className="flex items-center justify-between mb-2">
+                  <h3 className="font-serif font-bold text-sm text-[#E8D8BA]">Upload Aset & Storage</h3>
+                  <span className="flex items-center gap-1 text-[10px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                    <Cloud className="w-3 h-3" /> Cloudflare R2 / S3
+                  </span>
+                </div>
+
+                {/* Smart Compression Toggle */}
+                <div className="mb-3 p-2.5 rounded-xl bg-white/5 border border-white/10 flex items-start gap-2">
+                  <input
+                    type="checkbox"
+                    id="smart-compress"
+                    checked={useSmartCompression}
+                    onChange={(e) => setUseSmartCompression(e.target.checked)}
+                    className="mt-0.5 accent-[#C2A676] cursor-pointer"
+                  />
+                  <label htmlFor="smart-compress" className="text-xs text-[#FAF9F5] cursor-pointer">
+                    <div className="font-semibold text-[11px] text-[#E8D8BA]">
+                      ⚡ Kompresi Cerdas WebP (Disarankan)
+                    </div>
+                    <p className="text-[10px] text-[#A0A694] leading-relaxed">
+                      Kamera HP 5-10MB dikompres ke ~200KB resolusi retina (1920p). Tidak buram, mulus & tidak lemot saat dibuka tamu di HP.
+                    </p>
+                  </label>
+                </div>
+
+                <label className={`w-full py-4 border-2 border-dashed rounded-2xl flex flex-col items-center justify-center cursor-pointer transition ${
+                  isUploading
+                    ? 'border-[#C2A676] bg-[#C2A676]/10 opacity-70 cursor-wait'
+                    : 'border-[#C2A676]/50 hover:bg-white/5 hover:border-[#C2A676]'
+                }`}>
+                  {isUploading ? (
+                    <div className="flex flex-col items-center">
+                      <Loader2 className="w-6 h-6 text-[#C2A676] animate-spin mb-1" />
+                      <span className="text-xs font-semibold text-[#FAF9F5]">Sedang Memproses Aset...</span>
+                      <span className="text-[10px] text-[#A0A694]">Mengompresi & menyimpan ke R2 Storage</span>
+                    </div>
+                  ) : (
+                    <>
+                      <Upload className="w-6 h-6 text-[#C2A676] mb-1" />
+                      <span className="text-xs font-semibold text-[#FAF9F5]">Pilih Gambar dari Komputer / HP</span>
+                      <span className="text-[10px] text-[#A0A694]">PNG transparan, WebP, JPG (Otomatis masuk Cloud)</span>
+                    </>
+                  )}
                   <input
                     type="file"
                     accept="image/*"
                     multiple
+                    disabled={isUploading}
                     onChange={handleUploadAsset}
                     className="hidden"
                   />
                 </label>
+
+                {uploadStatus && (
+                  <p className="text-[11px] text-[#C2A676] font-medium text-center mt-2 animate-pulse">
+                    {uploadStatus}
+                  </p>
+                )}
               </div>
 
               {/* Uploaded assets list */}
               {uploadedAssets.length > 0 && (
                 <div>
-                  <h4 className="text-xs font-semibold text-[#FAF9F5] mb-2">Aset yang Anda Upload:</h4>
-                  <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto pr-1">
+                  <div className="flex items-center justify-between mb-2">
+                    <h4 className="text-xs font-semibold text-[#FAF9F5]">Aset Cloud Anda:</h4>
+                    <span className="text-[10px] text-[#A0A694]">{uploadedAssets.length} file</span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 max-h-48 overflow-y-auto pr-1">
                     {uploadedAssets.map((asset, idx) => (
                       <div
                         key={idx}
@@ -620,12 +733,28 @@ export const InvitationStudio: React.FC = () => {
                             height: 140,
                           })
                         }
-                        className="p-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-[#C2A676] cursor-pointer group flex flex-col items-center"
+                        className="p-1.5 rounded-xl bg-white/5 border border-white/10 hover:border-[#C2A676] hover:bg-[#51583D]/20 cursor-pointer group flex flex-col items-center relative transition"
                       >
                         <img src={asset.url} alt="" className="w-16 h-16 object-contain" />
-                        <span className="text-[9px] text-[#A0A694] truncate w-full text-center mt-1">
+                        <span className="text-[9px] text-[#FAF9F5] truncate w-full text-center mt-1">
                           {asset.name}
                         </span>
+                        <div className="flex items-center gap-1 mt-0.5">
+                          {asset.storage === 'cloudflare-r2' ? (
+                            <span className="text-[8px] px-1 rounded bg-sky-500/20 text-sky-300 font-mono">
+                              R2 Cloud
+                            </span>
+                          ) : (
+                            <span className="text-[8px] px-1 rounded bg-amber-500/20 text-amber-300 font-mono">
+                              Server
+                            </span>
+                          )}
+                          {asset.size && (
+                            <span className="text-[8px] text-[#A0A694]">
+                              {Math.round(asset.size / 1024)}KB
+                            </span>
+                          )}
+                        </div>
                       </div>
                     ))}
                   </div>
