@@ -36,9 +36,11 @@ import {
   HardDrive,
   ChevronLeft,
   ArrowLeft,
-  ArrowRight,
   Move,
   X,
+  FlipHorizontal,
+  FlipVertical,
+  Crop,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
@@ -84,11 +86,19 @@ export const InvitationStudio: React.FC = () => {
 
   // Mobile Navigation State
   const [mobileTab, setMobileTab] = useState<'canvas' | 'tools' | 'inspector'>('canvas');
-  const [touchDragStart, setTouchDragStart] = useState<{
-    x: number;
-    y: number;
-    elX: number;
-    elY: number;
+  // Universal Pointer Transformation Session (Move, Resize, Rotate)
+  const [transformSession, setTransformSession] = useState<{
+    mode: 'move' | 'resize' | 'rotate';
+    handle?: 'tl' | 'tr' | 'bl' | 'br';
+    startX: number;
+    startY: number;
+    initialX: number;
+    initialY: number;
+    initialWidth: number;
+    initialHeight: number;
+    initialRotation: number;
+    centerX: number;
+    centerY: number;
   } | null>(null);
 
   // Load from LocalStorage on mount
@@ -351,34 +361,178 @@ export const InvitationStudio: React.FC = () => {
     });
   };
 
-  // Mobile direct touch dragging
-  const handleTouchStart = (e: React.TouchEvent, el: CanvasElement, secId: string) => {
+  // Universal Pointer Handlers (Works on Mouse, Pen, and Touch)
+  const startMove = (e: React.PointerEvent, el: CanvasElement, secId: string) => {
+    if (previewMode !== 'editor') return;
+    e.stopPropagation();
     setSelectedElementId(el.id);
     setSelectedSectionId(secId);
-    if (previewMode !== 'editor') return;
-    const touch = e.touches[0];
-    setTouchDragStart({
-      x: touch.clientX,
-      y: touch.clientY,
-      elX: el.x || 0,
-      elY: el.y || 0,
+
+    // Only respond to primary click / touch
+    if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    const targetEl = document.getElementById(`canvas-el-${el.id}`);
+    const rect = targetEl ? targetEl.getBoundingClientRect() : (e.currentTarget as HTMLElement).getBoundingClientRect();
+    setTransformSession({
+      mode: 'move',
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: el.x || 0,
+      initialY: el.y || 0,
+      initialWidth: typeof el.width === 'number' ? el.width : rect.width,
+      initialHeight: typeof el.height === 'number' ? el.height : rect.height,
+      initialRotation: el.rotation || 0,
+      centerX: rect.left + rect.width / 2,
+      centerY: rect.top + rect.height / 2,
     });
   };
 
-  const handleTouchMove = (e: React.TouchEvent, el: CanvasElement) => {
-    if (!touchDragStart || previewMode !== 'editor' || selectedElementId !== el.id) return;
-    const touch = e.touches[0];
-    const dx = touch.clientX - touchDragStart.x;
-    const dy = touch.clientY - touchDragStart.y;
-    updateSelectedElement({
-      x: Math.round(touchDragStart.elX + dx),
-      y: Math.round(touchDragStart.elY + dy),
+  const startResize = (e: React.PointerEvent, handle: 'tl' | 'tr' | 'bl' | 'br') => {
+    e.stopPropagation();
+    const el = getSelectedElement();
+    if (!el) return;
+
+    const targetEl = document.getElementById(`canvas-el-${el.id}`);
+    const rect = targetEl ? targetEl.getBoundingClientRect() : null;
+
+    setTransformSession({
+      mode: 'resize',
+      handle,
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: el.x || 0,
+      initialY: el.y || 0,
+      initialWidth: typeof el.width === 'number' ? el.width : (rect?.width || 120),
+      initialHeight: typeof el.height === 'number' ? el.height : (rect?.height || 60),
+      initialRotation: el.rotation || 0,
+      centerX: rect ? rect.left + rect.width / 2 : 0,
+      centerY: rect ? rect.top + rect.height / 2 : 0,
     });
   };
 
-  const handleTouchEnd = () => {
-    setTouchDragStart(null);
+  const startRotate = (e: React.PointerEvent) => {
+    e.stopPropagation();
+    const el = getSelectedElement();
+    if (!el) return;
+
+    const targetEl = document.getElementById(`canvas-el-${el.id}`);
+    const rect = targetEl?.getBoundingClientRect();
+    const centerX = rect ? rect.left + rect.width / 2 : e.clientX;
+    const centerY = rect ? rect.top + rect.height / 2 : e.clientY;
+
+    setTransformSession({
+      mode: 'rotate',
+      startX: e.clientX,
+      startY: e.clientY,
+      initialX: el.x || 0,
+      initialY: el.y || 0,
+      initialWidth: typeof el.width === 'number' ? el.width : 120,
+      initialHeight: typeof el.height === 'number' ? el.height : 60,
+      initialRotation: el.rotation || 0,
+      centerX,
+      centerY,
+    });
   };
+
+  // Quick Action Helpers
+  const handleRotateElement = (degDelta: number) => {
+    const el = getSelectedElement();
+    if (!el) return;
+    const nextRot = ((el.rotation || 0) + degDelta) % 360;
+    updateSelectedElement({ rotation: nextRot < 0 ? nextRot + 360 : nextRot });
+  };
+
+  const handleFlipElement = (axis: 'x' | 'y') => {
+    const el = getSelectedElement();
+    if (!el) return;
+    if (axis === 'x') {
+      updateSelectedElement({ flipX: !el.flipX });
+    } else {
+      updateSelectedElement({ flipY: !el.flipY });
+    }
+  };
+
+  const handleToggleCropFit = () => {
+    const el = getSelectedElement();
+    if (!el) return;
+    const current = el.objectFit || 'contain';
+    const next = current === 'contain' ? 'cover' : current === 'cover' ? 'fill' : 'contain';
+    updateSelectedElement({ objectFit: next });
+  };
+
+  // Global window listeners for pointer move and up
+  useEffect(() => {
+    if (!transformSession) return;
+
+    const handlePointerMove = (e: PointerEvent) => {
+      const dx = e.clientX - transformSession.startX;
+      const dy = e.clientY - transformSession.startY;
+
+      if (transformSession.mode === 'move') {
+        updateSelectedElement({
+          x: Math.round(transformSession.initialX + dx),
+          y: Math.round(transformSession.initialY + dy),
+        });
+      } else if (transformSession.mode === 'resize') {
+        const handle = transformSession.handle;
+        let nextW = transformSession.initialWidth;
+        let nextH = transformSession.initialHeight;
+
+        if (handle === 'br') {
+          nextW = Math.max(25, Math.round(transformSession.initialWidth + dx));
+          nextH = Math.max(25, Math.round(transformSession.initialHeight + dy));
+        } else if (handle === 'bl') {
+          nextW = Math.max(25, Math.round(transformSession.initialWidth - dx));
+          nextH = Math.max(25, Math.round(transformSession.initialHeight + dy));
+        } else if (handle === 'tr') {
+          nextW = Math.max(25, Math.round(transformSession.initialWidth + dx));
+          nextH = Math.max(25, Math.round(transformSession.initialHeight - dy));
+        } else if (handle === 'tl') {
+          nextW = Math.max(25, Math.round(transformSession.initialWidth - dx));
+          nextH = Math.max(25, Math.round(transformSession.initialHeight - dy));
+        }
+
+        updateSelectedElement({
+          width: nextW,
+          height: nextH,
+        });
+      } else if (transformSession.mode === 'rotate') {
+        const currentAngle =
+          Math.atan2(
+            e.clientY - transformSession.centerY,
+            e.clientX - transformSession.centerX
+          ) *
+          (180 / Math.PI);
+
+        const startAngle =
+          Math.atan2(
+            transformSession.startY - transformSession.centerY,
+            transformSession.startX - transformSession.centerX
+          ) *
+          (180 / Math.PI);
+
+        const diff = currentAngle - startAngle;
+        let nextRotation = Math.round((transformSession.initialRotation + diff) % 360);
+        if (nextRotation < 0) nextRotation += 360;
+
+        updateSelectedElement({ rotation: nextRotation });
+      }
+    };
+
+    const handlePointerUp = () => {
+      setTransformSession(null);
+    };
+
+    window.addEventListener('pointermove', handlePointerMove);
+    window.addEventListener('pointerup', handlePointerUp);
+    window.addEventListener('pointercancel', handlePointerUp);
+
+    return () => {
+      window.removeEventListener('pointermove', handlePointerMove);
+      window.removeEventListener('pointerup', handlePointerUp);
+      window.removeEventListener('pointercancel', handlePointerUp);
+    };
+  }, [transformSession]);
 
   // Delete element
   const handleDeleteElement = (id: string) => {
@@ -1058,17 +1212,16 @@ export const InvitationStudio: React.FC = () => {
                         return (
                           <div
                             key={el.id}
+                            id={`canvas-el-${el.id}`}
+                            onPointerDown={(e) => startMove(e, el, sec.id)}
                             onClick={(e) => {
                               e.stopPropagation();
                               setSelectedElementId(el.id);
                               setSelectedSectionId(sec.id);
                             }}
-                            onTouchStart={(e) => handleTouchStart(e, el, sec.id)}
-                            onTouchMove={(e) => handleTouchMove(e, el)}
-                            onTouchEnd={handleTouchEnd}
-                            className={`relative transition-transform select-none cursor-pointer ${
+                            className={`relative transition-none select-none cursor-grab active:cursor-grabbing touch-none ${
                               isSelected
-                                ? 'ring-2 ring-blue-500 ring-offset-2 ring-offset-transparent z-30'
+                                ? 'ring-2 ring-[#C2A676] ring-offset-2 ring-offset-transparent z-30 shadow-2xl'
                                 : 'hover:ring-1 hover:ring-[#C2A676]/60'
                             }`}
                             style={{
@@ -1077,35 +1230,114 @@ export const InvitationStudio: React.FC = () => {
                               height: typeof el.height === 'number' ? `${el.height}px` : el.height,
                               zIndex: el.zIndex,
                               opacity: el.opacity,
+                              touchAction: 'none',
                             }}
                           >
-                            {/* Selected Action Floating Toolbar (Desktop) */}
+                            {/* Selected Action Floating Toolbar */}
                             {isSelected && (
-                              <div className="hidden sm:flex absolute -top-9 left-1/2 -translate-x-1/2 z-50 bg-[#2A2E22] px-2 py-1 rounded-lg border border-[#C2A676]/60 shadow-xl items-center gap-1.5 text-white">
-                                <span className="text-[10px] font-medium max-w-[100px] truncate text-[#E8D8BA]">
-                                  {el.name}
-                                </span>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDuplicateElement(el);
-                                  }}
-                                  className="p-1 hover:bg-white/10 rounded"
-                                  title="Duplikat"
+                              <>
+                                <div
+                                  className="absolute -top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1E2218]/95 backdrop-blur-md px-2 py-1 rounded-xl border border-[#C2A676]/60 shadow-2xl flex items-center gap-1 text-white text-[10px]"
+                                  onPointerDown={(e) => e.stopPropagation()}
                                 >
-                                  <Copy className="w-3 h-3" />
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    handleDeleteElement(el.id);
-                                  }}
-                                  className="p-1 hover:bg-rose-500/30 text-rose-400 rounded"
-                                  title="Hapus"
+                                  <span className="font-semibold max-w-[80px] truncate text-[#E8D8BA] mr-1">
+                                    {el.name}
+                                  </span>
+                                  {/* Rotate +45 */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleRotateElement(45);
+                                    }}
+                                    className="px-1.5 py-0.5 rounded bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] font-mono flex items-center gap-0.5"
+                                    title="Putar +45°"
+                                  >
+                                    <RotateCw className="w-2.5 h-2.5" />
+                                    <span>45°</span>
+                                  </button>
+                                  {/* Flip Horizontal */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleFlipElement('x');
+                                    }}
+                                    className={`p-1 rounded ${el.flipX ? 'bg-[#C2A676] text-[#1E2218]' : 'bg-white/10 hover:bg-white/20 text-[#E8D8BA]'}`}
+                                    title="Balik Horizontal (Mirror)"
+                                  >
+                                    <FlipHorizontal className="w-3 h-3" />
+                                  </button>
+                                  {/* Crop / Fit Toggle (for images/decor) */}
+                                  {(el.type === 'image' || el.type === 'flower' || el.type === 'ornament') && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        handleToggleCropFit();
+                                      }}
+                                      className="px-1.5 py-0.5 rounded bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] flex items-center gap-1"
+                                      title={`Crop/Fit: ${el.objectFit || 'contain'}`}
+                                    >
+                                      <Crop className="w-2.5 h-2.5" />
+                                      <span className="capitalize">{el.objectFit || 'contain'}</span>
+                                    </button>
+                                  )}
+                                  {/* Duplicate */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDuplicateElement(el);
+                                    }}
+                                    className="p-1 hover:bg-white/10 rounded text-[#E8D8BA]"
+                                    title="Duplikat Elemen"
+                                  >
+                                    <Copy className="w-3 h-3" />
+                                  </button>
+                                  {/* Delete */}
+                                  <button
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDeleteElement(el.id);
+                                    }}
+                                    className="p-1 hover:bg-rose-500/30 text-rose-400 rounded"
+                                    title="Hapus Elemen"
+                                  >
+                                    <Trash2 className="w-3 h-3" />
+                                  </button>
+                                </div>
+
+                                {/* Top Rotation Knob */}
+                                <div
+                                  className="absolute -top-7 left-1/2 -translate-x-1/2 flex flex-col items-center z-40 cursor-grab active:cursor-grabbing"
+                                  onPointerDown={startRotate}
+                                  title="Putar Elemen (Tarik Memutar)"
                                 >
-                                  <Trash2 className="w-3 h-3" />
-                                </button>
-                              </div>
+                                  <div className="w-5 h-5 rounded-full bg-[#1E2218] border-2 border-[#C2A676] flex items-center justify-center shadow-lg hover:scale-110 transition-transform">
+                                    <RotateCw className="w-2.5 h-2.5 text-[#E8D8BA]" />
+                                  </div>
+                                  <div className="w-[1.5px] h-2 bg-[#C2A676]" />
+                                </div>
+
+                                {/* 4 Corner Resize Handles */}
+                                <div
+                                  className="absolute -top-1.5 -left-1.5 w-3.5 h-3.5 bg-white border-2 border-[#C2A676] rounded-full shadow cursor-nwse-resize z-40 hover:scale-125 transition-transform"
+                                  onPointerDown={(e) => startResize(e, 'tl')}
+                                  title="Tarik untuk mengubah ukuran (Kiri Atas)"
+                                />
+                                <div
+                                  className="absolute -top-1.5 -right-1.5 w-3.5 h-3.5 bg-white border-2 border-[#C2A676] rounded-full shadow cursor-nesw-resize z-40 hover:scale-125 transition-transform"
+                                  onPointerDown={(e) => startResize(e, 'tr')}
+                                  title="Tarik untuk mengubah ukuran (Kanan Atas)"
+                                />
+                                <div
+                                  className="absolute -bottom-1.5 -left-1.5 w-3.5 h-3.5 bg-white border-2 border-[#C2A676] rounded-full shadow cursor-nesw-resize z-40 hover:scale-125 transition-transform"
+                                  onPointerDown={(e) => startResize(e, 'bl')}
+                                  title="Tarik untuk mengubah ukuran (Kiri Bawah)"
+                                />
+                                <div
+                                  className="absolute -bottom-1.5 -right-1.5 w-3.5 h-3.5 bg-white border-2 border-[#C2A676] rounded-full shadow cursor-nwse-resize z-40 hover:scale-125 transition-transform"
+                                  onPointerDown={(e) => startResize(e, 'br')}
+                                  title="Tarik untuk mengubah ukuran (Kanan Bawah)"
+                                />
+                              </>
                             )}
 
                             {/* TEXT ELEMENT */}
@@ -1126,7 +1358,7 @@ export const InvitationStudio: React.FC = () => {
                                   borderStyle: el.borderStyle,
                                   borderRadius: `${el.borderRadius}px`,
                                 }}
-                                className="w-full h-full flex items-center justify-center p-1 whitespace-pre-line"
+                                className="w-full h-full flex items-center justify-center p-1 whitespace-pre-line pointer-events-none select-none"
                               >
                                 {el.content}
                               </div>
@@ -1135,7 +1367,7 @@ export const InvitationStudio: React.FC = () => {
                             {/* IMAGE / FLOWER / ORNAMENT ELEMENT */}
                             {(el.type === 'image' || el.type === 'flower' || el.type === 'ornament' || el.type === 'bismillah') && (
                               <div
-                                className="w-full h-full flex items-center justify-center overflow-hidden"
+                                className="w-full h-full flex items-center justify-center overflow-hidden pointer-events-none"
                                 style={{
                                   borderRadius: `${el.borderRadius}px`,
                                   borderWidth: `${el.borderWidth}px`,
@@ -1146,7 +1378,12 @@ export const InvitationStudio: React.FC = () => {
                                 <img
                                   src={el.content}
                                   alt={el.name}
-                                  className="w-full h-full object-contain pointer-events-none"
+                                  draggable={false}
+                                  style={{
+                                    objectFit: el.objectFit || 'contain',
+                                    transform: `scaleX(${el.flipX ? -1 : 1}) scaleY(${el.flipY ? -1 : 1})`,
+                                  }}
+                                  className="w-full h-full pointer-events-none select-none"
                                 />
                               </div>
                             )}
@@ -1166,7 +1403,7 @@ export const InvitationStudio: React.FC = () => {
                                   fontWeight: el.fontWeight,
                                   textAlign: el.textAlign,
                                 }}
-                                className="w-full h-full flex items-center justify-center p-3 whitespace-pre-line shadow-sm"
+                                className="w-full h-full flex items-center justify-center p-3 whitespace-pre-line shadow-sm pointer-events-none select-none"
                               >
                                 {el.content}
                               </div>
@@ -1187,7 +1424,7 @@ export const InvitationStudio: React.FC = () => {
                                   borderRadius: `${el.borderRadius}px`,
                                   letterSpacing: `${el.letterSpacing}px`,
                                 }}
-                                className="w-full h-full flex items-center justify-center shadow-lg pointer-events-auto"
+                                className="w-full h-full flex items-center justify-center shadow-lg pointer-events-none select-none"
                               >
                                 {el.content}
                               </button>
@@ -1499,17 +1736,86 @@ export const InvitationStudio: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Rotasi & Orientasi */}
                 <div>
-                  <label className="block text-[10px] text-[#A0A694] mb-1">Rotasi ({selectedElement.rotation}°)</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-[10px] text-[#A0A694]">Rotasi ({selectedElement.rotation || 0}°)</label>
+                    <div className="flex items-center gap-1">
+                      {[0, 90, 180, 270].map((deg) => (
+                        <button
+                          key={deg}
+                          onClick={() => updateSelectedElement({ rotation: deg })}
+                          className={`px-1.5 py-0.5 rounded text-[9px] font-mono ${
+                            (selectedElement.rotation || 0) === deg
+                              ? 'bg-[#C2A676] text-[#1E2218] font-bold'
+                              : 'bg-white/10 text-[#E8D8BA] hover:bg-white/20'
+                          }`}
+                        >
+                          {deg}°
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                   <input
                     type="range"
-                    min="-180"
-                    max="180"
-                    value={selectedElement.rotation}
+                    min="0"
+                    max="360"
+                    value={selectedElement.rotation || 0}
                     onChange={(e) => updateSelectedElement({ rotation: Number(e.target.value) })}
                     className="w-full accent-[#C2A676]"
                   />
                 </div>
+
+                {/* Flip & Mirror */}
+                <div>
+                  <label className="block text-[10px] text-[#A0A694] mb-1">Mirror / Balik Arah</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    <button
+                      onClick={() => updateSelectedElement({ flipX: !selectedElement.flipX })}
+                      className={`px-2 py-1.5 rounded-lg border text-xs flex items-center justify-center gap-1.5 transition ${
+                        selectedElement.flipX
+                          ? 'bg-[#C2A676] text-[#1E2218] border-[#C2A676] font-semibold'
+                          : 'bg-white/5 border-white/10 text-[#E8D8BA] hover:bg-white/10'
+                      }`}
+                    >
+                      <FlipHorizontal className="w-3.5 h-3.5" />
+                      <span>Flip Horizontal</span>
+                    </button>
+                    <button
+                      onClick={() => updateSelectedElement({ flipY: !selectedElement.flipY })}
+                      className={`px-2 py-1.5 rounded-lg border text-xs flex items-center justify-center gap-1.5 transition ${
+                        selectedElement.flipY
+                          ? 'bg-[#C2A676] text-[#1E2218] border-[#C2A676] font-semibold'
+                          : 'bg-white/5 border-white/10 text-[#E8D8BA] hover:bg-white/10'
+                      }`}
+                    >
+                      <FlipVertical className="w-3.5 h-3.5" />
+                      <span>Flip Vertikal</span>
+                    </button>
+                  </div>
+                </div>
+
+                {/* Crop & Fit Mode for images/decor */}
+                {(selectedElement.type === 'image' || selectedElement.type === 'flower' || selectedElement.type === 'ornament') && (
+                  <div>
+                    <label className="block text-[10px] text-[#A0A694] mb-1">Format Gambar (Crop / Fit)</label>
+                    <div className="grid grid-cols-3 gap-1">
+                      {(['contain', 'cover', 'fill'] as const).map((fitMode) => (
+                        <button
+                          key={fitMode}
+                          onClick={() => updateSelectedElement({ objectFit: fitMode })}
+                          className={`px-1.5 py-1 rounded border text-[10px] capitalize transition ${
+                            (selectedElement.objectFit || 'contain') === fitMode
+                              ? 'bg-[#C2A676] text-[#1E2218] border-[#C2A676] font-bold'
+                              : 'bg-white/5 border-white/10 text-[#E8D8BA] hover:bg-white/10'
+                          }`}
+                        >
+                          {fitMode === 'contain' ? 'Utuh' : fitMode === 'cover' ? 'Crop' : 'Regang'}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
 
               {/* 5. Animation Controls */}

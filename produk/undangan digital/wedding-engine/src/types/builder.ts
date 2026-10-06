@@ -64,6 +64,10 @@ export interface CanvasElement {
   opacity: number;
   zIndex: number;
   shadow: 'none' | 'sm' | 'md' | 'lg' | 'xl' | 'gold-glow' | 'inner';
+  // Image Fit & Crop & Flip
+  objectFit?: 'contain' | 'cover' | 'fill';
+  flipX?: boolean;
+  flipY?: boolean;
   // Shape-specific
   shapeType?: ShapeType;
   // Animation
