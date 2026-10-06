@@ -29,7 +29,8 @@ export type ActivePage =
   | 'checkout'
   | 'admin-login'
   | 'admin-dashboard'
-  | 'client-profile';
+  | 'client-profile'
+  | 'builder';
 
 interface NavbarProps {
   currentPage: ActivePage;
@@ -135,6 +136,7 @@ export const Navbar: React.FC<NavbarProps> = ({
     { id: 'home', label: 'Beranda', icon: Home },
     { id: 'catalog', label: 'Katalog Layanan', icon: Store },
     { id: 'portfolio', label: 'Inspirasi Event', icon: Layers },
+    { id: 'builder', label: '✨ Mesin Undangan', icon: Sparkles },
     { id: 'contact', label: 'Konsultasi & Atelier', icon: PhoneCall },
   ];
 

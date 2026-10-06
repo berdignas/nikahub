@@ -1,0 +1,31 @@
+<svg viewBox="0 0 200 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="rosePetal1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#f8e7e4"/>
+      <stop offset="60%" stop-color="#e8bfb8"/>
+      <stop offset="100%" stop-color="#d49e96"/>
+    </linearGradient>
+    <linearGradient id="rosePetal2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#ecd0cc"/>
+      <stop offset="100%" stop-color="#c98a81"/>
+    </linearGradient>
+    <linearGradient id="goldStem" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#dfba73"/>
+      <stop offset="100%" stop-color="#9a793c"/>
+    </linearGradient>
+  </defs>
+  {/* Rose Center & Swirls */}
+  <path d="M100 80 C85 60, 60 75, 75 95 C90 115, 120 115, 125 95 C130 75, 115 60, 100 80 Z" fill="url(#rosePetal1)" stroke="#b57970" stroke-width="0.75" />
+  <path d="M85 70 C70 50, 45 70, 60 90 C75 110, 105 125, 120 105 C135 85, 100 50, 85 70 Z" fill="url(#rosePetal2)" fill-opacity="0.85" stroke="#a3635a" stroke-width="0.75" />
+  <path d="M115 65 C135 50, 155 70, 140 95 C125 120, 95 130, 80 115 C65 100, 95 50, 115 65 Z" fill="url(#rosePetal1)" stroke="#b57970" stroke-width="0.75" />
+  {/* Outer Large Petals */}
+  <path d="M60 85 C35 80, 30 115, 55 130 C80 145, 110 140, 135 130 C160 120, 165 85, 140 75 C115 65, 85 90, 60 85 Z" fill="url(#rosePetal2)" fill-opacity="0.7" stroke="#b57970" stroke-width="0.5" />
+  <path d="M75 120 C60 145, 100 165, 125 150 C150 135, 155 115, 145 105" fill="none" stroke="#a3635a" stroke-width="0.8" />
+  {/* Botanical Calyx & Leaves */}
+  <path d="M55 125 C40 140, 30 165, 45 180 C60 165, 70 145, 60 130 Z" fill="#86a385" stroke="#516c52" stroke-width="0.75" />
+  <path d="M140 120 C160 130, 175 155, 165 170 C150 160, 135 140, 140 120 Z" fill="#688768" stroke="#415642" stroke-width="0.75" />
+  {/* Gold accent stamen */}
+  <circle cx="98" cy="88" r="2.5" fill="url(#goldStem)" />
+  <circle cx="104" cy="85" r="2" fill="url(#goldStem)" />
+  <circle cx="94" cy="93" r="1.8" fill="url(#goldStem)" />
+</svg>

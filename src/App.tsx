@@ -13,6 +13,7 @@ import { AdminDashboardView } from './components/AdminDashboardView';
 import { LoginModal } from './components/LoginModal';
 import { CartDrawer } from './components/CartDrawer';
 import { Footer } from './components/Footer';
+import { InvitationStudio } from './components/InvitationStudio';
 import { WEDDING_PRODUCTS } from './data/mockData';
 import { WeddingProduct, ProductCategory, BookingItem, User } from './types';
 import confetti from 'canvas-confetti';
@@ -29,6 +30,14 @@ const getSecretRoutePage = (): ActivePage => {
     const path = window.location.pathname;
     const hash = window.location.hash;
     const search = window.location.search;
+
+    if (
+      path.includes('builder') ||
+      hash.includes('builder') ||
+      search.includes('builder')
+    ) {
+      return 'builder';
+    }
 
     if (
       path.includes('login-berdignas-nikahub') ||
@@ -159,6 +168,14 @@ export function App() {
       const search = window.location.search;
 
       if (
+        path.includes('builder') ||
+        hash.includes('builder') ||
+        search.includes('builder')
+      ) {
+        return 'builder' as ActivePage;
+      }
+
+      if (
         path.includes('login-berdignas-nikahub') ||
         hash.includes('login-berdignas-nikahub') ||
         search.includes('login-berdignas-nikahub') ||
@@ -263,7 +280,9 @@ export function App() {
     };
 
     const handleHashChange = () => {
-      if (window.location.hash.includes('login-berdignas-nikahub') || window.location.hash.includes('admin')) {
+      if (window.location.hash.includes('builder')) {
+        setCurrentPage('builder');
+      } else if (window.location.hash.includes('login-berdignas-nikahub') || window.location.hash.includes('admin')) {
         const isAdminAuth = sessionStorage.getItem('nikahub_admin_session') === 'authenticated';
         setCurrentPage(isAdminAuth ? 'admin-dashboard' : 'admin-login');
       }
@@ -460,8 +479,8 @@ export function App() {
   return (
     <div className="min-h-screen bg-sand text-emerald-950 font-sans selection:bg-champagne-300">
       
-      {/* Floating Island Navbar (Hidden on Admin pages) */}
-      {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
+      {/* Floating Island Navbar (Hidden on Admin & Builder pages) */}
+      {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && currentPage !== 'builder' && (
         <Navbar 
           currentPage={currentPage}
           onPageChange={(page) => handleNavigate(page)}
@@ -480,6 +499,7 @@ export function App() {
           <HomeView 
             onNavigateToCatalog={() => handleNavigate('catalog')}
             onNavigateToContact={() => handleNavigate('contact')}
+            onNavigateToBuilder={() => handleNavigate('builder')}
             featuredProducts={products}
             onSelectProduct={handleSelectProduct}
           />
@@ -568,10 +588,15 @@ export function App() {
             }}
           />
         )}
+
+        {/* WEDDING INVITATION STUDIO BUILDER */}
+        {currentPage === 'builder' && (
+          <InvitationStudio onBackToHome={() => handleNavigate('home')} />
+        )}
       </main>
 
-      {/* Global Footer (Hidden on Admin pages) */}
-      {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && (
+      {/* Global Footer (Hidden on Admin & Builder pages) */}
+      {currentPage !== 'admin-login' && currentPage !== 'admin-dashboard' && currentPage !== 'builder' && (
         <Footer />
       )}
 

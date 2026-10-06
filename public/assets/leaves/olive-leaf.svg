@@ -1,0 +1,22 @@
+<svg viewBox="0 0 120 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="oliveGrad1" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#9eb89d"/>
+      <stop offset="100%" stop-color="#516c52"/>
+    </linearGradient>
+    <linearGradient id="oliveGrad2" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#b8cdb7"/>
+      <stop offset="100%" stop-color="#688768"/>
+    </linearGradient>
+  </defs>
+  <path d="M60 15 Q55 90 60 185" stroke="#7a5a46" stroke-width="1.8" stroke-linecap="round"/>
+  {/* Slender Olive Leaves */}
+  <path d="M60 30 C40 25 30 15 25 5 C35 25 50 35 60 30 Z" fill="url(#oliveGrad1)" />
+  <path d="M60 45 C80 35 95 30 100 20 C95 40 75 55 60 45 Z" fill="url(#oliveGrad2)" />
+  <path d="M60 80 C35 70 20 60 15 45 C25 70 45 88 60 80 Z" fill="url(#oliveGrad1)" />
+  <path d="M60 105 C85 95 105 85 110 70 C100 95 80 115 60 105 Z" fill="url(#oliveGrad2)" />
+  <path d="M60 140 C35 130 20 120 15 105 C25 130 45 150 60 140 Z" fill="url(#oliveGrad1)" />
+  {/* Golden olives */}
+  <ellipse cx="68" cy="62" rx="4" ry="6" transform="rotate(15 68 62)" fill="#3d3727" stroke="#dfba73" stroke-width="0.8" />
+  <ellipse cx="48" cy="118" rx="4" ry="6" transform="rotate(-20 48 118)" fill="#3d3727" stroke="#dfba73" stroke-width="0.8" />
+</svg>
