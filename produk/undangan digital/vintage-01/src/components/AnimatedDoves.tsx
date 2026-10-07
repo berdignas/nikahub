@@ -2,10 +2,10 @@ import React from 'react';
 
 export const AnimatedDoves: React.FC = () => {
   return (
-    <div className="fixed inset-0 pointer-events-none z-20 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[2] overflow-hidden">
       {/* Dove Flying Right */}
       <div className="absolute top-24 left-0 animate-dove-right">
-        <svg viewBox="0 0 64 64" className="w-12 h-12 text-white filter drop-shadow-md opacity-85">
+        <svg viewBox="0 0 64 64" className="w-12 h-12 text-white filter drop-shadow-md opacity-75">
           {/* Body */}
           <path
             fill="currentColor"
@@ -27,7 +27,7 @@ export const AnimatedDoves: React.FC = () => {
 
       {/* Dove Flying Left */}
       <div className="absolute top-64 right-0 animate-dove-left">
-        <svg viewBox="0 0 64 64" className="w-10 h-10 text-white filter drop-shadow-md opacity-80">
+        <svg viewBox="0 0 64 64" className="w-10 h-10 text-white filter drop-shadow-md opacity-70">
           {/* Body */}
           <path
             fill="currentColor"

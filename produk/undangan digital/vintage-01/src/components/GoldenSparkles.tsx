@@ -12,7 +12,7 @@ export const GoldenSparkles: React.FC = () => {
   ];
 
   return (
-    <div className="fixed inset-0 pointer-events-none z-20 overflow-hidden">
+    <div className="fixed inset-0 pointer-events-none z-[1] overflow-hidden">
       {sparkles.map((s) => (
         <motion.div
           key={s.id}
@@ -20,8 +20,8 @@ export const GoldenSparkles: React.FC = () => {
           style={{ left: s.left, top: s.top }}
           animate={{
             y: [-10, -40, -10],
-            opacity: [0.2, 0.9, 0.2],
-            scale: [0.8, 1.3, 0.8],
+            opacity: [0.15, 0.7, 0.15],
+            scale: [0.8, 1.2, 0.8],
           }}
           transition={{
             duration: s.duration,

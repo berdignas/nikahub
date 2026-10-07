@@ -78,7 +78,14 @@ export const CoupleSection: React.FC = () => {
             </a>
           </motion.div>
 
-          {/* Center Ampersand Connector for Desktop */}
+          {/* Mobile Centered Ampersand Connector */}
+          <div className="flex justify-center items-center my-1 pointer-events-none md:hidden">
+            <span className="w-12 h-12 rounded-full bg-white border-2 border-[#C5A059] flex items-center justify-center font-script text-3xl text-[#C5A059] shadow-lg">
+              &amp;
+            </span>
+          </div>
+
+          {/* Desktop Center Ampersand Connector */}
           <div className="hidden md:flex absolute inset-0 items-center justify-center pointer-events-none z-10">
             <span className="w-14 h-14 rounded-full bg-white border-2 border-[#C5A059] flex items-center justify-center font-script text-4xl text-[#C5A059] shadow-xl">
               &amp;
