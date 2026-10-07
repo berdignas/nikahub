@@ -62,6 +62,7 @@ import {
   ElementType,
   AnimationType,
   LoopAnimationType,
+  ExitAnimationType,
   ShapeType,
 } from '../types/builder';
 import {
@@ -107,10 +108,35 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
   const [previewMode, setPreviewMode] = useState<'editor' | 'live'>('editor');
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
-  // Animation Test & Interactive Preview Key
+  // Animation Phase & Interactive Preview Key (Stacked: Entrance -> Looping -> Exit)
   const [animPreviewKey, setAnimPreviewKey] = useState<number>(0);
-  const triggerPreviewAnimation = () => {
-    setAnimPreviewKey((k) => k + 1);
+  const [animPhase, setAnimPhase] = useState<'entrance' | 'exit'>('entrance');
+  const animPhaseTimeoutRef = useRef<any>(null);
+
+  const triggerPreviewAnimation = (phase?: 'all' | 'entrance' | 'exit' | React.SyntheticEvent) => {
+    if (animPhaseTimeoutRef.current) clearTimeout(animPhaseTimeoutRef.current);
+
+    const targetPhase = typeof phase === 'string' && (phase === 'entrance' || phase === 'exit' || phase === 'all') ? phase : 'all';
+
+    if (targetPhase === 'entrance') {
+      setAnimPhase('entrance');
+      setAnimPreviewKey((k) => k + 1);
+    } else if (targetPhase === 'exit') {
+      setAnimPhase('exit');
+      setAnimPreviewKey((k) => k + 1);
+    } else {
+      // Sequence: Masuk (Entrance) -> Looping -> Keluar (Exit: Dari Tengah ke Samping)
+      setAnimPhase('entrance');
+      setAnimPreviewKey((k) => k + 1);
+
+      animPhaseTimeoutRef.current = setTimeout(() => {
+        setAnimPhase('exit');
+        animPhaseTimeoutRef.current = setTimeout(() => {
+          setAnimPhase('entrance');
+          setAnimPreviewKey((k) => k + 1);
+        }, 1200);
+      }, 2000);
+    }
   };
 
   // Entrance & Looping Animation Helpers
@@ -159,6 +185,35 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
       case 'pulse': return { opacity: 1, scale: 1 };
       case 'none':
       default: return { opacity: 1 };
+    }
+  };
+
+  const getExitAnimate = (type?: ExitAnimationType) => {
+    switch (type) {
+      case 'centerToSides':
+        // Dari tengah keluar ke samping (meluncur & membelah ke samping kiri-kanan dengan blur)
+        return { opacity: 0, scaleX: 2.2, scaleY: 0.6, filter: 'blur(10px)' };
+      case 'splitOutSides':
+        // Terbelah melebar ke samping kiri & kanan
+        return { opacity: 0, scaleX: 2.5, filter: 'blur(14px)' };
+      case 'shrinkCenter':
+        // Menyusut dari samping ke titik tengah
+        return { opacity: 0, scale: 0, filter: 'blur(8px)' };
+      case 'fadeOut':
+        return { opacity: 0 };
+      case 'zoomOut':
+        return { opacity: 0, scale: 0.2 };
+      case 'fadeDown':
+        return { opacity: 0, y: 70 };
+      case 'fadeUp':
+        return { opacity: 0, y: -70 };
+      case 'slideLeft':
+        return { opacity: 0, x: -140 };
+      case 'slideRight':
+        return { opacity: 0, x: 140 };
+      case 'none':
+      default:
+        return { opacity: 1 };
     }
   };
 
@@ -621,10 +676,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
     // Only respond to primary click / touch
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 
-    // Guard: elements must already be selected via double-tap before dragging
-    if (!forceUnlock && selectedElementId !== el.id) {
-      return;
-    }
+    // On laptop/desktop: single click immediately starts move and selects
 
     e.stopPropagation();
     setSelectedElementId(el.id);
@@ -1879,72 +1931,22 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                             key={el.id}
                             id={`canvas-el-${el.id}`}
                             onPointerDown={(e) => {
-                              // Direct mouse drag on desktop is ONLY allowed if the element is ALREADY SELECTED!
-                              if (e.pointerType === 'mouse' && isSelected) {
+                              // On laptop/desktop mouse: single click starts move immediately!
+                              if (e.pointerType === 'mouse') {
                                 startMove(e, el, sec.id);
                               }
                             }}
                             onClick={(e) => {
-                              // If user was scrolling, ignore completely!
                               if (touchScrollTrackerRef.current.isScrolling) return;
                               e.stopPropagation();
 
                               if (previewMode !== 'editor') return;
 
-                              // If element is ALREADY selected, keep it selected without disturbance
-                              if (selectedElementId === el.id) {
-                                return;
-                              }
-
-                              // Require DOUBLE TAP / DOUBLE CLICK to select any element!
-                              const now = Date.now();
-                              const last = lastElementTapRef.current;
-
-                              // 1. MOBILE GHOST-TOUCH REJECTION:
-                              // If an event arrives within 160ms of the previous tap on this element,
-                              // it is physically impossible for a human finger to double-tap that fast.
-                              // It is a duplicate synthetic event / ghost click generated by mobile browsers!
-                              if (last && last.id === el.id && (now - last.time) < 160) {
-                                return;
-                              }
-
-                              const isSameElement = last && last.id === el.id;
-                              const isWithinWindow =
-                                last &&
-                                (now - last.time) >= 160 &&
-                                (now - last.time) <= 650;
-
-                              if (isSameElement && isWithinWindow) {
-                                // === CONFIRMED DOUBLE TAP / DOUBLE CLICK ===
-                                setSelectedElementId(el.id);
-                                setSelectedSectionId(sec.id);
-                                setDragUnlockedElementId(el.id);
-                                setStagedHintElementId(null);
-                                lastElementTapRef.current = null;
-                                if (stagedHintTimeoutRef.current) {
-                                  clearTimeout(stagedHintTimeoutRef.current);
-                                }
-                                try {
-                                  if (typeof navigator !== 'undefined' && navigator.vibrate) {
-                                    navigator.vibrate(40);
-                                  }
-                                } catch {
-                                  // ignore
-                                }
-                              } else {
-                                // === FIRST TAP: SHOW HINT, DO NOT OPEN SETTINGS ===
-                                lastElementTapRef.current = { id: el.id, time: now };
-                                setStagedHintElementId(el.id);
-                                if (stagedHintTimeoutRef.current) {
-                                  clearTimeout(stagedHintTimeoutRef.current);
-                                }
-                                stagedHintTimeoutRef.current = setTimeout(() => {
-                                  setStagedHintElementId((curr) => (curr === el.id ? null : curr));
-                                  if (lastElementTapRef.current && lastElementTapRef.current.id === el.id) {
-                                    lastElementTapRef.current = null;
-                                  }
-                                }, 650);
-                              }
+                              // 1-Click selects element immediately (laptop & mobile)
+                              setSelectedElementId(el.id);
+                              setSelectedSectionId(sec.id);
+                              setDragUnlockedElementId(el.id);
+                              setStagedHintElementId(null);
                             }}
                             className={`relative transition-none select-none ${
                               isSelected
@@ -2120,13 +2122,17 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                               </>
                             )}
 
-                            {/* ANIMATED ELEMENT WRAPPER (Entrance Motion + Continuous Loop) */}
+                            {/* ANIMATED ELEMENT WRAPPER (Entrance Motion + Exit Motion Stacked with Continuous Loop) */}
                             <motion.div
-                              key={`${el.id}-${animPreviewKey}`}
-                              initial={getEntranceInitial(el.animation?.type)}
-                              animate={getEntranceAnimate(el.animation?.type)}
+                              key={`anim-${el.id}-${animPreviewKey}-${animPhase}`}
+                              initial={animPhase === 'exit' ? undefined : getEntranceInitial(el.animation?.type)}
+                              animate={
+                                animPhase === 'exit' && el.animation?.exitType && el.animation.exitType !== 'none'
+                                  ? getExitAnimate(el.animation.exitType)
+                                  : getEntranceAnimate(el.animation?.type)
+                              }
                               whileInView={
-                                previewMode === 'live' && el.animation?.trigger === 'onScroll'
+                                previewMode === 'live' && el.animation?.trigger === 'onScroll' && animPhase !== 'exit'
                                   ? getEntranceAnimate(el.animation?.type)
                                   : undefined
                               }
@@ -2136,16 +2142,22 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                                   : undefined
                               }
                               transition={{
-                                duration: el.animation?.duration ?? 1.2,
-                                delay: previewMode === 'live' ? (el.animation?.delay ?? 0.1) : 0.05,
-                                ease: getEntranceEase(el.animation?.type) as any,
+                                duration: animPhase === 'exit'
+                                  ? (el.animation?.exitDuration ?? 0.8)
+                                  : (el.animation?.duration ?? 1.2),
+                                delay: animPhase === 'exit' ? 0 : (previewMode === 'live' ? (el.animation?.delay ?? 0.1) : 0.05),
+                                ease: animPhase === 'exit' ? [0.4, 0, 0.2, 1] : (getEntranceEase(el.animation?.type) as any),
                               }}
-                              className={`w-full h-full ${getLoopClass(el.animation?.loopType)}`}
-                              style={{
-                                '--loop-duration': `${el.animation?.loopDuration || 8}s`,
-                                '--move-dist': `${el.animation?.moveDistance || 30}px`,
-                              } as React.CSSProperties}
+                              className="w-full h-full"
                             >
+                              {/* INNER LAYER (DITUMPUK): Continuous Looping Animation */}
+                              <div
+                                className={`w-full h-full ${getLoopClass(el.animation?.loopType)}`}
+                                style={{
+                                  '--loop-duration': `${el.animation?.loopDuration || 6}s`,
+                                  '--move-dist': `${el.animation?.moveDistance || 25}px`,
+                                } as React.CSSProperties}
+                              >
                               {/* TEXT ELEMENT */}
                               {el.type === 'text' && (
                                 <div
@@ -2250,6 +2262,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                                   {el.content}
                                 </button>
                               )}
+                              </div>
                             </motion.div>
                           </div>
                         );
@@ -3050,6 +3063,67 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                         <option value="pulse">💖 Pulse (Masuk Berdenyut)</option>
                       </optgroup>
                     </select>
+                  </div>
+
+                  {/* Animasi Keluar (Exit) */}
+                  <div>
+                    <div className="flex items-center justify-between mb-1">
+                      <label className="text-[10px] text-[#A0A694] font-medium">Animasi Keluar (Exit)</label>
+                      <span className="text-[9px] text-[#C2A676]">Transisi saat halaman berganti / tutup</span>
+                    </div>
+                    <select
+                      value={selectedElement.animation.exitType || 'none'}
+                      onChange={(e) => {
+                        updateSelectedElement({
+                          animation: {
+                            ...selectedElement.animation,
+                            exitType: e.target.value as ExitAnimationType,
+                            exitDuration: selectedElement.animation.exitDuration || 0.8,
+                          },
+                        });
+                        triggerPreviewAnimation('exit');
+                      }}
+                      className="w-full px-2.5 py-1.5 rounded-lg bg-[#2A2E22] border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
+                    >
+                      <option value="none">🚫 Tanpa Animasi Keluar</option>
+                      <option value="centerToSides">↔️ Dari Tengah Keluar ke Samping (Membelah ke Samping) ⭐</option>
+                      <option value="splitOutSides">👐 Terbelah Melebar ke Samping (Split Out)</option>
+                      <option value="shrinkCenter">🎯 Menyusut ke Titik Tengah (Shrink Center)</option>
+                      <option value="fadeOut">🌫️ Fade Out (Memudar Lembut Keluar)</option>
+                      <option value="zoomOut">🔎 Zoom Out (Mengecil & Menghilang)</option>
+                      <option value="fadeDown">⬇️ Fade Down (Meluncur Turun & Lenyap)</option>
+                      <option value="fadeUp">⬆️ Fade Up (Meluncur Naik & Lenyap)</option>
+                      <option value="slideLeft">⬅️ Slide Left (Meluncur Keluar ke Kiri)</option>
+                      <option value="slideRight">➡️ Slide Right (Meluncur Keluar ke Kanan)</option>
+                    </select>
+                  </div>
+
+                  {/* Tombol Uji Animasi Masuk, Looping, dan Keluar */}
+                  <div className="flex items-center gap-1.5 pt-1">
+                    <button
+                      type="button"
+                      onClick={() => triggerPreviewAnimation('entrance')}
+                      className="flex-1 py-1 px-2 rounded-lg bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] text-[10px] font-semibold flex items-center justify-center gap-1"
+                      title="Uji Animasi Masuk"
+                    >
+                      <span>▶ Uji Masuk</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => triggerPreviewAnimation('exit')}
+                      className="flex-1 py-1 px-2 rounded-lg bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] text-[10px] font-semibold flex items-center justify-center gap-1"
+                      title="Uji Animasi Keluar (Tengah ke Samping)"
+                    >
+                      <span>▶ Uji Keluar</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => triggerPreviewAnimation('all')}
+                      className="flex-1 py-1 px-2 rounded-lg bg-[#C2A676] text-[#1E2218] text-[10px] font-bold flex items-center justify-center gap-1 shadow"
+                      title="Uji Lengkap: Masuk -> Looping -> Keluar"
+                    >
+                      <span>⚡ Uji Semua</span>
+                    </button>
                   </div>
 
                   {/* Gerakan Loop Berkelanjutan */}

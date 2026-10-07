@@ -40,7 +40,7 @@ import {
 } from 'lucide-react';
 import { compressImage } from '../lib/builder/imageCompression';
 import { uploadImageToSupabaseStorage } from '../lib/supabase';
-import { CanvasElement, BuilderSection, GlobalProjectConfig, AnimationType, LoopAnimationType } from '../types/builder';
+import { CanvasElement, BuilderSection, GlobalProjectConfig, AnimationType, LoopAnimationType, ExitAnimationType } from '../types/builder';
 import { FONT_OPTIONS, COLOR_PALETTES, ORNAMENT_LIBRARY, SHAPE_PRESETS } from '../lib/builder/presets';
 
 
@@ -116,7 +116,7 @@ interface CanvaMobileDockProps {
   onChangeCanvasViewMode: (mode: 'cover' | 'content' | 'all') => void;
   previewMode: 'editor' | 'live';
   onTogglePreviewMode: () => void;
-  onTriggerAnimPreview: () => void;
+  onTriggerAnimPreview: (phase?: 'all' | 'entrance' | 'exit') => void;
   canvasZoom: number;
   onChangeZoom: (newZoom: number) => void;
   onOpenAddPageModal: () => void;
@@ -148,6 +148,7 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
 }) => {
   const [activeDrawer, setActiveDrawer] = useState<MobileDrawerType>('none');
   const [bgSubTab, setBgSubTab] = useState<'image' | 'color' | 'anim'>('image');
+  const [animSubTab, setAnimSubTab] = useState<'entrance' | 'loop' | 'exit'>('entrance');
   const [isUploadingBg, setIsUploadingBg] = useState(false);
 
   const handleBgFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -828,86 +829,183 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                 </div>
               )}
 
-              {/* === F. DRAWER: ANIMATION === */}
+              {/* === F. DRAWER: ANIMATION (Ditumpuk: Masuk + Looping + Keluar) === */}
               {activeDrawer === 'anim' && selectedElement && (
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-semibold text-[#E8D8BA]">Animasi Muncul (Entrance)</span>
+                <div className="space-y-2">
+                  {/* Sub-Tabs: Masuk, Looping, Keluar */}
+                  <div className="flex items-center gap-1 bg-[#141610] p-0.5 rounded-lg border border-white/10 shrink-0">
                     <button
-                      onClick={onTriggerAnimPreview}
-                      className="px-2.5 py-1 rounded-lg bg-[#C2A676] text-[#1E2218] font-bold text-[10px] flex items-center gap-1 shadow"
+                      onClick={() => setAnimSubTab('entrance')}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold flex items-center justify-center gap-1 ${
+                        animSubTab === 'entrance' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
+                      }`}
                     >
-                      <Play className="w-2.5 h-2.5 fill-current" />
-                      <span>Uji Coba</span>
+                      <Sparkles className="w-3 h-3" />
+                      <span>Masuk</span>
+                    </button>
+                    <button
+                      onClick={() => setAnimSubTab('loop')}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold flex items-center justify-center gap-1 ${
+                        animSubTab === 'loop' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
+                      }`}
+                    >
+                      <RotateCw className="w-3 h-3" />
+                      <span>Looping (Ditumpuk)</span>
+                    </button>
+                    <button
+                      onClick={() => setAnimSubTab('exit')}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold flex items-center justify-center gap-1 ${
+                        animSubTab === 'exit' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
+                      }`}
+                    >
+                      <Move className="w-3 h-3" />
+                      <span>Keluar (Tengah-Samping)</span>
                     </button>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-2">
-                    {[
-                      { id: 'fadeIn', label: 'Fade In' },
-                      { id: 'fadeUp', label: 'Naik (Fade Up)' },
-                      { id: 'zoomIn', label: 'Zoom Masuk' },
-                      { id: 'bounceIn', label: 'Bounce Mantul' },
-                      { id: 'spinIn', label: 'Putar (Spin)' },
-                      { id: 'none', label: 'Tanpa Animasi' },
-                    ].map((anim) => (
-                      <button
-                        key={anim.id}
-                        onClick={() =>
-                          onUpdateElement({
-                            animation: {
-                              ...(selectedElement.animation || { duration: 1.2, delay: 0.2, trigger: 'onLoad' }),
-                              type: anim.id as AnimationType,
-                              trigger: selectedElement.animation?.trigger || 'onLoad',
-                            },
-                          })
-                        }
-                        className={`p-2 rounded-xl border text-center transition ${
-                          (selectedElement.animation?.type || 'fadeUp') === anim.id
-                            ? 'bg-white/15 border-[#C2A676] text-[#E8D8BA] font-bold'
-                            : 'bg-white/5 border-white/5 text-white/80'
-                        }`}
-                      >
-                        <span className="text-[11px] block">{anim.label}</span>
-                      </button>
-                    ))}
-                  </div>
-
-                  <div>
-                    <span className="block text-[11px] font-semibold text-[#E8D8BA] mb-2">
-                      Animasi Melayang Berulang (Looping)
-                    </span>
-                    <div className="grid grid-cols-3 gap-2">
-                      {[
-                        { id: 'sway', label: 'Goyang Halus (Sway)' },
-                        { id: 'float', label: 'Melayang (Float)' },
-                        { id: 'pulse', label: 'Detak (Pulse)' },
-                        { id: 'glow', label: 'Kilau (Glow)' },
-                        { id: 'none', label: 'Diam (None)' },
-                      ].map((loop) => (
-                        <button
-                          key={loop.id}
-                          onClick={() =>
-                            onUpdateElement({
-                              animation: {
-                                ...(selectedElement.animation || { duration: 1.2, delay: 0.2, trigger: 'onLoad', type: 'fadeUp' }),
-                                type: selectedElement.animation?.type || 'fadeUp',
-                                trigger: selectedElement.animation?.trigger || 'onLoad',
-                                loopType: loop.id as LoopAnimationType,
-                                loopDuration: 5,
-                              },
-                            })
-                          }
-                          className={`p-2 rounded-xl border text-center transition ${
-                            (selectedElement.animation?.loopType || 'none') === loop.id
-                              ? 'bg-white/15 border-[#C2A676] text-[#E8D8BA] font-bold'
-                              : 'bg-white/5 border-white/5 text-white/80'
-                          }`}
-                        >
-                          <span className="text-[11px] block">{loop.label}</span>
-                        </button>
-                      ))}
+                  {/* 1. SUB-TAB: ANIMASI MASUK (ENTRANCE) */}
+                  {animSubTab === 'entrance' && (
+                    <div className="space-y-1.5">
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { id: 'fadeIn', label: '✨ Fade In' },
+                          { id: 'fadeUp', label: '⬆️ Fade Up' },
+                          { id: 'zoomIn', label: '🔍 Zoom In' },
+                          { id: 'bounceIn', label: '🎈 Bounce' },
+                          { id: 'spinIn', label: '🌪️ Spin In' },
+                          { id: 'blurIn', label: '🌫️ Blur In' },
+                          { id: 'elasticIn', label: '⚡ Elastic' },
+                          { id: 'sway', label: '🌿 Sway In' },
+                          { id: 'none', label: '🚫 Tanpa Masuk' },
+                        ].map((anim) => (
+                          <button
+                            key={anim.id}
+                            onClick={() => {
+                              onUpdateElement({
+                                animation: {
+                                  ...(selectedElement.animation || { duration: 1.2, delay: 0.1, trigger: 'onLoad' }),
+                                  type: anim.id as AnimationType,
+                                  trigger: selectedElement.animation?.trigger || 'onLoad',
+                                },
+                              });
+                              onTriggerAnimPreview('entrance');
+                            }}
+                            className={`p-1.5 rounded-lg border text-center text-[10px] font-medium truncate transition ${
+                              (selectedElement.animation?.type || 'fadeUp') === anim.id
+                                ? 'bg-white/15 border-[#C2A676] text-[#E8D8BA] font-bold shadow'
+                                : 'bg-white/5 border-white/5 text-white/80'
+                            }`}
+                          >
+                            <span>{anim.label}</span>
+                          </button>
+                        ))}
+                      </div>
                     </div>
+                  )}
+
+                  {/* 2. SUB-TAB: ANIMASI LOOPING (DITUMPUK TERUS MENERUS) */}
+                  {animSubTab === 'loop' && (
+                    <div className="space-y-1.5">
+                      <div className="grid grid-cols-3 gap-1.5">
+                        {[
+                          { id: 'float', label: '🕊️ Melayang (Float)' },
+                          { id: 'sway', label: '🌿 Bergoyang (Sway)' },
+                          { id: 'pulse', label: '💖 Berdenyut (Pulse)' },
+                          { id: 'glow', label: '✨ Berpendar (Glow)' },
+                          { id: 'spin', label: '🌪️ Putar 360° (Spin)' },
+                          { id: 'driftHorizontal', label: '↔️ Geser Kiri-Kanan' },
+                          { id: 'driftVertical', label: '↕️ Naik-Turun' },
+                          { id: 'bounce', label: '🎈 Membal Lembut' },
+                          { id: 'none', label: '🚫 Diam (None)' },
+                        ].map((loop) => (
+                          <button
+                            key={loop.id}
+                            onClick={() => {
+                              onUpdateElement({
+                                animation: {
+                                  ...(selectedElement.animation || { duration: 1.2, delay: 0.1, trigger: 'onLoad', type: 'fadeUp' }),
+                                  type: selectedElement.animation?.type || 'fadeUp',
+                                  trigger: selectedElement.animation?.trigger || 'onLoad',
+                                  loopType: loop.id as LoopAnimationType,
+                                  loopDuration: 5,
+                                },
+                              });
+                              onTriggerAnimPreview('all');
+                            }}
+                            className={`p-1.5 rounded-lg border text-center text-[10px] font-medium truncate transition ${
+                              (selectedElement.animation?.loopType || 'none') === loop.id
+                                ? 'bg-white/15 border-[#C2A676] text-[#E8D8BA] font-bold shadow'
+                                : 'bg-white/5 border-white/5 text-white/80'
+                            }`}
+                          >
+                            <span>{loop.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. SUB-TAB: ANIMASI KELUAR (EXIT: TENGAH KE SAMPING) */}
+                  {animSubTab === 'exit' && (
+                    <div className="space-y-1.5">
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {[
+                          { id: 'centerToSides', label: '↔️ Tengah ke Samping ⭐' },
+                          { id: 'splitOutSides', label: '👐 Terbelah ke Samping' },
+                          { id: 'shrinkCenter', label: '🎯 Menyusut ke Tengah' },
+                          { id: 'fadeOut', label: '🌫️ Pudar Keluar' },
+                          { id: 'zoomOut', label: '🔎 Zoom Mengecil' },
+                          { id: 'fadeDown', label: '⬇️ Meluncur Turun' },
+                          { id: 'fadeUp', label: '⬆️ Meluncur Naik' },
+                          { id: 'none', label: '🚫 Tanpa Animasi Keluar' },
+                        ].map((exit) => (
+                          <button
+                            key={exit.id}
+                            onClick={() => {
+                              onUpdateElement({
+                                animation: {
+                                  ...(selectedElement.animation || { duration: 1.2, delay: 0.1, trigger: 'onLoad', type: 'fadeUp' }),
+                                  type: selectedElement.animation?.type || 'fadeUp',
+                                  trigger: selectedElement.animation?.trigger || 'onLoad',
+                                  exitType: exit.id as ExitAnimationType,
+                                  exitDuration: 0.8,
+                                },
+                              });
+                              onTriggerAnimPreview('exit');
+                            }}
+                            className={`p-1.5 rounded-lg border text-center text-[10px] font-medium truncate transition ${
+                              (selectedElement.animation?.exitType || 'none') === exit.id
+                                ? 'bg-[#51583D] border-[#C2A676] text-white font-bold shadow'
+                                : 'bg-white/5 border-white/5 text-white/80'
+                            }`}
+                          >
+                            <span>{exit.label}</span>
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Action Bar: Uji Animasi Masuk, Looping, dan Keluar */}
+                  <div className="flex items-center gap-1.5 pt-1 border-t border-white/10">
+                    <button
+                      onClick={() => onTriggerAnimPreview('entrance')}
+                      className="flex-1 py-1 px-2 rounded-lg bg-white/10 text-[#E8D8BA] text-[10px] font-semibold active:scale-95"
+                    >
+                      ▶ Uji Masuk
+                    </button>
+                    <button
+                      onClick={() => onTriggerAnimPreview('exit')}
+                      className="flex-1 py-1 px-2 rounded-lg bg-white/10 text-[#E8D8BA] text-[10px] font-semibold active:scale-95"
+                    >
+                      ▶ Uji Keluar
+                    </button>
+                    <button
+                      onClick={() => onTriggerAnimPreview('all')}
+                      className="flex-1 py-1 px-2 rounded-lg bg-[#C2A676] text-[#1E2218] text-[10px] font-bold active:scale-95 shadow"
+                    >
+                      ⚡ Uji Semua
+                    </button>
                   </div>
                 </div>
               )}

@@ -47,6 +47,18 @@ export type LoopAnimationType =
   | 'bounce'          // Membal halus
   | 'wobble';         // Goyang getar riang
 
+export type ExitAnimationType =
+  | 'none'
+  | 'centerToSides' // Dari tengah keluar ke samping
+  | 'splitOutSides' // Terbelah melebar ke samping
+  | 'shrinkCenter'  // Menyusut ke titik tengah
+  | 'fadeOut'       // Pudar keluar halus
+  | 'zoomOut'       // Zoom mengecil keluar
+  | 'fadeDown'      // Meluncur turun & menghilang
+  | 'fadeUp'        // Meluncur naik & menghilang
+  | 'slideLeft'     // Meluncur ke kiri
+  | 'slideRight';   // Meluncur ke kanan
+
 export interface ElementAnimationConfig {
   type: AnimationType;
   duration: number; // seconds
@@ -56,6 +68,8 @@ export interface ElementAnimationConfig {
   loopDuration?: number; // seconds per cycle
   moveDistance?: number; // distance in px for motion/drift (e.g. 15, 30, 60)
   easing?: 'ease' | 'linear' | 'ease-in-out' | 'spring';
+  exitType?: ExitAnimationType;
+  exitDuration?: number; // seconds
 }
 
 export type ShapeType =
