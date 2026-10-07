@@ -103,7 +103,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
     'sections' | 'text' | 'assets' | 'shapes' | 'animation' | 'theme' | 'music'
   >('sections');
   const [selectedSectionId, setSelectedSectionId] = useState<string>('section-cover');
-  const [selectedElementId, setSelectedElementId] = useState<string | null>('el-cover-names');
+  const [selectedElementId, setSelectedElementId] = useState<string | null>(null);
   const [previewMode, setPreviewMode] = useState<'editor' | 'live'>('editor');
   const [saveStatus, setSaveStatus] = useState<string | null>(null);
 
@@ -218,6 +218,8 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
     isScrolling: boolean;
   }>({ startX: 0, startY: 0, isScrolling: false });
   const lastElementTapRef = useRef<{ id: string; time: number } | null>(null);
+  const [stagedHintElementId, setStagedHintElementId] = useState<string | null>(null);
+  const stagedHintTimeoutRef = useRef<any>(null);
 
   const handleCanvasTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
@@ -578,6 +580,11 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
 
     // Only respond to primary click / touch
     if (e.button !== 0 && e.pointerType === 'mouse') return;
+
+    // Guard: elements must already be selected via double-tap before dragging
+    if (!forceUnlock && selectedElementId !== el.id) {
+      return;
+    }
 
     e.stopPropagation();
     setSelectedElementId(el.id);
@@ -1762,6 +1769,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                       setSelectedSectionId(sec.id);
                       setSelectedElementId(null);
                       setDragUnlockedElementId(null);
+                      setStagedHintElementId(null);
                     }}
                     className={`relative w-full overflow-hidden transition-all ${
                       selectedSectionId === sec.id && previewMode === 'editor'
@@ -1824,54 +1832,73 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                       {sec.elements.map((el) => {
                         const isSelected = selectedElementId === el.id && previewMode === 'editor';
                         const isUnlocked = isSelected && dragUnlockedElementId === el.id;
+                        const isStagedHint = stagedHintElementId === el.id && !isSelected;
 
                         return (
                           <div
                             key={el.id}
                             id={`canvas-el-${el.id}`}
                             onPointerDown={(e) => {
-                              // On desktop mouse: allow direct mouse drag
-                              if (e.pointerType === 'mouse') {
+                              // Direct mouse drag on desktop is ONLY allowed if the element is ALREADY SELECTED!
+                              if (e.pointerType === 'mouse' && isSelected) {
                                 startMove(e, el, sec.id);
                               }
                             }}
                             onClick={(e) => {
-                              // If user was scrolling on mobile, ignore completely!
+                              // If user was scrolling, ignore completely!
                               if (touchScrollTrackerRef.current.isScrolling) return;
                               e.stopPropagation();
 
-                              // On desktop mouse: single click selects
-                              if ((e.nativeEvent as any).pointerType !== 'touch') {
-                                setSelectedElementId(el.id);
-                                setSelectedSectionId(sec.id);
+                              if (previewMode !== 'editor') return;
+
+                              // If element is ALREADY selected, keep it selected without disturbance
+                              if (selectedElementId === el.id) {
                                 return;
                               }
 
-                              // On touch (mobile): require DOUBLE TAP to select!
+                              // Require DOUBLE TAP / DOUBLE CLICK to select any element!
                               const now = Date.now();
-                              const isDoubleTap =
+                              const isSameElement =
                                 lastElementTapRef.current &&
-                                lastElementTapRef.current.id === el.id &&
-                                now - lastElementTapRef.current.time < 350;
+                                lastElementTapRef.current.id === el.id;
+                              const isWithinWindow =
+                                lastElementTapRef.current &&
+                                now - lastElementTapRef.current.time < 500;
 
-                              lastElementTapRef.current = { id: el.id, time: now };
-
-                              if (isDoubleTap) {
+                              if (isSameElement && isWithinWindow) {
+                                // === CONFIRMED DOUBLE TAP / DOUBLE CLICK ===
                                 setSelectedElementId(el.id);
                                 setSelectedSectionId(sec.id);
                                 setDragUnlockedElementId(el.id);
+                                setStagedHintElementId(null);
+                                lastElementTapRef.current = null;
+                                if (stagedHintTimeoutRef.current) {
+                                  clearTimeout(stagedHintTimeoutRef.current);
+                                }
                                 try {
                                   if (typeof navigator !== 'undefined' && navigator.vibrate) {
-                                    navigator.vibrate(30);
+                                    navigator.vibrate(40);
                                   }
                                 } catch {
                                   // ignore
                                 }
+                              } else {
+                                // === FIRST TAP: SHOW HINT, DO NOT OPEN SETTINGS ===
+                                lastElementTapRef.current = { id: el.id, time: now };
+                                setStagedHintElementId(el.id);
+                                if (stagedHintTimeoutRef.current) {
+                                  clearTimeout(stagedHintTimeoutRef.current);
+                                }
+                                stagedHintTimeoutRef.current = setTimeout(() => {
+                                  setStagedHintElementId((curr) => (curr === el.id ? null : curr));
+                                }, 550);
                               }
                             }}
                             className={`relative transition-none select-none ${
                               isSelected
                                 ? 'ring-2 ring-[#C2A676] ring-offset-2 ring-offset-transparent z-30 shadow-2xl'
+                                : isStagedHint
+                                ? 'ring-2 ring-dashed ring-[#C2A676] z-20 shadow-lg animate-pulse'
                                 : 'hover:ring-1 hover:ring-[#C2A676]/60'
                             }`}
                             style={{
@@ -1883,6 +1910,15 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                               touchAction: 'pan-y',
                             }}
                           >
+                            {/* Staged Double-Tap Hint Badge (Ketuk 1x lagi untuk pengaturan) */}
+                            {stagedHintElementId === el.id && !isSelected && (
+                              <div className="absolute -top-7 left-1/2 -translate-x-1/2 z-50 pointer-events-none whitespace-nowrap animate-bounce">
+                                <span className="px-2 py-0.5 rounded-full bg-[#C2A676] text-[#1E2218] text-[9px] font-bold shadow-2xl border border-[#1E2218] flex items-center gap-1">
+                                  <span>👆 Ketuk 2x untuk Pengaturan</span>
+                                </span>
+                              </div>
+                            )}
+
                             {/* Mobile Dedicated Drag Handle Knob (Hanya bergerak saat knob ini ditarik) */}
                             {isSelected && (
                               <div

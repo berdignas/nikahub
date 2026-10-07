@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Type,
@@ -100,6 +100,13 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
   const [addCategory, setAddCategory] = useState<'text' | 'flower' | 'shape' | 'image'>('text');
   const [colorTarget, setColorTarget] = useState<'text' | 'bg' | 'border'>('text');
   const [stagedAddId, setStagedAddId] = useState<string | null>(null);
+
+  // Close element-specific drawers if element is deselected
+  useEffect(() => {
+    if (!selectedElement && ['text', 'font', 'color', 'size', 'anim', 'position'].includes(activeDrawer)) {
+      setActiveDrawer('none');
+    }
+  }, [selectedElement, activeDrawer]);
 
   const activePalette = COLOR_PALETTES.find((p) => p.id === project.activePalette) || COLOR_PALETTES[0];
 
