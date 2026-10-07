@@ -214,6 +214,12 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
   const [canvasZoom, setCanvasZoom] = useState<number>(1);
   const touchStartDistRef = useRef<number | null>(null);
   const touchStartZoomRef = useRef<number>(1);
+  const touchScrollTrackerRef = useRef<{
+    startX: number;
+    startY: number;
+    isScrolling: boolean;
+  }>({ startX: 0, startY: 0, isScrolling: false });
+  const lastElementTapRef = useRef<{ id: string; time: number } | null>(null);
 
   const handleCanvasTouchStart = (e: React.TouchEvent) => {
     if (e.touches.length === 2) {
@@ -223,6 +229,12 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
       );
       touchStartDistRef.current = dist;
       touchStartZoomRef.current = canvasZoom;
+    } else if (e.touches.length === 1) {
+      touchScrollTrackerRef.current = {
+        startX: e.touches[0].clientX,
+        startY: e.touches[0].clientY,
+        isScrolling: false,
+      };
     }
   };
 
@@ -235,11 +247,21 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
       const factor = dist / touchStartDistRef.current;
       const nextZoom = Math.min(2.2, Math.max(0.6, touchStartZoomRef.current * factor));
       setCanvasZoom(Number(nextZoom.toFixed(2)));
+    } else if (e.touches.length === 1) {
+      const dx = e.touches[0].clientX - touchScrollTrackerRef.current.startX;
+      const dy = e.touches[0].clientY - touchScrollTrackerRef.current.startY;
+      if (Math.hypot(dx, dy) > 8) {
+        touchScrollTrackerRef.current.isScrolling = true;
+      }
     }
   };
 
   const handleCanvasTouchEnd = () => {
     touchStartDistRef.current = null;
+    // Keep isScrolling flag active for 180ms to swallow follow-up click events from touch scrolling
+    setTimeout(() => {
+      touchScrollTrackerRef.current.isScrolling = false;
+    }, 180);
   };
 
   const [transformSession, setTransformSession] = useState<{
@@ -549,33 +571,26 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
   // Universal Pointer Handlers (Works on Mouse, Pen, and Touch)
   const startMove = (e: React.PointerEvent, el: CanvasElement, secId: string, forceUnlock = false) => {
     if (previewMode !== 'editor') return;
-    e.stopPropagation();
-    setSelectedElementId(el.id);
-    setSelectedSectionId(secId);
+
+    const isTouch = e.pointerType === 'touch';
+    // On touch screens, ONLY dragging via the dedicated move handle knob triggers movement!
+    // Direct touches on the element body must pass through to allow natural scrolling without shifting!
+    if (isTouch && !forceUnlock) {
+      return;
+    }
 
     // Only respond to primary click / touch
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 
-    const isTouch = e.pointerType === 'touch';
+    e.stopPropagation();
+    setSelectedElementId(el.id);
+    setSelectedSectionId(secId);
+
     if (isTouch) {
-      const now = Date.now();
-      const isDoubleTap =
-        lastTapRef.current &&
-        lastTapRef.current.id === el.id &&
-        now - lastTapRef.current.time < 400;
-
-      lastTapRef.current = { id: el.id, time: now };
-
-      // If single tap and not yet unlocked: do NOT start move session, allow free scrolling!
-      if (!isDoubleTap && dragUnlockedElementId !== el.id && !forceUnlock) {
-        return;
-      }
-
-      // Double tap or forced unlock: unlock dragging!
       setDragUnlockedElementId(el.id);
       try {
         if (typeof navigator !== 'undefined' && navigator.vibrate) {
-          navigator.vibrate(35);
+          navigator.vibrate(30);
         }
       } catch {
         // ignore
@@ -1057,11 +1072,9 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
           })}
         </aside>
 
-        {/* === LEFT DRAWER / EXPANDABLE PALETTE (FULL WIDTH ON MOBILE) === */}
+        {/* === LEFT DRAWER / EXPANDABLE PALETTE (DESKTOP ONLY) === */}
         <aside
-          className={`${
-            mobileTab === 'tools' ? 'flex flex-1 w-full' : 'hidden lg:flex'
-          } w-full lg:w-72 bg-[#171A12] border-r border-[#C2A676]/20 flex flex-col shrink-0 z-10 overflow-y-auto p-3 sm:p-4 pb-28 lg:pb-6 space-y-3 sm:space-y-4`}
+          className="hidden lg:flex w-full lg:w-72 bg-[#171A12] border-r border-[#C2A676]/20 flex-col shrink-0 z-10 overflow-y-auto p-3 sm:p-4 pb-28 lg:pb-6 space-y-3 sm:space-y-4"
         >
           {/* Mobile Category Pill Bar (Only on Mobile/Android) */}
           <div className="lg:hidden flex flex-col gap-2 pb-2 border-b border-white/10 shrink-0">
@@ -1638,9 +1651,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
 
         {/* === CENTER: MOBILE PREVIEW CANVAS === */}
         <main
-          className={`${
-            mobileTab === 'canvas' ? 'flex' : 'hidden lg:flex'
-          } flex-1 bg-[#0F110B] relative flex flex-col items-center justify-start overflow-y-auto p-1.5 sm:p-6 pb-28 lg:pb-8 w-full overscroll-contain`}
+          className="flex-1 bg-[#0F110B] relative flex flex-col items-center justify-start overflow-y-auto p-1.5 sm:p-6 pb-28 lg:pb-8 w-full overscroll-contain"
         >
           {/* Global Ambient Particles on Canvas */}
           {project.ambientEffect === 'petals' && (
@@ -1798,6 +1809,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                     key={sec.id}
                     id={`section-container-${sec.id}`}
                     onClick={() => {
+                      if (touchScrollTrackerRef.current.isScrolling) return;
                       setSelectedSectionId(sec.id);
                       setSelectedElementId(null);
                       setDragUnlockedElementId(null);
@@ -1869,20 +1881,48 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                             key={el.id}
                             id={`canvas-el-${el.id}`}
                             onPointerDown={(e) => {
-                              startMove(e, el, sec.id);
+                              // On desktop mouse: allow direct mouse drag
+                              if (e.pointerType === 'mouse') {
+                                startMove(e, el, sec.id);
+                              }
                             }}
                             onClick={(e) => {
+                              // If user was scrolling on mobile, ignore completely!
+                              if (touchScrollTrackerRef.current.isScrolling) return;
                               e.stopPropagation();
-                              setSelectedElementId(el.id);
-                              setSelectedSectionId(sec.id);
+
+                              // On desktop mouse: single click selects
+                              if ((e.nativeEvent as any).pointerType !== 'touch') {
+                                setSelectedElementId(el.id);
+                                setSelectedSectionId(sec.id);
+                                return;
+                              }
+
+                              // On touch (mobile): require DOUBLE TAP to select!
+                              const now = Date.now();
+                              const isDoubleTap =
+                                lastElementTapRef.current &&
+                                lastElementTapRef.current.id === el.id &&
+                                now - lastElementTapRef.current.time < 350;
+
+                              lastElementTapRef.current = { id: el.id, time: now };
+
+                              if (isDoubleTap) {
+                                setSelectedElementId(el.id);
+                                setSelectedSectionId(sec.id);
+                                setDragUnlockedElementId(el.id);
+                                try {
+                                  if (typeof navigator !== 'undefined' && navigator.vibrate) {
+                                    navigator.vibrate(30);
+                                  }
+                                } catch {
+                                  // ignore
+                                }
+                              }
                             }}
                             className={`relative transition-none select-none ${
-                              isUnlocked ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
-                            } ${
                               isSelected
-                                ? isUnlocked
-                                  ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent z-30 shadow-2xl'
-                                  : 'ring-2 ring-[#C2A676] ring-offset-2 ring-offset-transparent z-30 shadow-xl'
+                                ? 'ring-2 ring-[#C2A676] ring-offset-2 ring-offset-transparent z-30 shadow-2xl'
                                 : 'hover:ring-1 hover:ring-[#C2A676]/60'
                             }`}
                             style={{
@@ -1891,21 +1931,30 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                               height: typeof el.height === 'number' ? `${el.height}px` : el.height,
                               zIndex: el.zIndex,
                               opacity: el.opacity,
-                              touchAction: isUnlocked ? 'none' : 'pan-y',
+                              touchAction: 'pan-y',
                             }}
                           >
-                            {/* Mobile Double-tap Status Indicator */}
+                            {/* Mobile Dedicated Drag Handle Knob (Hanya bergerak saat knob ini ditarik) */}
                             {isSelected && (
-                              <div className="lg:hidden absolute -top-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none whitespace-nowrap">
-                                {isUnlocked ? (
-                                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-black text-[9px] font-bold shadow-lg animate-pulse flex items-center gap-1">
-                                    🔓 Geser Aktif
-                                  </span>
-                                ) : (
-                                  <span className="px-2 py-0.5 rounded-full bg-black/85 text-[#E8D8BA] text-[9px] font-medium border border-[#C2A676]/60 shadow backdrop-blur-sm">
-                                    🔒 Ketuk 2x untuk Geser
-                                  </span>
-                                )}
+                              <div
+                                className="lg:hidden absolute -bottom-5 left-1/2 -translate-x-1/2 z-50 px-2 py-0.5 rounded-full bg-[#C2A676] text-[#1E2218] flex items-center gap-1 shadow-2xl border border-[#1E2218] touch-none cursor-grab active:cursor-grabbing active:scale-105"
+                                onPointerDown={(e) => {
+                                  e.stopPropagation();
+                                  startMove(e, el, sec.id, true);
+                                }}
+                                title="Tahan dan geser tombol ini untuk memindahkan posisi elemen"
+                              >
+                                <Move className="w-3 h-3 stroke-[2.5]" />
+                                <span className="text-[9px] font-bold">Geser</span>
+                              </div>
+                            )}
+
+                            {/* Mobile Selected Indicator */}
+                            {isSelected && (
+                              <div className="lg:hidden absolute -top-5 left-1/2 -translate-x-1/2 z-40 pointer-events-none whitespace-nowrap">
+                                <span className="px-2 py-0.5 rounded-full bg-black/85 text-[#E8D8BA] text-[9px] font-medium border border-[#C2A676]/60 shadow backdrop-blur-sm">
+                                  {el.name}
+                                </span>
                               </div>
                             )}
 
@@ -2189,29 +2238,26 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
             </div>
           </div>
 
-          {/* MODAL TAMBAH HALAMAN BARU (BOTTOM BOUNDED ON MOBILE) */}
+          {/* MODAL TAMBAH HALAMAN BARU (SEPEREMPAT LAYAR MAKSIMAL, TANPA BLACK SCREEN DI MOBILE) */}
           <AnimatePresence>
             {showAddPageModal && (
-              <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm">
+              <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 pointer-events-none sm:bg-black/80 sm:backdrop-blur-sm">
                 <motion.div
-                  initial={{ opacity: 0, y: 50 }}
+                  initial={{ opacity: 0, y: 40 }}
                   animate={{ opacity: 1, y: 0 }}
-                  exit={{ opacity: 0, y: 50 }}
-                  className="w-full max-w-lg bg-[#181B13] border-t sm:border border-[#C2A676]/40 rounded-t-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[210px] sm:max-h-[90vh]"
+                  exit={{ opacity: 0, y: 40 }}
+                  className="pointer-events-auto w-full max-w-lg bg-[#181B13] border-t sm:border border-[#C2A676]/40 rounded-t-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[140px] sm:max-h-[90vh]"
                 >
                   {/* Header */}
-                  <div className="py-2 px-3 sm:p-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-[#141610]">
+                  <div className="py-1 px-3 sm:p-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-[#141610]">
                     <div className="flex items-center gap-2">
-                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-[#51583D] flex items-center justify-center text-xs sm:text-base shadow">
+                      <div className="w-5 h-5 sm:w-8 sm:h-8 rounded-lg bg-[#51583D] flex items-center justify-center text-[10px] sm:text-base shadow">
                         📄
                       </div>
                       <div>
                         <h3 className="font-serif font-bold text-xs sm:text-base text-[#FAF9F5]">
-                          Tambah Halaman (Ketuk 2x untuk Pilih)
+                          Tambah Halaman (Ketuk 2x)
                         </h3>
-                        <p className="text-[10px] text-[#A0A694] hidden sm:block">
-                          Pilih jenis halaman yang ingin ditambahkan ke undangan Anda
-                        </p>
                       </div>
                     </div>
                     <button
@@ -2220,13 +2266,14 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                         setStagedPageTemplateId(null);
                       }}
                       className="p-1 rounded-lg hover:bg-white/10 text-white/60 hover:text-white"
+                      title="Tutup"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3.5 h-3.5" />
                     </button>
                   </div>
 
-                  {/* Template List */}
-                  <div className="p-2 sm:p-4 overflow-y-auto space-y-2 flex-1 max-h-[160px] sm:max-h-none">
+                  {/* Template List (Gulir Sendiri di Seperempat Layar) */}
+                  <div className="p-2 sm:p-4 overflow-y-auto space-y-1.5 flex-1 max-h-[95px] sm:max-h-none">
                     {PAGE_TEMPLATES.map((tmpl) => {
                       const isStaged = stagedPageTemplateId === tmpl.id;
                       return (
@@ -2283,11 +2330,9 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
           {/* FLOATING ACTION DOCK: REPLACED BY CANVA MOBILE DOCK AT THE BOTTOM */}
         </main>
 
-        {/* === RIGHT PROPERTY INSPECTOR === */}
+        {/* === RIGHT PROPERTY INSPECTOR (DESKTOP ONLY) === */}
         <aside
-          className={`${
-            mobileTab === 'inspector' ? 'flex flex-1 w-full' : 'hidden lg:flex'
-          } w-full lg:w-80 bg-[#171A12] border-l border-[#C2A676]/20 flex flex-col shrink-0 z-20 overflow-y-auto p-4 pb-28 lg:pb-8 space-y-4`}
+          className="hidden lg:flex w-full lg:w-80 bg-[#171A12] border-l border-[#C2A676]/20 flex-col shrink-0 z-20 overflow-y-auto p-4 pb-28 lg:pb-8 space-y-4"
         >
           {/* Mobile Back Header */}
           <div className="flex items-center justify-between pb-3 border-b border-white/10 lg:hidden shrink-0">

@@ -184,7 +184,7 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
         </div>
       </div>
 
-      {/* 2. CANVA BOTTOM SHEET DRAWER (BOUNDED TO BOTTOM ZONE - NO FULL PAGE OVERLAY) */}
+      {/* 2. CANVA BOTTOM SHEET DRAWER (SEPEREMPAT LAYAR MAKSIMAL ~ 20-25vh, TIDAK MENUTUPI KARTU) */}
       <AnimatePresence>
         {activeDrawer !== 'none' && (
           <motion.div
@@ -192,34 +192,35 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
             transition={{ type: 'spring', damping: 30, stiffness: 350 }}
-            className="bg-[#181B13] border-t border-[#C2A676]/40 rounded-t-2xl shadow-[0_-12px_32px_rgba(0,0,0,0.92)] max-h-[195px] h-[195px] flex flex-col overflow-hidden"
+            className="bg-[#181B13] border-t border-[#C2A676]/40 rounded-t-2xl shadow-[0_-12px_32px_rgba(0,0,0,0.92)] max-h-[140px] h-[140px] flex flex-col overflow-hidden"
           >
             {/* Drawer Drag Bar & Header */}
-            <div className="pt-1.5 pb-1 px-3 flex items-center justify-between border-b border-white/10 shrink-0 bg-[#141610]">
+            <div className="pt-1 pb-1 px-3 flex items-center justify-between border-b border-white/10 shrink-0 bg-[#141610]">
               <div className="w-8 h-0.5 rounded-full bg-white/20 mx-auto absolute left-1/2 -translate-x-1/2 top-1" />
               <div className="flex items-center gap-1.5">
                 <span className="font-serif text-[11px] font-bold text-[#FAF9F5] truncate max-w-[240px]">
-                  {activeDrawer === 'add' && '➕ Tambah Elemen (Ketuk 2x untuk Pasang)'}
+                  {activeDrawer === 'add' && '➕ Tambah Elemen (Ketuk 2x)'}
                   {activeDrawer === 'text' && '✏️ Edit Teks / Konten'}
                   {activeDrawer === 'font' && '🔤 Font & Tipografi'}
                   {activeDrawer === 'color' && '🎨 Pengaturan Warna'}
                   {activeDrawer === 'size' && '📐 Ukuran, Skala & Putar'}
                   {activeDrawer === 'anim' && '✨ Animasi Elemen'}
                   {activeDrawer === 'position' && '🧭 Geser, Nudge & Posisi'}
-                  {activeDrawer === 'background' && '🖼️ Pengaturan Latar / Background'}
-                  {activeDrawer === 'pages' && '📜 Pilihan Halaman Undangan'}
+                  {activeDrawer === 'background' && '🖼️ Pengaturan Latar'}
+                  {activeDrawer === 'pages' && '📜 Pilihan Halaman'}
                 </span>
               </div>
               <button
                 onClick={closeDrawer}
                 className="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-white/70 hover:text-white"
+                title="Tutup Menu"
               >
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Drawer Body Scrollable Content (Gulir Sendiri Saja) */}
-            <div className="p-2.5 overflow-y-auto space-y-2.5 flex-1 text-xs text-[#FAF9F5] max-h-[155px]">
+            {/* Drawer Body Scrollable Content (Gulir Sendiri Saja di 1/4 Layar) */}
+            <div className="p-2 overflow-y-auto space-y-2 flex-1 text-xs text-[#FAF9F5] max-h-[95px]">
               {/* === A. DRAWER: ADD ELEMENTS === */}
               {activeDrawer === 'add' && (
                 <div className="space-y-2">
