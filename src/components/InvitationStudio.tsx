@@ -208,8 +208,6 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
   const [useSmartCompression, setUseSmartCompression] = useState<boolean>(true);
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
-  // Mobile Navigation State
-  const [mobileTab, setMobileTab] = useState<'canvas' | 'tools' | 'inspector'>('canvas');
   // Two-Finger Pinch to Zoom State
   const [canvasZoom, setCanvasZoom] = useState<number>(1);
   const touchStartDistRef = useRef<number | null>(null);
@@ -544,7 +542,6 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
 
     handleUpdateProject({ ...project, sections: updatedSections });
     setSelectedElementId(newElement.id);
-    setMobileTab('canvas');
   };
 
   // Mobile precision touch nudge & resize helpers
@@ -716,10 +713,11 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
         if (!dragThresholdMetRef.current && Math.hypot(dx, dy) < 6) {
           return;
         }
-        dragThresholdMetRef.current = true;
+        const clampedX = Math.max(-180, Math.min(180, Math.round(transformSession.initialX + dx)));
+        const clampedY = Math.max(-360, Math.min(360, Math.round(transformSession.initialY + dy)));
         updateSelectedElement({
-          x: Math.round(transformSession.initialX + dx),
-          y: Math.round(transformSession.initialY + dy),
+          x: clampedX,
+          y: clampedY,
         });
       } else if (transformSession.mode === 'resize') {
         const handle = transformSession.handle;
@@ -1076,52 +1074,6 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
         <aside
           className="hidden lg:flex w-full lg:w-72 bg-[#171A12] border-r border-[#C2A676]/20 flex-col shrink-0 z-10 overflow-y-auto p-3 sm:p-4 pb-28 lg:pb-6 space-y-3 sm:space-y-4"
         >
-          {/* Mobile Category Pill Bar (Only on Mobile/Android) */}
-          <div className="lg:hidden flex flex-col gap-2 pb-2 border-b border-white/10 shrink-0">
-            <div className="flex items-center justify-between">
-              <span className="text-[11px] font-bold text-[#E8D8BA] flex items-center gap-1.5">
-                <Palette className="w-3.5 h-3.5 text-[#C2A676]" />
-                <span>Pilih Kategori Alat</span>
-              </span>
-              <button
-                onClick={() => setMobileTab('canvas')}
-                className="px-2.5 py-1 rounded-lg bg-[#51583D] text-[#FAF9F5] text-[11px] font-semibold flex items-center gap-1 shadow"
-              >
-                <ChevronLeft className="w-3.5 h-3.5" />
-                <span>Ke Kanvas</span>
-              </button>
-            </div>
-            {/* Horizontal Scrollable Categories */}
-            <div className="flex items-center gap-1.5 overflow-x-auto py-1 scrollbar-none">
-              {[
-                { id: 'sections', label: 'Bagian', icon: Layers },
-                { id: 'text', label: 'Teks', icon: Type },
-                { id: 'assets', label: 'Asset', icon: ImageIcon },
-                { id: 'shapes', label: 'Shape', icon: Square },
-                { id: 'animation', label: 'Animasi', icon: Sparkles },
-                { id: 'theme', label: 'Tema', icon: Palette },
-                { id: 'music', label: 'Musik', icon: Music },
-              ].map((item) => {
-                const Icon = item.icon;
-                const isActive = activeTab === item.id;
-                return (
-                  <button
-                    key={item.id}
-                    onClick={() => setActiveTab(item.id as any)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold flex items-center gap-1.5 whitespace-nowrap shrink-0 transition-all ${
-                      isActive
-                        ? 'bg-[#C2A676] text-[#1E2218] font-bold shadow-md'
-                        : 'bg-white/5 text-[#A0A694] hover:bg-white/10 hover:text-white'
-                    }`}
-                  >
-                    <Icon className="w-3.5 h-3.5" />
-                    <span>{item.label}</span>
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-
           {/* TAB 1: SECTIONS */}
           {activeTab === 'sections' && (
             <div>
@@ -1448,12 +1400,9 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                     {selectedElement ? `Elemen: ${selectedElement.name}` : 'Pilih Elemen di HP'}
                   </span>
                   {selectedElement && (
-                    <button
-                      onClick={() => setMobileTab('inspector')}
-                      className="text-[10px] text-[#C2A676] hover:underline"
-                    >
-                      Detail ➔
-                    </button>
+                    <span className="text-[10px] text-[#C2A676] font-mono">
+                      Terpilih
+                    </span>
                   )}
                 </div>
 
@@ -1968,21 +1917,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                                   <span className="font-semibold max-w-[80px] truncate text-[#E8D8BA] mr-1">
                                     {el.name}
                                   </span>
-                                  {/* Quick Open Content Transition Button */}
-                                  {(el.type === 'button' || el.name.toLowerCase().includes('buka')) && (
-                                    <button
-                                      onClick={(e) => {
-                                        e.stopPropagation();
-                                        setCanvasViewMode('content');
-                                        if (contentSections.length > 0) setSelectedSectionId(contentSections[0].id);
-                                      }}
-                                      className="px-2 py-0.5 rounded bg-[#C2A676] text-[#1E2218] font-bold flex items-center gap-1 shadow"
-                                      title="Buka / Alihkan ke Halaman Isi Undangan"
-                                    >
-                                      <Play className="w-2.5 h-2.5 fill-current" />
-                                      <span>Buka Isi ➔</span>
-                                    </button>
-                                  )}
+                                  
                                   {/* Rotate +45 */}
                                   <button
                                     onClick={(e) => {
@@ -2334,17 +2269,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
         <aside
           className="hidden lg:flex w-full lg:w-80 bg-[#171A12] border-l border-[#C2A676]/20 flex-col shrink-0 z-20 overflow-y-auto p-4 pb-28 lg:pb-8 space-y-4"
         >
-          {/* Mobile Back Header */}
-          <div className="flex items-center justify-between pb-3 border-b border-white/10 lg:hidden shrink-0">
-            <button
-              onClick={() => setMobileTab('canvas')}
-              className="px-3 py-1.5 rounded-lg bg-[#51583D] text-[#FAF9F5] text-xs font-semibold flex items-center gap-1.5 shadow"
-            >
-              <ChevronLeft className="w-4 h-4" />
-              <span>Selesai & Lihat Kanvas</span>
-            </button>
-            <span className="text-xs font-mono text-[#E8D8BA]">Pengaturan Elemen</span>
-          </div>
+          
 
           {selectedElement ? (() => {
             const isImageOrDecor = ['image', 'flower', 'ornament', 'bismillah', 'seal'].includes(selectedElement.type);
