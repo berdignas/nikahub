@@ -384,12 +384,25 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
     reader.readAsText(file);
   };
 
-  // Direct Background Uploader for Active Section
+  // Direct Background Uploader for Active Section (Instant Local + Cloud Fallback)
   const handleUploadBackgroundDirect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
     try {
+      // 1. Tampilkan langsung dari file lokal perangkat (Instant Local Display)
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          updateCurrentSection({
+            backgroundImage: ev.target.result as string,
+            backgroundOpacity: currentSection?.backgroundOpacity ?? 0.85,
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // 2. Kompresi dan upload ke Cloud Supabase jika tersedia
       let fileToUpload = file;
       if (useSmartCompression) {
         try {
@@ -403,17 +416,6 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
           backgroundImage: publicUrl,
           backgroundOpacity: currentSection?.backgroundOpacity ?? 0.85,
         });
-      } else {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          if (ev.target?.result) {
-            updateCurrentSection({
-              backgroundImage: ev.target.result as string,
-              backgroundOpacity: currentSection?.backgroundOpacity ?? 0.85,
-            });
-          }
-        };
-        reader.readAsDataURL(fileToUpload);
       }
     } catch (err) {
       console.error('Failed to upload background:', err);

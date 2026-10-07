@@ -36,6 +36,7 @@ import {
   Maximize2,
   Minus,
   Upload,
+  Link as LinkIcon,
 } from 'lucide-react';
 import { compressImage } from '../lib/builder/imageCompression';
 import { uploadImageToSupabaseStorage } from '../lib/supabase';
@@ -155,6 +156,19 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
 
     setIsUploadingBg(true);
     try {
+      // 1. Tampilkan langsung file lokal via Base64 seketika (Instant Local Display)
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        if (ev.target?.result) {
+          onUpdateSection({
+            backgroundImage: ev.target.result as string,
+            backgroundOpacity: selectedSection?.backgroundOpacity ?? 0.85,
+          });
+        }
+      };
+      reader.readAsDataURL(file);
+
+      // 2. Kompresi dan upload ke cloud di background jika tersedia
       let fileToUpload = file;
       try {
         fileToUpload = await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 });
@@ -166,17 +180,6 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
           backgroundImage: publicUrl,
           backgroundOpacity: selectedSection?.backgroundOpacity ?? 0.85,
         });
-      } else {
-        const reader = new FileReader();
-        reader.onload = (ev) => {
-          if (ev.target?.result) {
-            onUpdateSection({
-              backgroundImage: ev.target.result as string,
-              backgroundOpacity: selectedSection?.backgroundOpacity ?? 0.85,
-            });
-          }
-        };
-        reader.readAsDataURL(fileToUpload);
       }
     } catch (err) {
       console.error('Failed to upload background:', err);
@@ -1004,11 +1007,11 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                   {/* 1. SUB-TAB: FOTO / GAMBAR LATAR */}
                   {bgSubTab === 'image' && (
                     <div className="space-y-2">
-                      {/* Direct Upload Button & Delete */}
-                      <div className="flex items-center gap-2">
+                      {/* Baris 1: Upload Lokal & Tombol Hapus */}
+                      <div className="flex items-center gap-1.5">
                         <label className="flex-1 cursor-pointer py-1.5 px-3 rounded-xl bg-gradient-to-r from-[#C2A676] to-[#E8D8BA] text-[#141610] font-bold text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 transition">
                           <Upload className="w-3.5 h-3.5 stroke-[2.5]" />
-                          <span>{isUploadingBg ? 'Mengompresi & Memasang...' : '📷 Pilih Foto Latar dari HP / Galeri'}</span>
+                          <span className="truncate">{isUploadingBg ? 'Memproses...' : '📁 Upload dari Galeri/Lokal'}</span>
                           <input
                             type="file"
                             accept="image/*"
@@ -1020,19 +1023,40 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                         {selectedSection?.backgroundImage && (
                           <button
                             onClick={() => onUpdateSection({ backgroundImage: '' })}
-                            className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 shrink-0"
+                            className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 shrink-0 active:scale-95"
                             title="Hapus gambar latar"
                           >
                             <Trash2 className="w-3 h-3" />
-                            <span>Hapus</span>
+                            <span>Hapus Latar</span>
                           </button>
                         )}
                       </div>
 
-                      {/* Opacity Slider if background image exists */}
+                      {/* Baris 2: Masukkan / Tempel URL Gambar */}
+                      <div className="space-y-1">
+                        <div className="flex items-center gap-1.5">
+                          <div className="relative flex-1">
+                            <input
+                              type="url"
+                              value={selectedSection?.backgroundImage || ''}
+                              onChange={(e) =>
+                                onUpdateSection({
+                                  backgroundImage: e.target.value,
+                                  backgroundOpacity: selectedSection?.backgroundOpacity ?? 0.85,
+                                })
+                              }
+                              placeholder="Atau tempel URL gambar: https://..."
+                              className="w-full pl-6 pr-2 py-1 rounded-lg bg-black/40 border border-white/10 text-[11px] font-mono text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
+                            />
+                            <LinkIcon className="w-3 h-3 text-[#C2A676] absolute left-1.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Baris 3: Opasitas / Transparansi Latar */}
                       {selectedSection?.backgroundImage && (
                         <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px]">
-                          <span className="text-[#A0A694] shrink-0">Transparansi Latar:</span>
+                          <span className="text-[#A0A694] shrink-0">Transparansi:</span>
                           <input
                             type="range"
                             min="0.1"
@@ -1048,9 +1072,9 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                         </div>
                       )}
 
-                      {/* Presets Horizontal Row */}
+                      {/* Baris 4: Presets Horizontal Row */}
                       <div>
-                        <span className="text-[10px] text-[#A0A694] block mb-1">Koleksi Gambar Tekstur Mewah:</span>
+                        <span className="text-[10px] text-[#A0A694] block mb-1">Atau Pilih Tekstur Siap Pakai:</span>
                         <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
                           {BACKGROUND_PRESETS.map((preset) => {
                             const isCurrent = (selectedSection?.backgroundImage || '') === preset.url;
