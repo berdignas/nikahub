@@ -70,6 +70,8 @@ interface CanvaMobileDockProps {
   canvasZoom: number;
   onChangeZoom: (newZoom: number) => void;
   onOpenAddPageModal: () => void;
+  isDragUnlocked?: boolean;
+  onToggleDragLock?: () => void;
 }
 
 export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
@@ -91,43 +93,68 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
   canvasZoom,
   onChangeZoom,
   onOpenAddPageModal,
+  isDragUnlocked = false,
+  onToggleDragLock,
 }) => {
   const [activeDrawer, setActiveDrawer] = useState<MobileDrawerType>('none');
   const [addCategory, setAddCategory] = useState<'text' | 'flower' | 'shape' | 'image'>('text');
   const [colorTarget, setColorTarget] = useState<'text' | 'bg' | 'border'>('text');
+  const [stagedAddId, setStagedAddId] = useState<string | null>(null);
 
   const activePalette = COLOR_PALETTES.find((p) => p.id === project.activePalette) || COLOR_PALETTES[0];
 
   const handleOpenDrawer = (drawer: MobileDrawerType) => {
+    setStagedAddId(null);
     setActiveDrawer(activeDrawer === drawer ? 'none' : drawer);
   };
 
   const closeDrawer = () => {
     setActiveDrawer('none');
+    setStagedAddId(null);
+  };
+
+  const handleAddWithConfirm = (id: string, elementData: Partial<CanvasElement>) => {
+    if (stagedAddId === id) {
+      onAddElement(elementData);
+      setStagedAddId(null);
+      closeDrawer();
+    } else {
+      setStagedAddId(id);
+    }
   };
 
   return (
     <div className="lg:hidden fixed bottom-0 left-0 right-0 z-40 select-none">
       {/* 1. FLOATING ZOOM & CANVAS TOOLS PILL (ABOVE DOCK) */}
-      <div className="px-3 pb-2 flex items-center justify-between pointer-events-none">
-        {/* Left: Element indicator / Deselect */}
+      <div className="px-3 pb-1.5 flex items-center justify-between pointer-events-none">
+        {/* Left: Element indicator & Drag Lock/Unlock / Deselect */}
         {selectedElement ? (
-          <div className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1E2218]/95 border border-[#C2A676]/50 shadow-xl backdrop-blur-md">
-            <span className="w-2 h-2 rounded-full bg-[#C2A676] animate-pulse" />
-            <span className="text-[11px] font-bold text-[#E8D8BA] truncate max-w-[120px]">
+          <div className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1E2218]/95 border border-[#C2A676]/50 shadow-xl backdrop-blur-md">
+            <button
+              onClick={onToggleDragLock}
+              className={`px-1.5 py-0.5 rounded text-[9px] font-bold flex items-center gap-1 transition ${
+                isDragUnlocked
+                  ? 'bg-amber-400 text-black shadow animate-pulse'
+                  : 'bg-white/15 text-white/80 hover:bg-white/25'
+              }`}
+              title={isDragUnlocked ? 'Mode geser aktif (Ketuk untuk kunci)' : 'Ketuk 2x di kanvas atau tekan ini untuk menggeser'}
+            >
+              <span>{isDragUnlocked ? '🔓 Geser' : '🔒 Kunci'}</span>
+            </button>
+            <span className="text-[11px] font-bold text-[#E8D8BA] truncate max-w-[100px]">
               {selectedElement.name}
             </span>
             <button
               onClick={onDeselect}
-              className="p-0.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white ml-1"
+              className="p-0.5 rounded-full hover:bg-white/10 text-white/70 hover:text-white ml-0.5"
               title="Batalkan pilihan"
             >
               <X className="w-3 h-3" />
             </button>
           </div>
         ) : (
-          <div className="pointer-events-auto flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1E2218]/90 border border-white/10 shadow-lg backdrop-blur-md">
-            <span className="text-[10px] text-[#A0A694]">Mode: Kanvas ({canvasViewMode === 'cover' ? 'Sampul' : 'Isi'})</span>
+          <div className="pointer-events-auto flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-[#1E2218]/90 border border-white/10 shadow-lg backdrop-blur-md">
+            <span className="text-[10px] text-[#A0A694]">Kanvas: {canvasViewMode === 'cover' ? 'Sampul' : 'Isi'}</span>
           </div>
         )}
 
@@ -157,22 +184,22 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
         </div>
       </div>
 
-      {/* 2. CANVA BOTTOM SHEET DRAWER */}
+      {/* 2. CANVA BOTTOM SHEET DRAWER (BOUNDED TO BOTTOM ZONE - NO FULL PAGE OVERLAY) */}
       <AnimatePresence>
         {activeDrawer !== 'none' && (
           <motion.div
             initial={{ y: '100%', opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             exit={{ y: '100%', opacity: 0 }}
-            transition={{ type: 'spring', damping: 28, stiffness: 320 }}
-            className="bg-[#1A1D15] border-t border-[#C2A676]/40 rounded-t-3xl shadow-[0_-12px_40px_rgba(0,0,0,0.85)] max-h-[52vh] flex flex-col overflow-hidden"
+            transition={{ type: 'spring', damping: 30, stiffness: 350 }}
+            className="bg-[#181B13] border-t border-[#C2A676]/40 rounded-t-2xl shadow-[0_-12px_32px_rgba(0,0,0,0.92)] max-h-[195px] h-[195px] flex flex-col overflow-hidden"
           >
             {/* Drawer Drag Bar & Header */}
-            <div className="pt-2.5 pb-2 px-4 flex items-center justify-between border-b border-white/10 shrink-0">
-              <div className="w-10 h-1 rounded-full bg-white/20 mx-auto absolute left-1/2 -translate-x-1/2 top-2" />
-              <div className="flex items-center gap-2">
-                <span className="font-serif text-xs font-bold text-[#FAF9F5]">
-                  {activeDrawer === 'add' && '➕ Tambah Elemen Baru'}
+            <div className="pt-1.5 pb-1 px-3 flex items-center justify-between border-b border-white/10 shrink-0 bg-[#141610]">
+              <div className="w-8 h-0.5 rounded-full bg-white/20 mx-auto absolute left-1/2 -translate-x-1/2 top-1" />
+              <div className="flex items-center gap-1.5">
+                <span className="font-serif text-[11px] font-bold text-[#FAF9F5] truncate max-w-[240px]">
+                  {activeDrawer === 'add' && '➕ Tambah Elemen (Ketuk 2x untuk Pasang)'}
                   {activeDrawer === 'text' && '✏️ Edit Teks / Konten'}
                   {activeDrawer === 'font' && '🔤 Font & Tipografi'}
                   {activeDrawer === 'color' && '🎨 Pengaturan Warna'}
@@ -185,38 +212,47 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
               </div>
               <button
                 onClick={closeDrawer}
-                className="p-1 rounded-full bg-white/5 hover:bg-white/15 text-white/70 hover:text-white"
+                className="p-1 rounded-lg bg-white/5 hover:bg-white/15 text-white/70 hover:text-white"
               >
-                <X className="w-4 h-4" />
+                <X className="w-3.5 h-3.5" />
               </button>
             </div>
 
-            {/* Drawer Body Scrollable Content */}
-            <div className="p-4 overflow-y-auto space-y-4 flex-1 text-xs text-[#FAF9F5]">
+            {/* Drawer Body Scrollable Content (Gulir Sendiri Saja) */}
+            <div className="p-2.5 overflow-y-auto space-y-2.5 flex-1 text-xs text-[#FAF9F5] max-h-[155px]">
               {/* === A. DRAWER: ADD ELEMENTS === */}
               {activeDrawer === 'add' && (
-                <div className="space-y-3">
+                <div className="space-y-2">
                   {/* Category Pills */}
-                  <div className="flex items-center gap-1.5 bg-[#141610] p-1 rounded-xl border border-white/10">
+                  <div className="flex items-center gap-1 bg-[#141610] p-0.5 rounded-lg border border-white/10">
                     <button
-                      onClick={() => setAddCategory('text')}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold ${
+                      onClick={() => {
+                        setAddCategory('text');
+                        setStagedAddId(null);
+                      }}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold ${
                         addCategory === 'text' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
                       }`}
                     >
                       Teks
                     </button>
                     <button
-                      onClick={() => setAddCategory('flower')}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold ${
+                      onClick={() => {
+                        setAddCategory('flower');
+                        setStagedAddId(null);
+                      }}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold ${
                         addCategory === 'flower' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
                       }`}
                     >
-                      Bunga & Hiasan
+                      Bunga
                     </button>
                     <button
-                      onClick={() => setAddCategory('shape')}
-                      className={`flex-1 py-1.5 rounded-lg text-xs font-semibold ${
+                      onClick={() => {
+                        setAddCategory('shape');
+                        setStagedAddId(null);
+                      }}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold ${
                         addCategory === 'shape' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
                       }`}
                     >
@@ -224,147 +260,182 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                     </button>
                   </div>
 
-                  {/* Add Text Presets */}
+                  {/* Add Text Presets with Double-Tap confirmation */}
                   {addCategory === 'text' && (
-                    <div className="grid grid-cols-2 gap-2">
+                    <div className="grid grid-cols-2 gap-1.5">
                       <button
-                        onClick={() => {
-                          onAddElement({
+                        onClick={() =>
+                          handleAddWithConfirm('text-judul', {
                             name: 'Judul Mewah',
                             type: 'text',
                             content: 'The Wedding of',
                             fontFamily: 'Cormorant Garamond, serif',
                             fontSize: 18,
                             fontStyle: 'italic',
-                          });
-                          closeDrawer();
-                        }}
-                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left space-y-1"
+                          })
+                        }
+                        className={`p-2 rounded-xl border text-left transition ${
+                          stagedAddId === 'text-judul'
+                            ? 'bg-[#C2A676]/25 border-[#C2A676] ring-1 ring-[#C2A676]'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10'
+                        }`}
                       >
-                        <p className="font-serif italic text-base">The Wedding of</p>
-                        <p className="text-[10px] text-[#A0A694]">Judul Pembuka Garamond</p>
+                        <p className="font-serif italic text-sm text-[#FAF9F5]">The Wedding of</p>
+                        <p className="text-[9px] text-[#C2A676]">
+                          {stagedAddId === 'text-judul' ? '✓ Ketuk lagi pasang' : 'Judul Garamond'}
+                        </p>
                       </button>
 
                       <button
-                        onClick={() => {
-                          onAddElement({
+                        onClick={() =>
+                          handleAddWithConfirm('text-couple', {
                             name: 'Nama Pasangan',
                             type: 'text',
                             content: `${project.groomName.split(' ')[0]} & ${project.brideName.split(' ')[0]}`,
                             fontFamily: 'Playfair Display, serif',
-                            fontSize: 28,
+                            fontSize: 26,
                             fontWeight: '600',
-                          });
-                          closeDrawer();
-                        }}
-                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left space-y-1"
+                          })
+                        }
+                        className={`p-2 rounded-xl border text-left transition ${
+                          stagedAddId === 'text-couple'
+                            ? 'bg-[#C2A676]/25 border-[#C2A676] ring-1 ring-[#C2A676]'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10'
+                        }`}
                       >
-                        <p className="font-serif font-bold text-lg text-[#E8D8BA]">Nama Pengantin</p>
-                        <p className="text-[10px] text-[#A0A694]">Teks Playfair Mewah</p>
+                        <p className="font-serif font-bold text-sm text-[#E8D8BA]">Nama Pengantin</p>
+                        <p className="text-[9px] text-[#C2A676]">
+                          {stagedAddId === 'text-couple' ? '✓ Ketuk lagi pasang' : 'Playfair Mewah'}
+                        </p>
                       </button>
 
                       <button
-                        onClick={() => {
-                          onAddElement({
+                        onClick={() =>
+                          handleAddWithConfirm('text-date', {
                             name: 'Kutipan Kaligrafi',
                             type: 'text',
                             content: 'Save The Date',
                             fontFamily: 'Great Vibes, cursive',
-                            fontSize: 24,
-                          });
-                          closeDrawer();
-                        }}
-                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left space-y-1"
+                            fontSize: 22,
+                          })
+                        }
+                        className={`p-2 rounded-xl border text-left transition ${
+                          stagedAddId === 'text-date'
+                            ? 'bg-[#C2A676]/25 border-[#C2A676] ring-1 ring-[#C2A676]'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10'
+                        }`}
                       >
-                        <p className="font-serif text-lg text-amber-200">Save The Date</p>
-                        <p className="text-[10px] text-[#A0A694]">Kaligrafi Latin Halus</p>
+                        <p className="font-serif text-sm text-amber-200">Save The Date</p>
+                        <p className="text-[9px] text-[#C2A676]">
+                          {stagedAddId === 'text-date' ? '✓ Ketuk lagi pasang' : 'Kaligrafi Halus'}
+                        </p>
                       </button>
 
                       <button
-                        onClick={() => {
-                          onAddElement({
+                        onClick={() =>
+                          handleAddWithConfirm('btn-open', {
                             name: 'Tombol Undangan',
                             type: 'button',
                             content: '💌 BUKA UNDANGAN',
-                            width: 220,
-                            height: 44,
+                            width: 200,
+                            height: 40,
                             backgroundColor: '#51583D',
                             textColor: '#FAF9F5',
                             borderRadius: 999,
                             borderColor: '#C2A676',
                             borderWidth: 1.5,
-                          });
-                          closeDrawer();
-                        }}
-                        className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left space-y-1"
+                          })
+                        }
+                        className={`p-2 rounded-xl border text-left transition ${
+                          stagedAddId === 'btn-open'
+                            ? 'bg-[#C2A676]/25 border-[#C2A676] ring-1 ring-[#C2A676]'
+                            : 'bg-white/5 hover:bg-white/10 border-white/10'
+                        }`}
                       >
-                        <span className="inline-block px-2.5 py-1 rounded-full bg-[#51583D] text-[10px] font-bold text-white border border-[#C2A676]/40">
+                        <span className="inline-block px-2 py-0.5 rounded-full bg-[#51583D] text-[9px] font-bold text-white border border-[#C2A676]/40">
                           💌 Tombol Buka
                         </span>
-                        <p className="text-[10px] text-[#A0A694]">Tombol Interaktif</p>
+                        <p className="text-[9px] text-[#C2A676]">
+                          {stagedAddId === 'btn-open' ? '✓ Ketuk lagi pasang' : 'Tombol Interaktif'}
+                        </p>
                       </button>
                     </div>
                   )}
 
-                  {/* Add Flowers & Ornaments */}
+                  {/* Add Flowers & Ornaments with Double-Tap confirmation */}
                   {addCategory === 'flower' && (
-                    <div className="grid grid-cols-3 gap-2">
-                      {ORNAMENT_LIBRARY.map((item, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            onAddElement({
-                              name: item.name,
-                              type: item.type as any,
-                              content: item.src,
-                              width: item.width,
-                              height: item.height,
-                            });
-                            closeDrawer();
-                          }}
-                          className="p-2.5 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 flex flex-col items-center justify-center gap-1.5 transition text-center"
-                        >
-                          <img
-                            src={item.src}
-                            alt={item.name}
-                            className="w-12 h-12 object-contain"
-                            onError={(e) => {
-                              // fallback if local asset missing
-                              (e.target as any).style.display = 'none';
-                            }}
-                          />
-                          <span className="text-[10px] text-[#E8D8BA] line-clamp-1">{item.name}</span>
-                        </button>
-                      ))}
+                    <div className="grid grid-cols-3 gap-1.5">
+                      {ORNAMENT_LIBRARY.map((item, idx) => {
+                        const isStaged = stagedAddId === item.name;
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() =>
+                              handleAddWithConfirm(item.name, {
+                                name: item.name,
+                                type: item.type as any,
+                                content: item.src,
+                                width: item.width,
+                                height: item.height,
+                              })
+                            }
+                            className={`p-1.5 rounded-xl border flex flex-col items-center justify-center gap-1 transition text-center ${
+                              isStaged
+                                ? 'bg-[#C2A676]/25 border-[#C2A676] ring-1 ring-[#C2A676]'
+                                : 'bg-white/5 hover:bg-white/10 border-white/10'
+                            }`}
+                          >
+                            <img
+                              src={item.src}
+                              alt={item.name}
+                              className="w-10 h-10 object-contain"
+                              onError={(e) => {
+                                (e.target as any).style.display = 'none';
+                              }}
+                            />
+                            <span className="text-[9px] text-[#E8D8BA] line-clamp-1">
+                              {isStaged ? '✓ Pasang' : item.name}
+                            </span>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
 
-                  {/* Add Shapes */}
+                  {/* Add Shapes with Double-Tap confirmation */}
                   {addCategory === 'shape' && (
-                    <div className="grid grid-cols-2 gap-2">
-                      {SHAPE_PRESETS.map((shape, idx) => (
-                        <button
-                          key={idx}
-                          onClick={() => {
-                            onAddElement({
-                              name: shape.name,
-                              type: 'shape',
-                              shapeType: shape.shapeType as any,
-                              width: shape.width,
-                              height: shape.height,
-                              borderRadius: shape.borderRadius,
-                              borderWidth: shape.borderWidth,
-                              borderColor: shape.borderColor,
-                              backgroundColor: shape.backgroundColor,
-                            });
-                            closeDrawer();
-                          }}
-                          className="p-3 rounded-xl bg-white/5 hover:bg-white/10 border border-white/10 text-left space-y-1"
-                        >
-                          <p className="font-bold text-xs text-[#E8D8BA]">{shape.name}</p>
-                          <p className="text-[10px] text-[#A0A694]">Bentuk & Garis Mewah</p>
-                        </button>
-                      ))}
+                    <div className="grid grid-cols-2 gap-1.5">
+                      {SHAPE_PRESETS.map((shape, idx) => {
+                        const isStaged = stagedAddId === shape.name;
+                        return (
+                          <button
+                            key={idx}
+                            onClick={() =>
+                              handleAddWithConfirm(shape.name, {
+                                name: shape.name,
+                                type: 'shape',
+                                shapeType: shape.shapeType as any,
+                                width: shape.width,
+                                height: shape.height,
+                                borderRadius: shape.borderRadius,
+                                borderWidth: shape.borderWidth,
+                                borderColor: shape.borderColor,
+                                backgroundColor: shape.backgroundColor,
+                              })
+                            }
+                            className={`p-2 rounded-xl border text-left transition ${
+                              isStaged
+                                ? 'bg-[#C2A676]/25 border-[#C2A676] ring-1 ring-[#C2A676]'
+                                : 'bg-white/5 hover:bg-white/10 border-white/10'
+                            }`}
+                          >
+                            <p className="font-bold text-xs text-[#E8D8BA]">{shape.name}</p>
+                            <p className="text-[9px] text-[#C2A676]">
+                              {isStaged ? '✓ Ketuk lagi pasang' : 'Garis & Kotak Mewah'}
+                            </p>
+                          </button>
+                        );
+                      })}
                     </div>
                   )}
                 </div>
@@ -686,8 +757,9 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                         onClick={() =>
                           onUpdateElement({
                             animation: {
-                              ...(selectedElement.animation || { duration: 1.2, delay: 0.2 }),
+                              ...(selectedElement.animation || { duration: 1.2, delay: 0.2, trigger: 'onLoad' }),
                               type: anim.id as AnimationType,
+                              trigger: selectedElement.animation?.trigger || 'onLoad',
                             },
                           })
                         }
@@ -719,7 +791,9 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                           onClick={() =>
                             onUpdateElement({
                               animation: {
-                                ...(selectedElement.animation || { duration: 1.2, delay: 0.2, type: 'fadeUp' }),
+                                ...(selectedElement.animation || { duration: 1.2, delay: 0.2, trigger: 'onLoad', type: 'fadeUp' }),
+                                type: selectedElement.animation?.type || 'fadeUp',
+                                trigger: selectedElement.animation?.trigger || 'onLoad',
                                 loopType: loop.id as LoopAnimationType,
                                 loopDuration: 5,
                               },

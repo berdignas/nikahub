@@ -196,6 +196,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
   const [canvasViewMode, setCanvasViewMode] = useState<'cover' | 'content' | 'all'>('cover');
   const [isInvitationOpened, setIsInvitationOpened] = useState<boolean>(false);
   const [showAddPageModal, setShowAddPageModal] = useState<boolean>(false);
+  const [stagedPageTemplateId, setStagedPageTemplateId] = useState<string | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState<boolean>(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
@@ -254,6 +255,10 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
     centerX: number;
     centerY: number;
   } | null>(null);
+
+  const [dragUnlockedElementId, setDragUnlockedElementId] = useState<string | null>(null);
+  const lastTapRef = useRef<{ id: string; time: number } | null>(null);
+  const dragThresholdMetRef = useRef<boolean>(false);
 
   // Load project on mount or when projectId changes
   useEffect(() => {
@@ -542,7 +547,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
   };
 
   // Universal Pointer Handlers (Works on Mouse, Pen, and Touch)
-  const startMove = (e: React.PointerEvent, el: CanvasElement, secId: string) => {
+  const startMove = (e: React.PointerEvent, el: CanvasElement, secId: string, forceUnlock = false) => {
     if (previewMode !== 'editor') return;
     e.stopPropagation();
     setSelectedElementId(el.id);
@@ -551,12 +556,39 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
     // Only respond to primary click / touch
     if (e.button !== 0 && e.pointerType === 'mouse') return;
 
+    const isTouch = e.pointerType === 'touch';
+    if (isTouch) {
+      const now = Date.now();
+      const isDoubleTap =
+        lastTapRef.current &&
+        lastTapRef.current.id === el.id &&
+        now - lastTapRef.current.time < 400;
+
+      lastTapRef.current = { id: el.id, time: now };
+
+      // If single tap and not yet unlocked: do NOT start move session, allow free scrolling!
+      if (!isDoubleTap && dragUnlockedElementId !== el.id && !forceUnlock) {
+        return;
+      }
+
+      // Double tap or forced unlock: unlock dragging!
+      setDragUnlockedElementId(el.id);
+      try {
+        if (typeof navigator !== 'undefined' && navigator.vibrate) {
+          navigator.vibrate(35);
+        }
+      } catch {
+        // ignore
+      }
+    }
+
     try {
       (e.currentTarget as HTMLElement).setPointerCapture(e.pointerId);
     } catch {
       // ignore
     }
 
+    dragThresholdMetRef.current = false;
     const targetEl = document.getElementById(`canvas-el-${el.id}`);
     const rect = targetEl ? targetEl.getBoundingClientRect() : (e.currentTarget as HTMLElement).getBoundingClientRect();
     setTransformSession({
@@ -665,6 +697,11 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
       const dy = e.clientY - transformSession.startY;
 
       if (transformSession.mode === 'move') {
+        // Enforce jitter threshold (6px) so tiny touch tremors don't move the element
+        if (!dragThresholdMetRef.current && Math.hypot(dx, dy) < 6) {
+          return;
+        }
+        dragThresholdMetRef.current = true;
         updateSelectedElement({
           x: Math.round(transformSession.initialX + dx),
           y: Math.round(transformSession.initialY + dy),
@@ -1763,6 +1800,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                     onClick={() => {
                       setSelectedSectionId(sec.id);
                       setSelectedElementId(null);
+                      setDragUnlockedElementId(null);
                     }}
                     className={`relative w-full overflow-hidden transition-all ${
                       selectedSectionId === sec.id && previewMode === 'editor'
@@ -1824,15 +1862,13 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                     <div className="relative w-full h-full flex flex-col items-center justify-center">
                       {sec.elements.map((el) => {
                         const isSelected = selectedElementId === el.id && previewMode === 'editor';
+                        const isUnlocked = isSelected && dragUnlockedElementId === el.id;
 
                         return (
                           <div
                             key={el.id}
                             id={`canvas-el-${el.id}`}
                             onPointerDown={(e) => {
-                              e.stopPropagation();
-                              setSelectedElementId(el.id);
-                              setSelectedSectionId(sec.id);
                               startMove(e, el, sec.id);
                             }}
                             onClick={(e) => {
@@ -1840,9 +1876,13 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                               setSelectedElementId(el.id);
                               setSelectedSectionId(sec.id);
                             }}
-                            className={`relative transition-none select-none cursor-grab active:cursor-grabbing touch-none ${
+                            className={`relative transition-none select-none ${
+                              isUnlocked ? 'cursor-grab active:cursor-grabbing' : 'cursor-pointer'
+                            } ${
                               isSelected
-                                ? 'ring-2 ring-[#C2A676] ring-offset-2 ring-offset-transparent z-30 shadow-2xl'
+                                ? isUnlocked
+                                  ? 'ring-2 ring-amber-400 ring-offset-2 ring-offset-transparent z-30 shadow-2xl'
+                                  : 'ring-2 ring-[#C2A676] ring-offset-2 ring-offset-transparent z-30 shadow-xl'
                                 : 'hover:ring-1 hover:ring-[#C2A676]/60'
                             }`}
                             style={{
@@ -1851,9 +1891,24 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                               height: typeof el.height === 'number' ? `${el.height}px` : el.height,
                               zIndex: el.zIndex,
                               opacity: el.opacity,
-                              touchAction: 'none',
+                              touchAction: isUnlocked ? 'none' : 'pan-y',
                             }}
                           >
+                            {/* Mobile Double-tap Status Indicator */}
+                            {isSelected && (
+                              <div className="lg:hidden absolute -top-6 left-1/2 -translate-x-1/2 z-40 pointer-events-none whitespace-nowrap">
+                                {isUnlocked ? (
+                                  <span className="px-2 py-0.5 rounded-full bg-amber-400 text-black text-[9px] font-bold shadow-lg animate-pulse flex items-center gap-1">
+                                    🔓 Geser Aktif
+                                  </span>
+                                ) : (
+                                  <span className="px-2 py-0.5 rounded-full bg-black/85 text-[#E8D8BA] text-[9px] font-medium border border-[#C2A676]/60 shadow backdrop-blur-sm">
+                                    🔒 Ketuk 2x untuk Geser
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
                             {/* Selected Action Floating Toolbar (Desktop Only, on Mobile it's docked in Canva bottom toolbar) */}
                             {isSelected && (
                               <>
@@ -2134,65 +2189,91 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
             </div>
           </div>
 
-          {/* MODAL TAMBAH HALAMAN BARU */}
+          {/* MODAL TAMBAH HALAMAN BARU (BOTTOM BOUNDED ON MOBILE) */}
           <AnimatePresence>
             {showAddPageModal && (
-              <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+              <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-black/80 backdrop-blur-sm">
                 <motion.div
-                  initial={{ opacity: 0, scale: 0.95, y: 20 }}
-                  animate={{ opacity: 1, scale: 1, y: 0 }}
-                  exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                  className="w-full max-w-lg bg-[#1E2218] border border-[#C2A676]/40 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]"
+                  initial={{ opacity: 0, y: 50 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 50 }}
+                  className="w-full max-w-lg bg-[#181B13] border-t sm:border border-[#C2A676]/40 rounded-t-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[210px] sm:max-h-[90vh]"
                 >
                   {/* Header */}
-                  <div className="p-4 sm:p-5 border-b border-white/10 flex items-center justify-between">
-                    <div className="flex items-center gap-2.5">
-                      <div className="w-8 h-8 rounded-xl bg-[#51583D] flex items-center justify-center text-lg shadow">
+                  <div className="py-2 px-3 sm:p-4 border-b border-white/10 flex items-center justify-between shrink-0 bg-[#141610]">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 sm:w-8 sm:h-8 rounded-lg bg-[#51583D] flex items-center justify-center text-xs sm:text-base shadow">
                         📄
                       </div>
                       <div>
-                        <h3 className="font-serif font-bold text-base text-[#FAF9F5]">Tambah Halaman Baru</h3>
-                        <p className="text-[11px] text-[#A0A694]">Pilih jenis halaman yang ingin ditambahkan ke undangan Anda</p>
+                        <h3 className="font-serif font-bold text-xs sm:text-base text-[#FAF9F5]">
+                          Tambah Halaman (Ketuk 2x untuk Pilih)
+                        </h3>
+                        <p className="text-[10px] text-[#A0A694] hidden sm:block">
+                          Pilih jenis halaman yang ingin ditambahkan ke undangan Anda
+                        </p>
                       </div>
                     </div>
                     <button
-                      onClick={() => setShowAddPageModal(false)}
-                      className="p-1.5 rounded-xl hover:bg-white/10 text-white/60 hover:text-white"
+                      onClick={() => {
+                        setShowAddPageModal(false);
+                        setStagedPageTemplateId(null);
+                      }}
+                      className="p-1 rounded-lg hover:bg-white/10 text-white/60 hover:text-white"
                     >
-                      <X className="w-5 h-5" />
+                      <X className="w-4 h-4" />
                     </button>
                   </div>
 
                   {/* Template List */}
-                  <div className="p-4 sm:p-5 overflow-y-auto space-y-2.5">
-                    {PAGE_TEMPLATES.map((tmpl) => (
-                      <div
-                        key={tmpl.id}
-                        onClick={() => handleSelectPageTemplate(tmpl)}
-                        className="p-3.5 rounded-2xl bg-white/5 hover:bg-[#51583D]/40 border border-white/10 hover:border-[#C2A676]/60 transition-all cursor-pointer flex items-center justify-between group"
-                      >
-                        <div className="flex items-center gap-3">
-                          <span className="text-2xl p-2 rounded-xl bg-white/5 group-hover:scale-110 transition-transform">
-                            {tmpl.icon}
-                          </span>
-                          <div>
-                            <div className="flex items-center gap-2">
-                              <h4 className="font-semibold text-xs text-[#FAF9F5] group-hover:text-[#E8D8BA]">
-                                {tmpl.name}
-                              </h4>
-                              <span className="text-[9px] px-2 py-0.5 rounded-full bg-white/10 text-[#C2A676] font-mono">
-                                {tmpl.category}
-                              </span>
+                  <div className="p-2 sm:p-4 overflow-y-auto space-y-2 flex-1 max-h-[160px] sm:max-h-none">
+                    {PAGE_TEMPLATES.map((tmpl) => {
+                      const isStaged = stagedPageTemplateId === tmpl.id;
+                      return (
+                        <div
+                          key={tmpl.id}
+                          onClick={() => {
+                            if (isStaged) {
+                              handleSelectPageTemplate(tmpl);
+                              setStagedPageTemplateId(null);
+                            } else {
+                              setStagedPageTemplateId(tmpl.id);
+                            }
+                          }}
+                          className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-center justify-between group ${
+                            isStaged
+                              ? 'bg-[#C2A676]/25 border-[#C2A676] ring-1 ring-[#C2A676]'
+                              : 'bg-white/5 hover:bg-white/10 border-white/10'
+                          }`}
+                        >
+                          <div className="flex items-center gap-2.5">
+                            <span className="text-xl p-1 rounded-lg bg-white/5 group-hover:scale-110 transition-transform">
+                              {tmpl.icon}
+                            </span>
+                            <div>
+                              <div className="flex items-center gap-1.5">
+                                <h4 className="font-semibold text-xs text-[#FAF9F5] group-hover:text-[#E8D8BA]">
+                                  {tmpl.name}
+                                </h4>
+                                <span className="text-[9px] px-1.5 py-0.2 rounded-full bg-white/10 text-[#C2A676] font-mono">
+                                  {tmpl.category}
+                                </span>
+                              </div>
+                              <p className="text-[10px] text-[#A0A694] line-clamp-1">{tmpl.description}</p>
                             </div>
-                            <p className="text-[11px] text-[#A0A694] mt-0.5 line-clamp-1">{tmpl.description}</p>
                           </div>
+                          <button
+                            className={`px-2.5 py-1 rounded-lg text-xs font-bold transition flex items-center gap-1 shrink-0 ${
+                              isStaged
+                                ? 'bg-[#C2A676] text-[#1E2218] animate-pulse'
+                                : 'bg-[#51583D] text-[#FAF9F5]'
+                            }`}
+                          >
+                            <span>{isStaged ? '✓ Ketuk Lagi' : 'Pilih'}</span>
+                          </button>
                         </div>
-                        <button className="px-3 py-1.5 rounded-xl bg-[#51583D] group-hover:bg-[#C2A676] text-[#FAF9F5] group-hover:text-[#1E2218] text-xs font-bold transition flex items-center gap-1 shrink-0">
-                          <Plus className="w-3.5 h-3.5" />
-                          <span>Pilih</span>
-                        </button>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </motion.div>
               </div>
@@ -3504,7 +3585,10 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
         onAddElement={handleAddElement}
         onDeleteElement={handleDeleteElement}
         onDuplicateElement={handleDuplicateElement}
-        onDeselect={() => setSelectedElementId(null)}
+        onDeselect={() => {
+          setSelectedElementId(null);
+          setDragUnlockedElementId(null);
+        }}
         onNudge={nudgeElement}
         canvasViewMode={canvasViewMode}
         onChangeCanvasViewMode={setCanvasViewMode}
@@ -3514,6 +3598,10 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
         canvasZoom={canvasZoom}
         onChangeZoom={setCanvasZoom}
         onOpenAddPageModal={() => setShowAddPageModal(true)}
+        isDragUnlocked={dragUnlockedElementId === selectedElementId}
+        onToggleDragLock={() =>
+          setDragUnlockedElementId(dragUnlockedElementId === selectedElementId ? null : selectedElementId)
+        }
       />
     </div>
   );
