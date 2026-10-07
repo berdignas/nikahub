@@ -14,6 +14,7 @@ import { LoginModal } from './components/LoginModal';
 import { CartDrawer } from './components/CartDrawer';
 import { Footer } from './components/Footer';
 import { InvitationStudio } from './components/InvitationStudio';
+import { ProjectHubView } from './components/ProjectHubView';
 import { WEDDING_PRODUCTS } from './data/mockData';
 import { WeddingProduct, ProductCategory, BookingItem, User } from './types';
 import confetti from 'canvas-confetti';
@@ -57,6 +58,8 @@ const getSecretRoutePage = (): ActivePage => {
 export function App() {
   const [currentPage, setCurrentPage] = useState<ActivePage>(getSecretRoutePage);
   const currentPageRef = useRef<ActivePage>(currentPage);
+  const [builderSubPage, setBuilderSubPage] = useState<'hub' | 'editor'>('hub');
+  const [selectedBuilderProjectId, setSelectedBuilderProjectId] = useState<string>('');
 
   useEffect(() => {
     currentPageRef.current = currentPage;
@@ -282,6 +285,7 @@ export function App() {
     const handleHashChange = () => {
       if (window.location.hash.includes('builder')) {
         setCurrentPage('builder');
+        setBuilderSubPage('hub');
       } else if (window.location.hash.includes('login-berdignas-nikahub') || window.location.hash.includes('admin')) {
         const isAdminAuth = sessionStorage.getItem('nikahub_admin_session') === 'authenticated';
         setCurrentPage(isAdminAuth ? 'admin-dashboard' : 'admin-login');
@@ -343,6 +347,9 @@ export function App() {
 
   const handleNavigate = (page: ActivePage, pushToHistory = true) => {
     setCurrentPage(page);
+    if (page === 'builder') {
+      setBuilderSubPage('hub');
+    }
     setIsCartOpen(false);
     setIsLoginModalOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -588,9 +595,23 @@ export function App() {
           />
         )}
 
-        {/* WEDDING INVITATION STUDIO BUILDER */}
+        {/* WEDDING INVITATION STUDIO BUILDER & PROJECT HUB */}
         {currentPage === 'builder' && (
-          <InvitationStudio onBackToHome={() => handleNavigate('home')} />
+          builderSubPage === 'hub' ? (
+            <ProjectHubView
+              onOpenStudio={(projectId) => {
+                setSelectedBuilderProjectId(projectId);
+                setBuilderSubPage('editor');
+              }}
+              onBackToCatalogue={() => handleNavigate('home')}
+            />
+          ) : (
+            <InvitationStudio
+              projectId={selectedBuilderProjectId}
+              onBackToProjects={() => setBuilderSubPage('hub')}
+              onBackToHome={() => handleNavigate('home')}
+            />
+          )
         )}
       </main>
 

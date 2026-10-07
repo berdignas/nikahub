@@ -167,4 +167,8 @@ export interface GlobalProjectConfig {
     autoPlay: boolean;
   };
   sections: BuilderSection[];
+  status?: 'draft' | 'in_progress' | 'completed';
+  updatedAt?: string;
+  createdAt?: string;
+  thumbnail?: string;
 }

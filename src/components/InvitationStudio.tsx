@@ -40,6 +40,7 @@ import {
   Move,
   X,
   Store,
+  FolderKanban,
   FlipHorizontal,
   FlipVertical,
   Crop,
@@ -75,14 +76,25 @@ import {
 import { FloatingPetals } from './FloatingPetals';
 import { compressImage } from '../lib/builder/imageCompression';
 import { uploadImageToSupabaseStorage } from '../lib/supabase';
+import { getProjectById, saveProject } from '../lib/builder/projectStorage';
+import { CanvaMobileDock } from './CanvaMobileDock';
 
 interface InvitationStudioProps {
+  projectId?: string;
+  onBackToProjects?: () => void;
   onBackToHome?: () => void;
 }
 
-export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome }) => {
+export const InvitationStudio: React.FC<InvitationStudioProps> = ({ 
+  projectId,
+  onBackToProjects,
+  onBackToHome 
+}) => {
   // Main Project State
-  const [project, setProject] = useState<GlobalProjectConfig>(DEFAULT_INITIAL_PROJECT);
+  const [project, setProject] = useState<GlobalProjectConfig>(() => {
+    if (projectId) return getProjectById(projectId);
+    return DEFAULT_INITIAL_PROJECT;
+  });
   const [history, setHistory] = useState<GlobalProjectConfig[]>([]);
   const [historyIndex, setHistoryIndex] = useState<number>(-1);
 
@@ -197,6 +209,38 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
 
   // Mobile Navigation State
   const [mobileTab, setMobileTab] = useState<'canvas' | 'tools' | 'inspector'>('canvas');
+  // Two-Finger Pinch to Zoom State
+  const [canvasZoom, setCanvasZoom] = useState<number>(1);
+  const touchStartDistRef = useRef<number | null>(null);
+  const touchStartZoomRef = useRef<number>(1);
+
+  const handleCanvasTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      touchStartDistRef.current = dist;
+      touchStartZoomRef.current = canvasZoom;
+    }
+  };
+
+  const handleCanvasTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && touchStartDistRef.current !== null) {
+      const dist = Math.hypot(
+        e.touches[0].clientX - e.touches[1].clientX,
+        e.touches[0].clientY - e.touches[1].clientY
+      );
+      const factor = dist / touchStartDistRef.current;
+      const nextZoom = Math.min(2.2, Math.max(0.6, touchStartZoomRef.current * factor));
+      setCanvasZoom(Number(nextZoom.toFixed(2)));
+    }
+  };
+
+  const handleCanvasTouchEnd = () => {
+    touchStartDistRef.current = null;
+  };
+
   const [transformSession, setTransformSession] = useState<{
     mode: 'move' | 'resize' | 'rotate';
     handle?: 'tl' | 'tr' | 'bl' | 'br';
@@ -211,14 +255,13 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
     centerY: number;
   } | null>(null);
 
-  // Load from LocalStorage on mount
+  // Load project on mount or when projectId changes
   useEffect(() => {
+    if (projectId) {
+      const p = getProjectById(projectId);
+      setProject(p);
+    }
     try {
-      const saved = localStorage.getItem('nikahhub_wedding_builder_project');
-      if (saved) {
-        const parsed = JSON.parse(saved);
-        setProject(parsed);
-      }
       const savedAssets = localStorage.getItem('nikahhub_user_uploaded_assets');
       if (savedAssets) {
         setUploadedAssets(JSON.parse(savedAssets));
@@ -226,7 +269,25 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
     } catch {
       // ignore
     }
-  }, []);
+  }, [projectId]);
+
+  // AUTO-SAVE: Otomatis menyimpan setiap perubahan pada proyek (Draft yang belum selesai)
+  const isInitialMount = useRef(true);
+  useEffect(() => {
+    if (isInitialMount.current) {
+      isInitialMount.current = false;
+      return;
+    }
+    setSaveStatus('Menyimpan...');
+    const saveTimer = setTimeout(() => {
+      saveProject(project);
+      setSaveStatus('Tersimpan otomatis');
+      const clearTimer = setTimeout(() => setSaveStatus(null), 2500);
+      return () => clearTimeout(clearTimer);
+    }, 600);
+
+    return () => clearTimeout(saveTimer);
+  }, [project]);
 
   // Record history for Undo / Redo
   const recordHistory = (newProject: GlobalProjectConfig) => {
@@ -254,14 +315,14 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
     }
   };
 
-  // Save to LocalStorage
+  // Manual Save to LocalStorage / Project Storage
   const handleSave = () => {
     try {
-      localStorage.setItem('nikahhub_wedding_builder_project', JSON.stringify(project));
+      saveProject(project);
       setSaveStatus('Tersimpan otomatis!');
       setTimeout(() => setSaveStatus(null), 2500);
     } catch {
-      setSaveStatus('Gagal menyimpan (kuota penuh)');
+      setSaveStatus('Gagal menyimpan');
       setTimeout(() => setSaveStatus(null), 2500);
     }
   };
@@ -801,29 +862,50 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
     <div className="flex flex-col w-full h-[100dvh] min-h-[100dvh] max-h-[100dvh] bg-[#141610] text-[#FAF9F5] overflow-hidden select-none overscroll-none">
       {/* 1. TOP HEADER APP BAR (RESPONSIVE) */}
       <header className="h-13 sm:h-14 bg-[#1E2218] border-b border-[#C2A676]/30 px-2 sm:px-4 flex items-center justify-between shrink-0 z-30">
-        {/* Left: Branding & Project Title */}
-        <div className="flex items-center gap-1.5 sm:gap-3">
+        {/* Left: Branding & Project Title & Home Proyek */}
+        <div className="flex items-center gap-1.5 sm:gap-2.5">
+          {onBackToProjects && (
+            <button
+              onClick={onBackToProjects}
+              className="px-2.5 py-1 sm:px-3 sm:py-1.5 rounded-xl bg-gradient-to-r from-[#51583D] to-[#3B412C] hover:brightness-110 text-[#E8D8BA] text-[11px] sm:text-xs font-bold flex items-center gap-1.5 border border-[#C2A676]/40 transition shrink-0 shadow"
+              title="Kembali ke Daftar Proyek (Home Proyek)"
+            >
+              <FolderKanban className="w-3.5 h-3.5 text-[#C2A676]" />
+              <span>Home Proyek</span>
+            </button>
+          )}
+
           {onBackToHome && (
             <button
               onClick={onBackToHome}
-              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-white/10 hover:bg-[#51583D] text-[#E8D8BA] text-[11px] sm:text-xs font-semibold flex items-center gap-1 border border-white/10 transition shrink-0"
-              title="Kembali ke Beranda"
+              className="px-2 py-1 sm:px-2.5 sm:py-1.5 rounded-xl bg-white/5 hover:bg-white/10 text-[#A0A694] hover:text-[#FAF9F5] text-[11px] sm:text-xs font-semibold flex items-center gap-1 border border-white/5 transition shrink-0"
+              title="Kembali ke Web Katalog Utama"
             >
               <Store className="w-3.5 h-3.5" />
               <span className="hidden md:inline">Katalog</span>
             </button>
           )}
-          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gradient-to-tr from-[#51583D] to-[#C2A676] flex items-center justify-center shadow shrink-0">
-            <Sparkles className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#FAF9F5]" />
-          </div>
+
+          <div className="h-6 w-[1px] bg-white/10 hidden sm:block" />
+
           <div>
-            <h1 className="font-serif font-bold text-xs sm:text-base text-[#FAF9F5] flex items-center gap-1">
-              <span className="truncate max-w-[85px] sm:max-w-none">Studio Builder</span>
-              <span className="text-[9px] px-1 py-0.2 rounded-full bg-[#C2A676]/20 text-[#E8D8BA] border border-[#C2A676]/40 uppercase tracking-widest font-mono">
-                V2
-              </span>
+            <h1 className="font-serif font-bold text-xs sm:text-sm text-[#FAF9F5] flex items-center gap-1.5">
+              <span className="truncate max-w-[90px] sm:max-w-xs">{project.title}</span>
+              {saveStatus ? (
+                <span className="text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 flex items-center gap-1 font-sans">
+                  <Check className="w-2.5 h-2.5" />
+                  <span>{saveStatus}</span>
+                </span>
+              ) : (
+                <span className="hidden sm:inline-flex text-[9px] px-1.5 py-0.5 rounded-full bg-emerald-500/15 text-emerald-300 border border-emerald-500/30 items-center gap-1 font-sans">
+                  <span className="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                  <span>Tersimpan</span>
+                </span>
+              )}
             </h1>
-            <p className="hidden md:block text-[10px] text-[#A0A694]">Drag, tempel, font & animasi sesuka hati</p>
+            <p className="hidden md:block text-[10px] text-[#A0A694]">
+              {project.groomName} & {project.brideName} • Auto-save aktif
+            </p>
           </div>
         </div>
 
@@ -1652,7 +1734,16 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
           )}
 
           {/* Smartphone Frame Simulation */}
-          <div className="relative w-full max-w-[420px] bg-[#FAF9F5] rounded-xl sm:rounded-[44px] shadow-2xl sm:shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-[#2A2E22]/60 sm:border-[10px] sm:border-[#2A2E22] overflow-hidden my-auto shrink-0 transition-all">
+          <div 
+            onTouchStart={handleCanvasTouchStart}
+            onTouchMove={handleCanvasTouchMove}
+            onTouchEnd={handleCanvasTouchEnd}
+            className="relative w-full max-w-[390px] sm:max-w-[420px] bg-[#FAF9F5] rounded-2xl sm:rounded-[44px] shadow-2xl sm:shadow-[0_0_80px_rgba(0,0,0,0.8)] border border-[#2A2E22]/60 sm:border-[10px] sm:border-[#2A2E22] overflow-hidden my-2 sm:my-auto shrink-0 transition-transform duration-100 ease-out"
+            style={{
+              transform: `scale(${canvasZoom})`,
+              transformOrigin: 'top center',
+            }}
+          >
             {/* Phone Speaker Notch (Desktop/Tablet) */}
             <div className="hidden sm:flex absolute top-2 left-1/2 -translate-x-1/2 w-28 h-4 rounded-full bg-[#1A1D15] z-50 items-center justify-center">
               <div className="w-10 h-1.5 rounded-full bg-white/20" />
@@ -1672,9 +1763,6 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                     onClick={() => {
                       setSelectedSectionId(sec.id);
                       setSelectedElementId(null);
-                      if (window.innerWidth < 1024) {
-                        setMobileTab('inspector');
-                      }
                     }}
                     className={`relative w-full overflow-hidden transition-all ${
                       selectedSectionId === sec.id && previewMode === 'editor'
@@ -1751,9 +1839,6 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                               e.stopPropagation();
                               setSelectedElementId(el.id);
                               setSelectedSectionId(sec.id);
-                              if (window.innerWidth < 1024) {
-                                setMobileTab('inspector');
-                              }
                             }}
                             className={`relative transition-none select-none cursor-grab active:cursor-grabbing touch-none ${
                               isSelected
@@ -1769,11 +1854,11 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                               touchAction: 'none',
                             }}
                           >
-                            {/* Selected Action Floating Toolbar */}
+                            {/* Selected Action Floating Toolbar (Desktop Only, on Mobile it's docked in Canva bottom toolbar) */}
                             {isSelected && (
                               <>
                                 <div
-                                  className="absolute -top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1E2218]/95 backdrop-blur-md px-2 py-1 rounded-xl border border-[#C2A676]/60 shadow-2xl flex items-center gap-1 text-white text-[10px]"
+                                  className="hidden lg:flex absolute -top-14 left-1/2 -translate-x-1/2 z-50 bg-[#1E2218]/95 backdrop-blur-md px-2 py-1 rounded-xl border border-[#C2A676]/60 shadow-2xl items-center gap-1 text-white text-[10px]"
                                   onPointerDown={(e) => e.stopPropagation()}
                                 >
                                   <span className="font-semibold max-w-[80px] truncate text-[#E8D8BA] mr-1">
@@ -2114,108 +2199,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
             )}
           </AnimatePresence>
 
-          {/* FLOATING MOBILE NUDGE & QUICK ACTION DOCK (ACTIVE ON MOBILE WHEN ELEMENT SELECTED) */}
-          {selectedElement && previewMode === 'editor' && (
-            <div className="fixed bottom-20 left-1/2 -translate-x-1/2 z-40 bg-[#1E2218]/95 backdrop-blur-md px-3 py-2 rounded-2xl border border-[#C2A676]/60 shadow-2xl flex items-center gap-2 max-w-[95vw]">
-              {/* D-Pad Directional Nudges */}
-              <div className="flex items-center gap-1 bg-black/40 p-1 rounded-xl">
-                <button
-                  onClick={() => nudgeElement(-5, 0)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 active:bg-[#C2A676] text-white"
-                  title="Geser Kiri"
-                >
-                  <ArrowLeft className="w-3.5 h-3.5" />
-                </button>
-                <div className="flex flex-col gap-1">
-                  <button
-                    onClick={() => nudgeElement(0, -5)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 active:bg-[#C2A676] text-white"
-                    title="Geser Atas"
-                  >
-                    <ArrowUp className="w-3.5 h-3.5" />
-                  </button>
-                  <button
-                    onClick={() => nudgeElement(0, 5)}
-                    className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 active:bg-[#C2A676] text-white"
-                    title="Geser Bawah"
-                  >
-                    <ArrowDown className="w-3.5 h-3.5" />
-                  </button>
-                </div>
-                <button
-                  onClick={() => nudgeElement(5, 0)}
-                  className="w-7 h-7 flex items-center justify-center rounded-lg bg-white/5 active:bg-[#C2A676] text-white"
-                  title="Geser Kanan"
-                >
-                  <ArrowRight className="w-3.5 h-3.5" />
-                </button>
-              </div>
-
-              {/* Size Adjusters */}
-              <div className="flex flex-col gap-1 bg-black/40 p-1 rounded-xl">
-                <button
-                  onClick={() => resizeElement(10, 5)}
-                  className="px-2 py-0.5 text-[10px] font-bold rounded bg-white/10 active:bg-[#C2A676] text-white"
-                  title="Perbesar"
-                >
-                  + Size
-                </button>
-                <button
-                  onClick={() => resizeElement(-10, -5)}
-                  className="px-2 py-0.5 text-[10px] font-bold rounded bg-white/10 active:bg-[#C2A676] text-white"
-                  title="Perkecil"
-                >
-                  - Size
-                </button>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex items-center gap-1 pl-1 border-l border-white/10">
-                <button
-                  onClick={() => setMobileTab('inspector')}
-                  className="px-2.5 py-1.5 rounded-xl bg-[#51583D] active:bg-[#65744F] text-[#FAF9F5] text-xs font-semibold flex items-center gap-1 shadow"
-                  title="Pengaturan Elemen"
-                >
-                  <Sliders className="w-3.5 h-3.5 text-[#E8D8BA]" />
-                  <span className="text-[11px]">Edit</span>
-                </button>
-                {(selectedElement.type === 'button' || selectedElement.name.toLowerCase().includes('buka')) && (
-                  <button
-                    onClick={() => {
-                      setCanvasViewMode('content');
-                      if (contentSections.length > 0) setSelectedSectionId(contentSections[0].id);
-                    }}
-                    className="px-2.5 py-1.5 rounded-xl bg-[#C2A676] text-[#1E2218] text-xs font-bold flex items-center gap-1 shadow"
-                    title="Buka Halaman Isi Undangan"
-                  >
-                    <Play className="w-3.5 h-3.5 fill-current" />
-                    <span>Buka Isi</span>
-                  </button>
-                )}
-                <button
-                  onClick={() => handleDuplicateElement(selectedElement)}
-                  className="p-1.5 rounded-xl bg-white/5 active:bg-white/20 text-[#FAF9F5]"
-                  title="Duplikat"
-                >
-                  <Copy className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => handleDeleteElement(selectedElement.id)}
-                  className="p-1.5 rounded-xl bg-rose-500/20 active:bg-rose-500/40 text-rose-300"
-                  title="Hapus"
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </button>
-                <button
-                  onClick={() => setSelectedElementId(null)}
-                  className="p-1.5 rounded-xl bg-white/5 text-white/50 hover:text-white"
-                  title="Tutup Seleksi"
-                >
-                  <X className="w-3.5 h-3.5" />
-                </button>
-              </div>
-            </div>
-          )}
+          {/* FLOATING ACTION DOCK: REPLACED BY CANVA MOBILE DOCK AT THE BOTTOM */}
         </main>
 
         {/* === RIGHT PROPERTY INSPECTOR === */}
@@ -3510,59 +3494,27 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
         </aside>
       </div>
 
-      {/* 3. MOBILE BOTTOM NAVIGATION DOCK (OPTIMIZED FOR ANDROID GESTURES) */}
-      <nav className="lg:hidden min-h-[58px] pb-[calc(env(safe-area-inset-bottom,0px)+4px)] pt-1 bg-[#171A12] border-t border-[#C2A676]/30 px-1.5 flex items-center justify-around shrink-0 z-40 backdrop-blur-md">
-        <button
-          onClick={() => setMobileTab('canvas')}
-          className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition ${
-            mobileTab === 'canvas'
-              ? 'text-[#E8D8BA] bg-[#51583D]/40 font-bold'
-              : 'text-[#A0A694] hover:text-[#FAF9F5]'
-          }`}
-        >
-          <Smartphone className="w-4 h-4" />
-          <span className="text-[10px] leading-none">Kanvas</span>
-        </button>
-
-        <button
-          onClick={() => setMobileTab('tools')}
-          className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition ${
-            mobileTab === 'tools'
-              ? 'text-[#E8D8BA] bg-[#51583D]/40 font-bold'
-              : 'text-[#A0A694] hover:text-[#FAF9F5]'
-          }`}
-        >
-          <Palette className="w-4 h-4" />
-          <span className="text-[10px] leading-none">Alat & Aset</span>
-        </button>
-
-        <button
-          onClick={() => setMobileTab('inspector')}
-          className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition relative ${
-            mobileTab === 'inspector'
-              ? 'text-[#E8D8BA] bg-[#51583D]/40 font-bold'
-              : 'text-[#A0A694] hover:text-[#FAF9F5]'
-          }`}
-        >
-          <Sliders className="w-4 h-4" />
-          <span className="text-[10px] leading-none">{selectedElementId ? 'Edit Elemen' : 'Background'}</span>
-          {selectedElementId && (
-            <span className="absolute top-1.5 right-1/4 w-2 h-2 rounded-full bg-[#C2A676] animate-ping" />
-          )}
-        </button>
-
-        <button
-          onClick={() => setPreviewMode(previewMode === 'live' ? 'editor' : 'live')}
-          className={`flex-1 py-1.5 flex flex-col items-center justify-center gap-1 rounded-xl transition ${
-            previewMode === 'live'
-              ? 'text-emerald-300 bg-emerald-950/50 font-bold border border-emerald-500/30'
-              : 'text-[#A0A694] hover:text-[#FAF9F5]'
-          }`}
-        >
-          <Play className="w-4 h-4" />
-          <span className="text-[10px] leading-none">{previewMode === 'live' ? 'Editor' : 'Preview'}</span>
-        </button>
-      </nav>
+      {/* 3. CANVA-STYLE MOBILE BOTTOM DOCK & TOUCH TOOLBAR */}
+      <CanvaMobileDock
+        selectedElement={selectedElement}
+        selectedSection={currentSection}
+        project={project}
+        onUpdateElement={updateSelectedElement}
+        onUpdateSection={updateCurrentSection}
+        onAddElement={handleAddElement}
+        onDeleteElement={handleDeleteElement}
+        onDuplicateElement={handleDuplicateElement}
+        onDeselect={() => setSelectedElementId(null)}
+        onNudge={nudgeElement}
+        canvasViewMode={canvasViewMode}
+        onChangeCanvasViewMode={setCanvasViewMode}
+        previewMode={previewMode}
+        onTogglePreviewMode={() => setPreviewMode(previewMode === 'live' ? 'editor' : 'live')}
+        onTriggerAnimPreview={triggerPreviewAnimation}
+        canvasZoom={canvasZoom}
+        onChangeZoom={setCanvasZoom}
+        onOpenAddPageModal={() => setShowAddPageModal(true)}
+      />
     </div>
   );
 };

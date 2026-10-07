@@ -32,8 +32,15 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
       setIsLoading(false);
 
       // Secret Admin Credentials check
-      const validUser = username.trim().toLowerCase() === 'admin@nikahub.id' || username.trim().toLowerCase() === 'admin';
-      const validPass = password === 'nikahub2026' || password === 'admin123';
+      const cleanUser = username.trim().toLowerCase();
+      const validUser = 
+        cleanUser === 'faizacket@gmail.com' ||
+        cleanUser === 'admin@nikahub.id' || 
+        cleanUser === 'admin';
+      const validPass = 
+        password === 'Pasuruan*88' ||
+        password === 'nikahub2026' || 
+        password === 'admin123';
 
       if (validUser && validPass) {
         confetti({
@@ -99,7 +106,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder="admin@nikahub.id"
+                  placeholder="Faizacket@gmail.com"
                   className="w-full pl-10 pr-4 py-3 rounded-xl border border-gray-200 text-xs text-emerald-950 focus:outline-none focus:ring-2 focus:ring-emerald-950 bg-gray-50 focus:bg-white transition-colors"
                 />
               </div>
@@ -150,7 +157,7 @@ export const AdminLoginView: React.FC<AdminLoginViewProps> = ({
           </form>
 
           <div className="pt-4 border-t border-gray-100 flex items-center justify-between text-[11px] text-emerald-950/60">
-            <span>Login Default: <strong>admin@nikahub.id</strong> / <strong>nikahub2026</strong></span>
+            <span>Login Admin: <strong>Faizacket@gmail.com</strong> / <strong>Pasuruan*88</strong></span>
             <button
               onClick={onGoHome}
               className="text-emerald-950 font-bold hover:underline"

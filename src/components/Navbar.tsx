@@ -400,6 +400,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                         </button>
                         <button
                           onClick={() => {
+                            onPageChange('builder');
+                            setUserDropdownOpen(false);
+                          }}
+                          className="w-full text-left px-3 py-2 rounded-xl text-xs font-semibold hover:bg-emerald-950/5 flex items-center gap-2 transition-colors cursor-pointer text-emerald-950"
+                        >
+                          <Sparkles className="w-4 h-4 text-champagne-700" />
+                          <span>Studio Undangan & Proyek</span>
+                        </button>
+                        <button
+                          onClick={() => {
                             window.open('https://wa.me/qr/XCPMCWREYZVOM1', '_blank');
                             setUserDropdownOpen(false);
                           }}

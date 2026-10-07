@@ -633,6 +633,15 @@ export const AdminDashboardView: React.FC<AdminDashboardViewProps> = ({
         </div>
 
         <div className="flex items-center gap-2.5 relative z-10 w-full sm:w-auto">
+          <a
+            href="#builder"
+            className="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-champagne-400 hover:bg-champagne-300 text-emerald-950 font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md"
+            title="Buka Studio Proyek Undangan Digital"
+          >
+            <Sparkles className="w-3.5 h-3.5 text-emerald-950" />
+            <span>Studio Proyek</span>
+          </a>
+
           <button
             onClick={onLogoutAdmin}
             className="flex-1 sm:flex-none px-4 py-2.5 rounded-full bg-rose-600 hover:bg-rose-700 text-white font-bold text-xs flex items-center justify-center gap-1.5 transition-colors cursor-pointer shadow-md"
