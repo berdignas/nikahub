@@ -35,9 +35,58 @@ import {
   FolderKanban,
   Maximize2,
   Minus,
+  Upload,
 } from 'lucide-react';
+import { compressImage } from '../lib/builder/imageCompression';
+import { uploadImageToSupabaseStorage } from '../lib/supabase';
 import { CanvasElement, BuilderSection, GlobalProjectConfig, AnimationType, LoopAnimationType } from '../types/builder';
 import { FONT_OPTIONS, COLOR_PALETTES, ORNAMENT_LIBRARY, SHAPE_PRESETS } from '../lib/builder/presets';
+
+
+export const BACKGROUND_PRESETS = [
+  {
+    id: 'vintage-paper',
+    label: '📜 Kertas Vintage',
+    url: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1200&auto=format&fit=crop&q=80',
+    desc: 'Kertas kuno perkamen',
+  },
+  {
+    id: 'sage-botanical',
+    label: '🌿 Sage Botanical',
+    url: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=1200&auto=format&fit=crop&q=80',
+    desc: 'Dedaunan botani pastel',
+  },
+  {
+    id: 'golden-bokeh',
+    label: '✨ Golden Bokeh',
+    url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1200&auto=format&fit=crop&q=80',
+    desc: 'Kilau cahaya emas',
+  },
+  {
+    id: 'floral-rose',
+    label: '🌸 Mawar Lembut',
+    url: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=1200&auto=format&fit=crop&q=80',
+    desc: 'Kelopak mekar romantis',
+  },
+  {
+    id: 'midnight-star',
+    label: '🌌 Bintang Malam',
+    url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=1200&auto=format&fit=crop&q=80',
+    desc: 'Langit malam romantis',
+  },
+  {
+    id: 'white-marble',
+    label: '🏛️ Marmer Mewah',
+    url: 'https://images.unsplash.com/photo-1579783900882-c0d3dad7b119?w=1200&auto=format&fit=crop&q=80',
+    desc: 'Guratan marmer elegan',
+  },
+  {
+    id: 'aesthetic-linen',
+    label: '🧵 Serat Linen',
+    url: 'https://images.unsplash.com/photo-1586075010923-2dd4570fb338?w=1200&auto=format&fit=crop&q=80',
+    desc: 'Tekstur kanvas lembut',
+  },
+];
 
 export type MobileDrawerType =
   | 'none'
@@ -97,6 +146,45 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
   onToggleDragLock,
 }) => {
   const [activeDrawer, setActiveDrawer] = useState<MobileDrawerType>('none');
+  const [bgSubTab, setBgSubTab] = useState<'image' | 'color' | 'anim'>('image');
+  const [isUploadingBg, setIsUploadingBg] = useState(false);
+
+  const handleBgFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    setIsUploadingBg(true);
+    try {
+      let fileToUpload = file;
+      try {
+        fileToUpload = await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 });
+      } catch {}
+
+      const publicUrl = await uploadImageToSupabaseStorage(fileToUpload, 'wedding-asset');
+      if (publicUrl && publicUrl.startsWith('http')) {
+        onUpdateSection({
+          backgroundImage: publicUrl,
+          backgroundOpacity: selectedSection?.backgroundOpacity ?? 0.85,
+        });
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          if (ev.target?.result) {
+            onUpdateSection({
+              backgroundImage: ev.target.result as string,
+              backgroundOpacity: selectedSection?.backgroundOpacity ?? 0.85,
+            });
+          }
+        };
+        reader.readAsDataURL(fileToUpload);
+      }
+    } catch (err) {
+      console.error('Failed to upload background:', err);
+    } finally {
+      setIsUploadingBg(false);
+      e.target.value = '';
+    }
+  };
   const [addCategory, setAddCategory] = useState<'text' | 'flower' | 'shape' | 'image'>('text');
   const [colorTarget, setColorTarget] = useState<'text' | 'bg' | 'border'>('text');
   const [stagedAddId, setStagedAddId] = useState<string | null>(null);
@@ -881,30 +969,138 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
 
               {/* === H. DRAWER: BACKGROUND / SECTION === */}
               {activeDrawer === 'background' && (
-                <div className="space-y-4">
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#E8D8BA] mb-2">
-                      Pilih Warna Latar Bagian Ini
-                    </label>
-                    <div className="flex items-center gap-2.5 flex-wrap">
-                      {['#FAF9F5', '#FAF6F0', '#FCF8F8', '#1E293B', '#51583D', '#141610', '#FFFFFF'].map(
-                        (col, i) => (
-                          <button
-                            key={i}
-                            onClick={() => onUpdateSection({ backgroundColor: col })}
-                            className="w-10 h-10 rounded-full border-2 border-white/30 shadow active:scale-90"
-                            style={{ backgroundColor: col }}
-                          />
-                        )
-                      )}
-                    </div>
+                <div className="space-y-2">
+                  {/* Sub-Tabs: Gambar, Warna, Efek */}
+                  <div className="flex items-center gap-1 bg-[#141610] p-0.5 rounded-lg border border-white/10 shrink-0">
+                    <button
+                      onClick={() => setBgSubTab('image')}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold flex items-center justify-center gap-1 ${
+                        bgSubTab === 'image' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
+                      }`}
+                    >
+                      <ImageIcon className="w-3 h-3" />
+                      <span>Foto Latar</span>
+                    </button>
+                    <button
+                      onClick={() => setBgSubTab('color')}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold flex items-center justify-center gap-1 ${
+                        bgSubTab === 'color' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
+                      }`}
+                    >
+                      <Palette className="w-3 h-3" />
+                      <span>Warna Polos</span>
+                    </button>
+                    <button
+                      onClick={() => setBgSubTab('anim')}
+                      className={`flex-1 py-1 rounded text-[11px] font-semibold flex items-center justify-center gap-1 ${
+                        bgSubTab === 'anim' ? 'bg-[#51583D] text-white shadow' : 'text-[#A0A694]'
+                      }`}
+                    >
+                      <Sparkles className="w-3 h-3" />
+                      <span>Animasi</span>
+                    </button>
                   </div>
 
-                  <div>
-                    <label className="block text-[11px] font-semibold text-[#E8D8BA] mb-2">
-                      Efek Animasi Latar
-                    </label>
-                    <div className="grid grid-cols-2 gap-2">
+                  {/* 1. SUB-TAB: FOTO / GAMBAR LATAR */}
+                  {bgSubTab === 'image' && (
+                    <div className="space-y-2">
+                      {/* Direct Upload Button & Delete */}
+                      <div className="flex items-center gap-2">
+                        <label className="flex-1 cursor-pointer py-1.5 px-3 rounded-xl bg-gradient-to-r from-[#C2A676] to-[#E8D8BA] text-[#141610] font-bold text-xs flex items-center justify-center gap-1.5 shadow active:scale-95 transition">
+                          <Upload className="w-3.5 h-3.5 stroke-[2.5]" />
+                          <span>{isUploadingBg ? 'Mengompresi & Memasang...' : '📷 Pilih Foto Latar dari HP / Galeri'}</span>
+                          <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleBgFileChange}
+                            disabled={isUploadingBg}
+                            className="hidden"
+                          />
+                        </label>
+                        {selectedSection?.backgroundImage && (
+                          <button
+                            onClick={() => onUpdateSection({ backgroundImage: '' })}
+                            className="px-2.5 py-1.5 rounded-xl bg-rose-500/20 text-rose-300 border border-rose-500/30 text-xs font-semibold flex items-center gap-1 shrink-0"
+                            title="Hapus gambar latar"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                            <span>Hapus</span>
+                          </button>
+                        )}
+                      </div>
+
+                      {/* Opacity Slider if background image exists */}
+                      {selectedSection?.backgroundImage && (
+                        <div className="flex items-center gap-2 px-2 py-1 rounded-lg bg-white/5 border border-white/10 text-[10px]">
+                          <span className="text-[#A0A694] shrink-0">Transparansi Latar:</span>
+                          <input
+                            type="range"
+                            min="0.1"
+                            max="1"
+                            step="0.05"
+                            value={selectedSection?.backgroundOpacity ?? 0.85}
+                            onChange={(e) => onUpdateSection({ backgroundOpacity: parseFloat(e.target.value) })}
+                            className="flex-1 accent-[#C2A676] h-1.5"
+                          />
+                          <span className="font-mono text-[#E8D8BA] w-8 text-right shrink-0">
+                            {Math.round((selectedSection?.backgroundOpacity ?? 0.85) * 100)}%
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Presets Horizontal Row */}
+                      <div>
+                        <span className="text-[10px] text-[#A0A694] block mb-1">Koleksi Gambar Tekstur Mewah:</span>
+                        <div className="flex items-center gap-1.5 overflow-x-auto pb-1 no-scrollbar">
+                          {BACKGROUND_PRESETS.map((preset) => {
+                            const isCurrent = (selectedSection?.backgroundImage || '') === preset.url;
+                            return (
+                              <button
+                                key={preset.id}
+                                onClick={() =>
+                                  onUpdateSection({
+                                    backgroundImage: preset.url,
+                                    backgroundOpacity: selectedSection?.backgroundOpacity ?? 0.85,
+                                  })
+                                }
+                                className={`px-2.5 py-1.5 rounded-lg border text-left whitespace-nowrap shrink-0 transition flex items-center gap-1.5 ${
+                                  isCurrent
+                                    ? 'bg-[#51583D] border-[#C2A676] text-white font-bold shadow'
+                                    : 'bg-white/5 border-white/10 text-[#E8D8BA] hover:bg-white/10'
+                                }`}
+                              >
+                                <span className="text-xs">{preset.label}</span>
+                              </button>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 2. SUB-TAB: WARNA POLOS */}
+                  {bgSubTab === 'color' && (
+                    <div>
+                      <div className="flex items-center gap-2 overflow-x-auto pb-1 no-scrollbar">
+                        {['#FAF9F5', '#FAF6F0', '#FCF8F8', '#1E293B', '#51583D', '#141610', '#FFFFFF', '#2D2013', '#1A2A20'].map(
+                          (col, i) => (
+                            <button
+                              key={i}
+                              onClick={() => onUpdateSection({ backgroundColor: col })}
+                              className={`w-8 h-8 rounded-full border-2 shadow active:scale-90 shrink-0 ${
+                                selectedSection?.backgroundColor === col ? 'border-[#C2A676] ring-2 ring-[#C2A676]' : 'border-white/30'
+                              }`}
+                              style={{ backgroundColor: col }}
+                            />
+                          )
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* 3. SUB-TAB: EFEK ANIMASI */}
+                  {bgSubTab === 'anim' && (
+                    <div className="grid grid-cols-2 gap-1.5">
                       {[
                         { id: 'petals', label: '🌸 Guguran Kelopak' },
                         { id: 'sparkles', label: '✨ Kilau Bintang' },
@@ -914,9 +1110,9 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                         <button
                           key={item.id}
                           onClick={() => onUpdateSection({ backgroundAnimation: item.id as any })}
-                          className={`p-2.5 rounded-xl border text-left text-xs font-semibold ${
+                          className={`p-1.5 rounded-lg border text-left text-[11px] font-semibold truncate ${
                             selectedSection?.backgroundAnimation === item.id
-                              ? 'bg-white/15 border-[#C2A676] text-[#E8D8BA]'
+                              ? 'bg-[#51583D] border-[#C2A676] text-[#E8D8BA]'
                               : 'bg-white/5 border-white/5 text-white'
                           }`}
                         >
@@ -924,7 +1120,7 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                         </button>
                       ))}
                     </div>
-                  </div>
+                  )}
                 </div>
               )}
 

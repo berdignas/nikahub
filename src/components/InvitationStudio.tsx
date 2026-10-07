@@ -384,6 +384,44 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
     reader.readAsText(file);
   };
 
+  // Direct Background Uploader for Active Section
+  const handleUploadBackgroundDirect = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    try {
+      let fileToUpload = file;
+      if (useSmartCompression) {
+        try {
+          fileToUpload = await compressImage(file, { maxWidth: 1920, maxHeight: 1920, quality: 0.85 });
+        } catch {}
+      }
+
+      const publicUrl = await uploadImageToSupabaseStorage(fileToUpload, 'wedding-asset');
+      if (publicUrl && publicUrl.startsWith('http')) {
+        updateCurrentSection({
+          backgroundImage: publicUrl,
+          backgroundOpacity: currentSection?.backgroundOpacity ?? 0.85,
+        });
+      } else {
+        const reader = new FileReader();
+        reader.onload = (ev) => {
+          if (ev.target?.result) {
+            updateCurrentSection({
+              backgroundImage: ev.target.result as string,
+              backgroundOpacity: currentSection?.backgroundOpacity ?? 0.85,
+            });
+          }
+        };
+        reader.readAsDataURL(fileToUpload);
+      }
+    } catch (err) {
+      console.error('Failed to upload background:', err);
+    } finally {
+      e.target.value = '';
+    }
+  };
+
   // File Uploader for user assets with smart compression & Cloudflare R2
   const handleUploadAsset = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -3372,6 +3410,18 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                     </button>
                   )}
                 </div>
+
+                {/* Direct Upload Button from Computer / Device */}
+                <label className="w-full cursor-pointer py-2 px-3 rounded-xl bg-gradient-to-r from-[#C2A676] to-[#E8D8BA] text-[#141610] font-bold text-xs flex items-center justify-center gap-2 shadow hover:opacity-90 active:scale-95 transition">
+                  <Upload className="w-4 h-4 stroke-[2.5]" />
+                  <span>📷 Upload Foto Latar (Galeri / File)</span>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleUploadBackgroundDirect}
+                    className="hidden"
+                  />
+                </label>
 
                 {/* Preset Tekstur Mewah 1-Klik */}
                 <div className="grid grid-cols-2 gap-1.5">
