@@ -133,6 +133,7 @@ export interface BuilderSection {
   backgroundImage?: string;
   backgroundOverlay?: string;
   backgroundOpacity?: number;
+  backgroundAnimation?: 'none' | 'zoomSlow' | 'drift' | 'pulse' | 'sparkles' | 'petals';
   minHeight: number; // px
   paddingY: number; // px
   elements: CanvasElement[];

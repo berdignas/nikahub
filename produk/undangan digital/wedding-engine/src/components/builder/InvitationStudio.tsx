@@ -393,6 +393,18 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
     handleUpdateProject({ ...project, sections: updatedSections });
   };
 
+  // Update active section (background, height, padding, animation, etc.)
+  const updateCurrentSection = (partial: Partial<BuilderSection>) => {
+    const targetSecId = selectedSectionId || project.sections[0]?.id;
+    const updatedSections = project.sections.map((sec) => {
+      if (sec.id === targetSecId) {
+        return { ...sec, ...partial };
+      }
+      return sec;
+    });
+    handleUpdateProject({ ...project, sections: updatedSections });
+  };
+
   // Add element to active section
   const handleAddElement = (elementData: Partial<CanvasElement>) => {
     const targetSectionId = selectedSectionId || project.sections[0].id;
@@ -1513,7 +1525,13 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
         >
           {/* Global Ambient Particles on Canvas */}
           {project.ambientEffect === 'petals' && (
-            <FloatingPetals count={15} type="mixed" className="fixed inset-0 pointer-events-none z-10" />
+            <FloatingPetals count={20} type="petals" className="fixed inset-0 pointer-events-none z-10" />
+          )}
+          {project.ambientEffect === 'sparkles' && (
+            <FloatingPetals count={25} type="sparkles" className="fixed inset-0 pointer-events-none z-10" />
+          )}
+          {(project.ambientEffect === 'butterflies' || project.ambientEffect === 'doves') && (
+            <FloatingPetals count={18} type="leaves" className="fixed inset-0 pointer-events-none z-10" />
           )}
 
           {/* Background Audio Player */}
@@ -1651,13 +1669,14 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                   <div
                     key={sec.id}
                     id={`section-container-${sec.id}`}
-                    onClick={(e) => {
-                      if (e.target === e.currentTarget || (e.target as HTMLElement).id === `section-container-${sec.id}`) {
-                        setSelectedSectionId(sec.id);
-                        setSelectedElementId(null);
+                    onClick={() => {
+                      setSelectedSectionId(sec.id);
+                      setSelectedElementId(null);
+                      if (window.innerWidth < 1024) {
+                        setMobileTab('inspector');
                       }
                     }}
-                    className={`relative w-full transition-all ${
+                    className={`relative w-full overflow-hidden transition-all ${
                       selectedSectionId === sec.id && previewMode === 'editor'
                         ? 'ring-2 ring-[#C2A676] ring-inset'
                         : ''
@@ -1669,6 +1688,43 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                       paddingBottom: `${sec.paddingY}px`,
                     }}
                   >
+                    {/* Background Image / Texture Layer */}
+                    {sec.backgroundImage && (
+                      <div
+                        className={`absolute inset-0 pointer-events-none bg-cover bg-center ${
+                          sec.backgroundAnimation === 'zoomSlow'
+                            ? 'anim-bg-zoomSlow'
+                            : sec.backgroundAnimation === 'drift'
+                            ? 'anim-bg-drift'
+                            : sec.backgroundAnimation === 'pulse'
+                            ? 'anim-bg-pulse'
+                            : ''
+                        }`}
+                        style={{
+                          backgroundImage: `url(${sec.backgroundImage})`,
+                          opacity: sec.backgroundOpacity ?? 1,
+                        }}
+                      />
+                    )}
+
+                    {/* Background Overlay Color */}
+                    {sec.backgroundOverlay && (
+                      <div
+                        className="absolute inset-0 pointer-events-none"
+                        style={{
+                          backgroundColor: sec.backgroundOverlay,
+                        }}
+                      />
+                    )}
+
+                    {/* Section-specific Particles */}
+                    {sec.backgroundAnimation === 'petals' && (
+                      <FloatingPetals count={16} type="petals" className="absolute inset-0 pointer-events-none z-10" />
+                    )}
+                    {sec.backgroundAnimation === 'sparkles' && (
+                      <FloatingPetals count={20} type="sparkles" className="absolute inset-0 pointer-events-none z-10" />
+                    )}
+
                     {/* Section Badge in Editor Mode */}
                     {previewMode === 'editor' && (
                       <div className="absolute top-2 left-3 z-30 px-2 py-0.5 rounded bg-black/60 text-[#E8D8BA] text-[9px] font-mono tracking-wider backdrop-blur-sm pointer-events-none">
@@ -3134,28 +3190,302 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
               </div>
             );
           })() : (
-            /* Nothing Selected State: Tampilkan Panduan & Daftar Elemen Cepat */
-            <div className="h-full flex flex-col justify-start p-1 text-[#A0A694] space-y-4">
-              <div className="p-4 rounded-2xl bg-white/5 border border-white/10 text-center">
-                <Edit3 className="w-8 h-8 text-[#C2A676] mx-auto mb-2 opacity-80" />
-                <h4 className="font-serif font-bold text-sm text-[#FAF9F5] mb-1">Pilih Elemen di Layar</h4>
-                <p className="text-xs text-[#A0A694]">
-                  Sentuh salah satu bunga, foto, atau teks di kanvas HP untuk membuka pengaturannya secara khusus.
-                </p>
+            /* === PENGATURAN LATAR BELAKANG & SECTION (OTOMATIS AKTIF KETIKA BACKGROUND DITEKAN) === */
+            <div className="space-y-4">
+              {/* Header Latar Belakang */}
+              <div className="flex items-center justify-between pb-3 border-b border-white/10">
+                <div className="flex items-center gap-2 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-[#51583D]/40 border border-[#C2A676]/40 flex items-center justify-center shrink-0">
+                    <Palette className="w-4 h-4 text-[#C2A676]" />
+                  </div>
+                  <div className="min-w-0">
+                    <h3 className="font-serif font-bold text-xs sm:text-sm text-[#FAF9F5] truncate">
+                      🎨 Pengaturan Latar Belakang
+                    </h3>
+                    <p className="text-[10px] text-[#A0A694] truncate">
+                      Bagian: {currentSection?.title || 'Undangan'}
+                    </p>
+                  </div>
+                </div>
+                <span className="px-2 py-0.5 rounded-full bg-[#C2A676]/20 border border-[#C2A676]/40 text-[#E8D8BA] text-[9px] font-mono">
+                  Latar Aktif
+                </span>
               </div>
 
-              {/* Quick element selector list from active section */}
-              {currentSectionElements.length > 0 && (
-                <div className="space-y-1.5">
-                  <div className="text-[10px] font-semibold text-[#E8D8BA] uppercase tracking-wider px-1">
-                    Elemen di Bagian Ini ({currentSectionElements.length}):
+              {/* 1. Warna Latar Belakang & Palet Cepat */}
+              <div className="space-y-2">
+                <div className="flex items-center justify-between text-xs font-semibold text-[#E8D8BA]">
+                  <span>Warna Latar Belakang</span>
+                  <span className="font-mono text-[11px] text-[#C2A676]">{currentSection?.backgroundColor || '#FAF9F5'}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <input
+                    type="color"
+                    value={currentSection?.backgroundColor?.startsWith('#') ? currentSection.backgroundColor : '#FAF9F5'}
+                    onChange={(e) => updateCurrentSection({ backgroundColor: e.target.value })}
+                    className="w-9 h-9 rounded-lg border border-white/20 cursor-pointer bg-transparent p-0.5 shrink-0"
+                  />
+                  <input
+                    type="text"
+                    value={currentSection?.backgroundColor || '#FAF9F5'}
+                    onChange={(e) => updateCurrentSection({ backgroundColor: e.target.value })}
+                    className="flex-1 px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-mono text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
+                    placeholder="#FAF9F5"
+                  />
+                </div>
+
+                {/* Quick Luxury Presets */}
+                <div className="pt-1">
+                  <div className="text-[10px] text-[#A0A694] mb-1.5 font-medium">Palet Warna Cepat Luxury:</div>
+                  <div className="grid grid-cols-4 gap-1.5">
+                    {[
+                      { label: 'Krem Suci', color: '#FAF9F5', border: '#DCD6CA' },
+                      { label: 'Ivory Vintage', color: '#FDFBF7', border: '#E5DDCB' },
+                      { label: 'Sage Botanical', color: '#E8ECE3', border: '#C5CDC0' },
+                      { label: 'Rose Soft', color: '#FDF2F4', border: '#ECC8D0' },
+                      { label: 'Champagne', color: '#F4EEDF', border: '#DECBA9' },
+                      { label: 'Forest Dark', color: '#1E2218', border: '#363D2B' },
+                      { label: 'Midnight Black', color: '#0F110B', border: '#252B1B' },
+                      { label: 'Navy Gold', color: '#0F172A', border: '#2B3B5E' },
+                    ].map((pal, idx) => (
+                      <button
+                        key={idx}
+                        onClick={() => updateCurrentSection({ backgroundColor: pal.color })}
+                        className={`p-1.5 rounded-lg border text-center transition flex flex-col items-center gap-1 ${
+                          (currentSection?.backgroundColor || '').toLowerCase() === pal.color.toLowerCase()
+                            ? 'ring-2 ring-[#C2A676] shadow'
+                            : 'hover:border-white/30'
+                        }`}
+                        style={{ backgroundColor: pal.color, borderColor: pal.border }}
+                        title={pal.label}
+                      >
+                        <span
+                          className="text-[9px] font-bold leading-tight"
+                          style={{
+                            color: pal.color === '#1E2218' || pal.color === '#0F110B' || pal.color === '#0F172A' ? '#E8D8BA' : '#1E2218',
+                          }}
+                        >
+                          {pal.label}
+                        </span>
+                      </button>
+                    ))}
                   </div>
-                  <div className="space-y-1 max-h-[300px] overflow-y-auto pr-1">
+                </div>
+              </div>
+
+              {/* 2. Gambar / Tekstur Latar Belakang */}
+              <div className="pt-3 border-t border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#E8D8BA] uppercase tracking-wider flex items-center gap-1.5">
+                    <ImageIcon className="w-3.5 h-3.5 text-[#C2A676]" />
+                    <span>Gambar & Tekstur Latar</span>
+                  </h4>
+                  {currentSection?.backgroundImage && (
+                    <button
+                      onClick={() => updateCurrentSection({ backgroundImage: '' })}
+                      className="text-[10px] text-rose-300 hover:underline"
+                    >
+                      Hapus Gambar
+                    </button>
+                  )}
+                </div>
+
+                {/* Preset Tekstur Mewah 1-Klik */}
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    {
+                      label: '🚫 Polos (Warna)',
+                      url: '',
+                      desc: 'Tanpa gambar latar',
+                    },
+                    {
+                      label: '📜 Kertas Vintage',
+                      url: 'https://images.unsplash.com/photo-1607604276583-eef5d076aa5f?w=1000&auto=format&fit=crop&q=80',
+                      desc: 'Serat kertas kuno',
+                    },
+                    {
+                      label: '🌿 Sage Botanical',
+                      url: 'https://images.unsplash.com/photo-1518895949257-7621c3c786d7?w=1000&auto=format&fit=crop&q=80',
+                      desc: 'Dedaunan botani pastel',
+                    },
+                    {
+                      label: '✨ Golden Bokeh Dust',
+                      url: 'https://images.unsplash.com/photo-1507525428034-b723cf961d3e?w=1000&auto=format&fit=crop&q=80',
+                      desc: 'Kilau cahaya keemasan',
+                    },
+                    {
+                      label: '🌌 Bintang Malam',
+                      url: 'https://images.unsplash.com/photo-1506703719100-a0f3a48c0f86?w=1000&auto=format&fit=crop&q=80',
+                      desc: 'Langit malam romantis',
+                    },
+                    {
+                      label: '🏛️ Bunga Mawar',
+                      url: 'https://images.unsplash.com/photo-1490750967868-88aa4486c946?w=1000&auto=format&fit=crop&q=80',
+                      desc: 'Kelopak mawar lembut',
+                    },
+                  ].map((tex, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => updateCurrentSection({ backgroundImage: tex.url })}
+                      className={`p-2 rounded-xl border text-left transition ${
+                        (currentSection?.backgroundImage || '') === tex.url
+                          ? 'bg-[#51583D] border-[#C2A676] text-white font-bold shadow'
+                          : 'bg-black/30 border-white/5 text-[#E8D8BA] hover:bg-white/10'
+                      }`}
+                    >
+                      <div className="text-[11px] font-semibold truncate">{tex.label}</div>
+                      <div className="text-[9px] text-[#A0A694] truncate">{tex.desc}</div>
+                    </button>
+                  ))}
+                </div>
+
+                {/* Custom URL Input */}
+                <div className="space-y-1">
+                  <label className="text-[10px] text-[#A0A694]">Atau Masukkan URL Gambar Sendiri:</label>
+                  <input
+                    type="text"
+                    value={currentSection?.backgroundImage || ''}
+                    onChange={(e) => updateCurrentSection({ backgroundImage: e.target.value })}
+                    placeholder="https://... URL gambar latar"
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-black/40 border border-white/10 text-xs font-mono text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
+                  />
+                </div>
+
+                {/* Opasitas Gambar Latar */}
+                {currentSection?.backgroundImage && (
+                  <div className="space-y-2 p-2.5 rounded-xl bg-black/30 border border-white/5">
+                    <div className="flex items-center justify-between text-[10px]">
+                      <span className="text-[#A0A694]">Transparansi Gambar Latar</span>
+                      <span className="font-mono text-[#E8D8BA]">
+                        {Math.round((currentSection?.backgroundOpacity ?? 1) * 100)}%
+                      </span>
+                    </div>
+                    <input
+                      type="range"
+                      min="0.05"
+                      max="1"
+                      step="0.05"
+                      value={currentSection?.backgroundOpacity ?? 1}
+                      onChange={(e) => updateCurrentSection({ backgroundOpacity: Number(e.target.value) })}
+                      className="w-full accent-[#C2A676]"
+                    />
+                  </div>
+                )}
+              </div>
+
+              {/* 3. Efek Animasi Latar Belakang & Partikel */}
+              <div className="pt-3 border-t border-white/10 space-y-3">
+                <div className="flex items-center justify-between">
+                  <h4 className="text-xs font-bold text-[#E8D8BA] uppercase tracking-wider flex items-center gap-1.5">
+                    <Sparkles className="w-3.5 h-3.5 text-[#C2A676]" />
+                    <span>Animasi & Suasana Latar</span>
+                  </h4>
+                </div>
+
+                {/* Animasi Kamera / Latar */}
+                <div>
+                  <label className="block text-[10px] text-[#A0A694] mb-1 font-medium">
+                    Efek Gerakan Gambar Latar
+                  </label>
+                  <select
+                    value={currentSection?.backgroundAnimation || 'none'}
+                    onChange={(e) => updateCurrentSection({ backgroundAnimation: e.target.value as any })}
+                    className="w-full px-2.5 py-1.5 rounded-lg bg-[#2A2E22] border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
+                  >
+                    <option value="none">🚫 Statis (Tanpa Gerakan Latar)</option>
+                    <option value="zoomSlow">🔍 Ken Burns Slow Zoom (Latar Bergerak Maju-Mundur)</option>
+                    <option value="drift">🌊 Drift Floating (Latar Mengambang Halus)</option>
+                    <option value="pulse">💡 Pulse Ambient Glow (Pendaran Cahaya Halus)</option>
+                    <option value="petals">🌸 Hujan Kelopak Bunga di Bagian Ini (Falling Petals)</option>
+                    <option value="sparkles">✨ Kilauan Debu Emas di Bagian Ini (Gold Glitter Dust)</option>
+                  </select>
+                </div>
+
+                {/* Efek Partikel Global Seluruh Undangan */}
+                <div className="p-2.5 rounded-xl bg-black/30 border border-white/5 space-y-2">
+                  <div className="flex items-center justify-between text-[10px]">
+                    <span className="text-[#A0A694]">Partikel Seluruh Undangan (Global)</span>
+                    <span className="text-[#C2A676] font-semibold capitalize">{project.ambientEffect}</span>
+                  </div>
+                  <div className="grid grid-cols-4 gap-1">
+                    {[
+                      { id: 'petals', label: '🌸 Bunga' },
+                      { id: 'sparkles', label: '✨ Kilau' },
+                      { id: 'butterflies', label: '🌿 Daun' },
+                      { id: 'none', label: '🚫 Polos' },
+                    ].map((item) => (
+                      <button
+                        key={item.id}
+                        onClick={() => handleUpdateProject({ ...project, ambientEffect: item.id as any })}
+                        className={`py-1 rounded text-[10px] font-medium transition ${
+                          project.ambientEffect === item.id
+                            ? 'bg-[#C2A676] text-[#1E2218] font-bold shadow'
+                            : 'bg-black/40 text-[#A0A694] hover:bg-white/10 hover:text-white'
+                        }`}
+                      >
+                        {item.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              {/* 4. Ukuran Bagian / Section */}
+              <div className="pt-3 border-t border-white/10 space-y-3">
+                <h4 className="text-xs font-bold text-[#E8D8BA] uppercase tracking-wider flex items-center gap-1.5">
+                  <Move className="w-3.5 h-3.5 text-[#C2A676]" />
+                  <span>Ukuran & Jarak Bagian</span>
+                </h4>
+
+                <div className="grid grid-cols-2 gap-2">
+                  <div>
+                    <div className="flex justify-between items-center text-[10px] text-[#A0A694] mb-1">
+                      <span>Tinggi Min</span>
+                      <span className="font-mono text-[#E8D8BA]">{currentSection?.minHeight || 400}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="350"
+                      max="1000"
+                      step="25"
+                      value={currentSection?.minHeight || 400}
+                      onChange={(e) => updateCurrentSection({ minHeight: Number(e.target.value) })}
+                      className="w-full accent-[#C2A676]"
+                    />
+                  </div>
+                  <div>
+                    <div className="flex justify-between items-center text-[10px] text-[#A0A694] mb-1">
+                      <span>Padding Y</span>
+                      <span className="font-mono text-[#E8D8BA]">{currentSection?.paddingY || 40}px</span>
+                    </div>
+                    <input
+                      type="range"
+                      min="10"
+                      max="120"
+                      step="5"
+                      value={currentSection?.paddingY || 40}
+                      onChange={(e) => updateCurrentSection({ paddingY: Number(e.target.value) })}
+                      className="w-full accent-[#C2A676]"
+                    />
+                  </div>
+                </div>
+              </div>
+
+              {/* 5. Daftar Elemen di Bagian Ini (Untuk kemudahan memilih elemen) */}
+              {currentSectionElements.length > 0 && (
+                <div className="pt-3 border-t border-white/10 space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold text-[#E8D8BA] uppercase tracking-wider">
+                      Elemen di Bagian Ini ({currentSectionElements.length}):
+                    </span>
+                    <span className="text-[9px] text-[#A0A694]">Sentuh untuk edit</span>
+                  </div>
+                  <div className="space-y-1 max-h-[200px] overflow-y-auto pr-1">
                     {currentSectionElements.map((el) => (
                       <button
                         key={el.id}
                         onClick={() => setSelectedElementId(el.id)}
-                        className="w-full p-2.5 rounded-xl bg-black/40 hover:bg-[#51583D]/40 border border-white/5 hover:border-[#C2A676]/60 flex items-center justify-between text-left transition"
+                        className="w-full p-2 rounded-xl bg-black/40 hover:bg-[#51583D]/40 border border-white/5 hover:border-[#C2A676]/60 flex items-center justify-between text-left transition"
                       >
                         <div className="flex items-center gap-2 truncate">
                           {el.type === 'flower' ? (
@@ -3169,7 +3499,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
                           )}
                           <span className="text-xs text-[#FAF9F5] truncate">{el.name}</span>
                         </div>
-                        <span className="text-[10px] text-[#C2A676] font-mono">Pilih ➔</span>
+                        <span className="text-[10px] text-[#C2A676] font-mono">Edit ➔</span>
                       </button>
                     ))}
                   </div>
@@ -3215,7 +3545,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({ onBackToHome
           }`}
         >
           <Sliders className="w-4 h-4" />
-          <span className="text-[10px] leading-none">Edit Elemen</span>
+          <span className="text-[10px] leading-none">{selectedElementId ? 'Edit Elemen' : 'Background'}</span>
           {selectedElementId && (
             <span className="absolute top-1.5 right-1/4 w-2 h-2 rounded-full bg-[#C2A676] animate-ping" />
           )}

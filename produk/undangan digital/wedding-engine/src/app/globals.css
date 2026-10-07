@@ -269,3 +269,44 @@ body {
 .anim-loop-wiggleMove {
   animation: studio-wiggle-move var(--loop-duration, 5s) ease-in-out infinite;
 }
+
+/* Section Background Ambient Animations */
+@keyframes studio-bg-zoom {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+@keyframes studio-bg-drift {
+  0%, 100% {
+    transform: translate(0, 0) scale(1.04);
+  }
+  50% {
+    transform: translate(-10px, -15px) scale(1.06);
+  }
+}
+
+@keyframes studio-bg-pulse {
+  0%, 100% {
+    opacity: 0.92;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+.anim-bg-zoomSlow {
+  animation: studio-bg-zoom 18s ease-in-out infinite;
+}
+
+.anim-bg-drift {
+  animation: studio-bg-drift 22s ease-in-out infinite;
+}
+
+.anim-bg-pulse {
+  animation: studio-bg-pulse 8s ease-in-out infinite;
+}
+
