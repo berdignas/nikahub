@@ -6,6 +6,7 @@ interface NavbarProps {
   isAdminModerator: boolean;
   onOpenPinModal: () => void;
   onExitAdminMode: () => void;
+  onOpenChangePinModal?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -13,6 +14,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   isAdminModerator,
   onOpenPinModal,
   onExitAdminMode,
+  onOpenChangePinModal,
 }) => {
   return (
     <header className="sticky top-0 z-40 backdrop-blur-xl bg-white/90 border-b border-[#E6CA92]/30 transition-all shadow-xs">
@@ -49,6 +51,16 @@ export const Navbar: React.FC<NavbarProps> = ({
             <div className="flex items-center gap-1.5 pl-3 pr-1.5 py-1 rounded-full bg-emerald-50 border border-emerald-300 text-emerald-800 text-xs font-sans shadow-xs">
               <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
               <span className="font-bold text-[11px] hidden sm:inline">Mode Pengantin Aktif</span>
+              {onOpenChangePinModal && (
+                <button
+                  onClick={onOpenChangePinModal}
+                  className="px-2 py-0.5 rounded-full bg-emerald-100 hover:bg-emerald-200 text-emerald-800 text-[10px] font-bold transition-colors cursor-pointer flex items-center gap-1"
+                  title="Ganti / Ubah PIN Pengantin"
+                >
+                  <KeyRound className="w-2.5 h-2.5" />
+                  <span>Ubah PIN</span>
+                </button>
+              )}
               <button
                 onClick={onExitAdminMode}
                 className="p-1 rounded-full hover:bg-emerald-200/60 text-emerald-800 transition-colors cursor-pointer"

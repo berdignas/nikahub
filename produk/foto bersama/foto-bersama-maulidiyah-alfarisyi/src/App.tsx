@@ -42,6 +42,7 @@ export function App() {
     }
   });
   const [isPinModalOpen, setIsPinModalOpen] = useState(false);
+  const [pinModalMode, setPinModalMode] = useState<'verify' | 'change'>('verify');
 
   // Modals state
   const [isUploadOpen, setIsUploadOpen] = useState(false);
@@ -263,7 +264,14 @@ export function App() {
       <Navbar
         onOpenTv={() => setIsTvOpen(true)}
         isAdminModerator={isAdminModerator}
-        onOpenPinModal={() => setIsPinModalOpen(true)}
+        onOpenPinModal={() => {
+          setPinModalMode('verify');
+          setIsPinModalOpen(true);
+        }}
+        onOpenChangePinModal={() => {
+          setPinModalMode('change');
+          setIsPinModalOpen(true);
+        }}
         onExitAdminMode={handleLockAdmin}
       />
 
@@ -395,6 +403,7 @@ export function App() {
         isOpen={isPinModalOpen}
         onClose={() => setIsPinModalOpen(false)}
         onSuccess={handleUnlockAdmin}
+        initialMode={pinModalMode}
       />
     </div>
   );
