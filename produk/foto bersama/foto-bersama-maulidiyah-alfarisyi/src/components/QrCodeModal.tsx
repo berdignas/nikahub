@@ -46,6 +46,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
   };
 
   // Generate High-Resolution Printable Standee Table Card (1020 x 1560 px = Ratio 8.5 cm x 13 cm at 300 DPI)
+  // OPTIMIZED WITH EXTRA LARGE TEXT & EXTRA LARGE BARCODE (Mudah Dilihat & Dibaca Orang Tua)
   const handleDownloadTableCardPng = () => {
     try {
       setIsDownloading(true);
@@ -67,19 +68,19 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
         // 1. Background Luxury Cream & Blush
         const bgGrad = ctx.createLinearGradient(0, 0, 0, canvas.height);
         bgGrad.addColorStop(0, '#FFFDF8');
-        bgGrad.addColorStop(0.4, '#FAF6EF');
+        bgGrad.addColorStop(0.35, '#FAF6EE');
         bgGrad.addColorStop(1, '#FFF5F6');
         ctx.fillStyle = bgGrad;
         ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-        // 2. Double Golden Frame
+        // 2. Double Golden Frame (Lebih mepet ke tepi agar ruang dalam lebih luas dan tulisan bisa besar!)
         ctx.strokeStyle = '#D4AF37';
         ctx.lineWidth = 6;
-        ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
+        ctx.strokeRect(26, 26, canvas.width - 52, canvas.height - 52);
 
         ctx.strokeStyle = '#E6CA92';
         ctx.lineWidth = 2;
-        ctx.strokeRect(48, 48, canvas.width - 96, canvas.height - 96);
+        ctx.strokeRect(36, 36, canvas.width - 72, canvas.height - 72);
 
         // 3. Draw Floral Corners
         const drawFlowerCorner = (cx: number, cy: number, rot: number) => {
@@ -115,65 +116,65 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
           ctx.restore();
         };
 
-        drawFlowerCorner(85, 85, 0);
-        drawFlowerCorner(canvas.width - 85, 85, Math.PI / 2);
-        drawFlowerCorner(canvas.width - 85, canvas.height - 85, Math.PI);
-        drawFlowerCorner(85, canvas.height - 85, (Math.PI * 3) / 2);
+        drawFlowerCorner(70, 70, 0);
+        drawFlowerCorner(canvas.width - 70, 70, Math.PI / 2);
+        drawFlowerCorner(canvas.width - 70, canvas.height - 70, Math.PI);
+        drawFlowerCorner(70, canvas.height - 70, (Math.PI * 3) / 2);
 
-        // 4. Header Badge: Standee Meja 8,5 x 13 cm
+        // 4. Header Badge: FOTO BERSAMA & BUKU TAMU
         ctx.fillStyle = '#E11D48';
         ctx.beginPath();
-        ctx.roundRect(canvas.width / 2 - 200, 75, 400, 44, 22);
+        ctx.roundRect(canvas.width / 2 - 230, 60, 460, 48, 24);
         ctx.fill();
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.textAlign = 'center';
-        ctx.fillText('💖 LIVE WEDDING PHOTO & GUESTBOOK 💖', canvas.width / 2, 103);
+        ctx.fillText('💖 LIVE FOTO BERSAMA & BUKU TAMU 💖', canvas.width / 2, 92);
 
-        // 5. Couple Title (Besar & Mewah)
+        // 5. Couple Title (SANGAT BESAR & JELAS UNTUK ORANG TUA: 74px!)
         ctx.fillStyle = '#0A261D';
-        ctx.font = 'bold 52px "Playfair Display", Georgia, serif';
+        ctx.font = 'bold 74px "Playfair Display", Georgia, serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Alfarisyi & Maulidiyah', canvas.width / 2, 185);
+        ctx.fillText('Alfarisyi & Maulidiyah', canvas.width / 2, 180);
 
         ctx.fillStyle = '#9F1239';
-        ctx.font = 'italic 22px Georgia, serif';
-        ctx.fillText('Selasa & Rabu, 13 - 14 Oktober 2026', canvas.width / 2, 225);
+        ctx.font = 'bold 28px Georgia, serif';
+        ctx.fillText('Selasa & Rabu, 13 - 14 Oktober 2026', canvas.width / 2, 224);
 
-        // 6. Warm Sweet Invitation Headline (Besar & Menggoda)
+        // 6. Warm Sweet Invitation Headline (BESAR & TEBAL: 44px!)
         ctx.fillStyle = '#881337';
-        ctx.font = 'bold 32px "Playfair Display", Georgia, serif';
+        ctx.font = 'bold 44px "Playfair Display", Georgia, serif';
         ctx.textAlign = 'center';
-        ctx.fillText('Abadikan Momen Manis Anda Bersama Kami!', canvas.width / 2, 295);
+        ctx.fillText('Abadikan Momen Manis Bersama Kami!', canvas.width / 2, 290);
 
-        ctx.fillStyle = '#4B5563';
-        ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.fillText('Scan Barcode di Bawah Ini dengan Kamera HP Anda ✨', canvas.width / 2, 335);
+        ctx.fillStyle = '#374151';
+        ctx.font = 'bold 26px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('Scan Barcode di Bawah Ini dengan Kamera HP Anda ✨', canvas.width / 2, 332);
 
-        // 7. CENTER SECTION: BIG QR CODE WITH DECORATIVE HEARTS ON THE SIDES
-        const qrCenterY = 660;
-        const boxSize = 460; // DIBESARKAN SESUAI REQUEST
+        // 7. CENTER SECTION: EXTRA LARGE QR CODE (DIBESARKAN DRASTIS DARI 400px KE 510px!)
+        const qrCenterY = 665;
+        const boxSize = 560; // Ukuran kotak putih QR
         const boxX = canvas.width / 2 - (boxSize / 2);
         const boxY = qrCenterY - (boxSize / 2);
 
         // Draw Big White Box for QR
         ctx.save();
         ctx.fillStyle = '#FFFFFF';
-        ctx.shadowColor = 'rgba(225, 29, 72, 0.25)';
-        ctx.shadowBlur = 30;
-        ctx.shadowOffsetY = 10;
+        ctx.shadowColor = 'rgba(225, 29, 72, 0.28)';
+        ctx.shadowBlur = 35;
+        ctx.shadowOffsetY = 12;
         ctx.beginPath();
         ctx.roundRect(boxX, boxY, boxSize, boxSize, 36);
         ctx.fill();
 
-        ctx.strokeStyle = '#FECDD3';
-        ctx.lineWidth = 4;
+        ctx.strokeStyle = '#FDA4AF';
+        ctx.lineWidth = 5;
         ctx.stroke();
         ctx.restore();
 
-        // Draw QR Code inside box (Ukuran Besar & Jernih!)
-        const qrDrawSize = 400;
+        // Draw QR Code inside box (Ukuran Ekstra Besar: 500 px!)
+        const qrDrawSize = 500;
         ctx.drawImage(
           qrImg,
           canvas.width / 2 - (qrDrawSize / 2),
@@ -182,19 +183,48 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
           qrDrawSize
         );
 
-        // Top Badge on QR Code
+        // Center Monogram Heart Emblem (DIGAMBAR LANGSUNG AGAR TIDAK BOLONG PUTIH!)
+        const emblemRadius = 42;
+        ctx.save();
+        ctx.beginPath();
+        ctx.arc(canvas.width / 2, qrCenterY, emblemRadius, 0, Math.PI * 2);
+        ctx.fillStyle = '#FFFFFF';
+        ctx.shadowColor = 'rgba(0, 0, 0, 0.2)';
+        ctx.shadowBlur = 10;
+        ctx.fill();
+        ctx.strokeStyle = '#E11D48';
+        ctx.lineWidth = 3;
+        ctx.stroke();
+
+        // Heart inside emblem
         ctx.fillStyle = '#E11D48';
         ctx.beginPath();
-        ctx.roundRect(canvas.width / 2 - 160, boxY - 20, 320, 40, 20);
+        const ehX = canvas.width / 2;
+        const ehY = qrCenterY;
+        const s = 34;
+        ctx.moveTo(ehX, ehY - s * 0.15);
+        ctx.bezierCurveTo(ehX - s * 0.5, ehY - s * 0.7, ehX - s, ehY - s * 0.1, ehX, ehY + s * 0.7);
+        ctx.bezierCurveTo(ehX + s, ehY - s * 0.1, ehX + s * 0.5, ehY - s * 0.7, ehX, ehY - s * 0.15);
         ctx.fill();
 
         ctx.fillStyle = '#FFFFFF';
-        ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.font = 'bold 15px Georgia, serif';
         ctx.textAlign = 'center';
-        ctx.fillText('💖 SCAN BARCODE KENANGAN 💖', canvas.width / 2, boxY + 6);
+        ctx.fillText('A&M', ehX, ehY + 4);
+        ctx.restore();
+
+        // Top Badge on QR Code
+        ctx.fillStyle = '#E11D48';
+        ctx.beginPath();
+        ctx.roundRect(canvas.width / 2 - 190, boxY - 24, 380, 48, 24);
+        ctx.fill();
+
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💖 SCAN BARCODE KENANGAN 💖', canvas.width / 2, boxY + 7);
 
         // 8. DECORATIVE HEARTS ON BOTH SIDES (GAMBAR HATI DI SAMPING-SAMPINGNYA)
-        // Helper to draw hearts on canvas
         const drawHeartIcon = (cx: number, cy: number, size: number, color: string) => {
           ctx.save();
           ctx.translate(cx, cy);
@@ -209,38 +239,38 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
 
         // Left Side Hearts
         const leftHearts = [
-          { y: qrCenterY - 140, s: 34, c: '#E11D48' },
-          { y: qrCenterY - 60, s: 26, c: '#D4AF37' },
-          { y: qrCenterY + 20, s: 38, c: '#F43F5E' },
-          { y: qrCenterY + 100, s: 28, c: '#E11D48' },
-          { y: qrCenterY + 160, s: 22, c: '#D4AF37' },
+          { y: qrCenterY - 170, s: 38, c: '#E11D48' },
+          { y: qrCenterY - 80, s: 30, c: '#D4AF37' },
+          { y: qrCenterY + 10, s: 44, c: '#F43F5E' },
+          { y: qrCenterY + 100, s: 32, c: '#E11D48' },
+          { y: qrCenterY + 180, s: 26, c: '#D4AF37' },
         ];
         leftHearts.forEach((h) => {
-          drawHeartIcon(boxX - 60, h.y, h.s, h.c);
+          drawHeartIcon(boxX - 52, h.y, h.s, h.c);
         });
 
         // Right Side Hearts
         const rightHearts = [
-          { y: qrCenterY - 140, s: 34, c: '#E11D48' },
-          { y: qrCenterY - 60, s: 26, c: '#D4AF37' },
-          { y: qrCenterY + 20, s: 38, c: '#F43F5E' },
-          { y: qrCenterY + 100, s: 28, c: '#E11D48' },
-          { y: qrCenterY + 160, s: 22, c: '#D4AF37' },
+          { y: qrCenterY - 170, s: 38, c: '#E11D48' },
+          { y: qrCenterY - 80, s: 30, c: '#D4AF37' },
+          { y: qrCenterY + 10, s: 44, c: '#F43F5E' },
+          { y: qrCenterY + 100, s: 32, c: '#E11D48' },
+          { y: qrCenterY + 180, s: 26, c: '#D4AF37' },
         ];
         rightHearts.forEach((h) => {
-          drawHeartIcon(boxX + boxSize + 60, h.y, h.s, h.c);
+          drawHeartIcon(boxX + boxSize + 52, h.y, h.s, h.c);
         });
 
-        // 9. Three Cheerful Steps Guide (Lebih Besar & Jelas)
-        const stepY = 1010;
-        const stepWidth = 270;
-        const stepGap = 25;
+        // 9. THREE CHEERFUL STEPS GUIDE (DIBUAT SANGAT BESAR & JELAS AGAR ORANG TUA MUDAH LIHAT!)
+        const stepY = 1005;
+        const stepWidth = 285;
+        const stepGap = 20;
         const startX = (canvas.width - (3 * stepWidth + 2 * stepGap)) / 2;
 
         const steps = [
-          { icon: '📱', title: '1. Buka Kamera HP', desc: 'Arahkan kamera ke barcode tanpa unduh aplikasi apapun' },
-          { icon: '📸', title: '2. Ambil / Pilih Foto', desc: 'Jepret foto selfie atau pilih foto kebersamaan Anda' },
-          { icon: '💖', title: '3. Masuk Album', desc: 'Foto tersimpan abadi di album kenangan pengantin!' },
+          { icon: '📱', title: '1. Buka Kamera HP', desc: 'Arahkan ke barcode' },
+          { icon: '📸', title: '2. Jepret Foto', desc: 'Foto bersama / selfie' },
+          { icon: '💖', title: '3. Masuk Album', desc: 'Tersimpan di album!' },
         ];
 
         steps.forEach((step, idx) => {
@@ -248,48 +278,46 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
 
           ctx.fillStyle = '#FFFFFF';
           ctx.strokeStyle = '#FBCFE8';
-          ctx.lineWidth = 2;
+          ctx.lineWidth = 3;
           ctx.beginPath();
-          ctx.roundRect(x, stepY, stepWidth, 175, 22);
+          ctx.roundRect(x, stepY, stepWidth, 195, 26);
           ctx.fill();
           ctx.stroke();
 
           // Icon
-          ctx.font = '36px sans-serif';
+          ctx.font = '48px sans-serif';
           ctx.textAlign = 'center';
-          ctx.fillText(step.icon, x + stepWidth / 2, stepY + 50);
+          ctx.fillText(step.icon, x + stepWidth / 2, stepY + 58);
 
-          // Step Title
+          // Step Title (SANGAT BESAR: 26px BOLD!)
           ctx.fillStyle = '#9F1239';
-          ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-          ctx.fillText(step.title, x + stepWidth / 2, stepY + 90);
+          ctx.font = 'bold 26px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          ctx.fillText(step.title, x + stepWidth / 2, stepY + 108);
 
-          // Step Desc
-          ctx.fillStyle = '#4B5563';
-          ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-          const words = step.desc.split(' ');
-          ctx.fillText(words.slice(0, 4).join(' '), x + stepWidth / 2, stepY + 122);
-          ctx.fillText(words.slice(4).join(' '), x + stepWidth / 2, stepY + 144);
+          // Step Desc (SANGAT BESAR & TEBAL: 22px!)
+          ctx.fillStyle = '#374151';
+          ctx.font = 'bold 21px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+          ctx.fillText(step.desc, x + stepWidth / 2, stepY + 148);
         });
 
-        // 10. Romantic Love Quote
+        // 10. Romantic Love Quote (BESAR & ELEGAN)
         ctx.fillStyle = '#0A261D';
-        ctx.font = 'italic 18px "Playfair Display", Georgia, serif';
+        ctx.font = 'bold italic 22px "Playfair Display", Georgia, serif';
         ctx.textAlign = 'center';
-        ctx.fillText('"Kehadiran dan senyuman Anda adalah kado terindah bagi hari bahagia kami"', canvas.width / 2, 1260);
+        ctx.fillText('"Kehadiran dan senyuman Anda adalah kado terindah bagi hari bahagia kami"', canvas.width / 2, 1270);
 
-        // 11. Direct URL Footer
-        ctx.fillStyle = '#6B7280';
-        ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.fillText('Atau buka langsung melalui browser HP Anda:', canvas.width / 2, 1340);
+        // 11. Direct URL Footer (BESAR: 26px!)
+        ctx.fillStyle = '#4B5563';
+        ctx.font = 'bold 20px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.fillText('Atau buka langsung link web:', canvas.width / 2, 1340);
 
         ctx.fillStyle = '#E11D48';
-        ctx.font = 'bold 18px monospace';
-        ctx.fillText(targetUrl, canvas.width / 2, 1375);
+        ctx.font = 'bold 26px monospace';
+        ctx.fillText(targetUrl, canvas.width / 2, 1380);
 
         ctx.fillStyle = '#9CA3AF';
-        ctx.font = '13px sans-serif';
-        ctx.fillText('Ukuran Standee 8,5 x 13 cm • Batas 5 Foto per Tamu • NikaHub Atelier', canvas.width / 2, 1490);
+        ctx.font = 'bold 15px sans-serif';
+        ctx.fillText('Ukuran Standee Meja: 8,5 × 13 cm • Batas 5 Foto per Tamu', canvas.width / 2, 1495);
 
         // 12. Trigger Download
         const pngUrl = canvas.toDataURL('image/png');
@@ -323,7 +351,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
                 Barcode Meja Tamu (Ukuran 8,5 × 13 cm)
               </h3>
               <p className="text-[11px] text-[#881337] mt-0.5 font-medium">
-                Alfarisyi & Maulidiyah • Siap Cetak untuk Akrilik Meja
+                Alfarisyi & Maulidiyah • Tulisan & Barcode Ekstra Besar (Jelas untuk Orang Tua)
               </p>
             </div>
           </div>
@@ -336,22 +364,22 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
         </div>
 
         {/* Modal Scrollable Body */}
-        <div className="p-3.5 sm:p-5 overflow-y-auto space-y-4 text-center">
-          {/* STAND CARD (Ukuran Proporsional 8,5 cm x 13 cm) */}
+        <div className="p-3 sm:p-4 overflow-y-auto space-y-3.5 text-center">
+          {/* STAND CARD (Ukuran Proporsional 8,5 cm x 13 cm - TULISAN BESAR) */}
           <div
             ref={printableCardRef}
-            className="relative mx-auto w-full max-w-[370px] aspect-[8.5/13] p-4 sm:p-5 rounded-[28px] bg-gradient-to-b from-[#FFFDF8] via-white to-[#FFF5F6] border-2 border-[#D4AF37]/60 shadow-xl overflow-hidden flex flex-col justify-between text-center"
+            className="relative mx-auto w-full max-w-[380px] aspect-[8.5/13] p-4 sm:p-5 rounded-[28px] bg-gradient-to-b from-[#FFFDF8] via-white to-[#FFF5F6] border-2 border-[#D4AF37]/60 shadow-xl overflow-hidden flex flex-col justify-between text-center"
           >
             {/* Corner Floral Motifs */}
-            <div className="absolute top-2 left-2 text-xl select-none opacity-80">🌸</div>
-            <div className="absolute top-2 right-2 text-xl select-none opacity-80">🌸</div>
-            <div className="absolute bottom-2 left-2 text-xl select-none opacity-80">🌿</div>
-            <div className="absolute bottom-2 right-2 text-xl select-none opacity-80">🌿</div>
+            <div className="absolute top-2 left-2 text-2xl select-none opacity-85">🌸</div>
+            <div className="absolute top-2 right-2 text-2xl select-none opacity-85">🌸</div>
+            <div className="absolute bottom-2 left-2 text-2xl select-none opacity-85">🌿</div>
+            <div className="absolute bottom-2 right-2 text-2xl select-none opacity-85">🌿</div>
 
             {/* Top Section: Photo + Big Names */}
             <div>
               {/* Couple Photo Avatar */}
-              <div className="relative inline-block mb-1.5">
+              <div className="relative inline-block mb-1">
                 <div className="w-16 h-16 sm:w-18 sm:h-18 rounded-full overflow-hidden border-2 border-[#D4AF37] shadow-md p-0.5 bg-white mx-auto">
                   <img
                     src={EVENT_INFO.coverImage}
@@ -364,70 +392,70 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
                 </div>
               </div>
 
-              {/* Big Names: Alfarisyi & Maulidiyah */}
+              {/* Big Names: Alfarisyi & Maulidiyah (FONT BESAR & TEBAL) */}
               <h2 className="font-serif font-bold text-2xl sm:text-3xl text-[#0A261D] leading-tight">
                 Alfarisyi & Maulidiyah
               </h2>
-              <p className="font-serif italic text-xs text-[#8C7355]">
+              <p className="font-serif font-bold text-xs sm:text-sm text-[#8C7355] mt-0.5">
                 {EVENT_INFO.eventDateText}
               </p>
 
-              {/* Big Headline */}
-              <div className="mt-1.5 px-2">
-                <h4 className="font-serif font-bold text-sm sm:text-base text-[#9F1239] leading-snug">
-                  "Abadikan Momen Manis Anda Bersama Kami!"
+              {/* Big Headline (BESAR & TEBAL) */}
+              <div className="mt-1.5 px-1">
+                <h4 className="font-serif font-extrabold text-base sm:text-lg text-[#9F1239] leading-tight">
+                  "Abadikan Momen Manis Anda!"
                 </h4>
-                <p className="text-[11px] text-gray-600 leading-tight mt-0.5">
-                  Scan Barcode di bawah untuk mengunggah foto Anda ✨
+                <p className="text-xs sm:text-sm font-bold text-gray-700 leading-tight mt-1">
+                  Scan Barcode di bawah dengan Kamera HP Anda ✨
                 </p>
               </div>
             </div>
 
-            {/* Middle Section: BIG QR CODE WITH DECORATIVE HEARTS ON SIDES */}
+            {/* Middle Section: EXTRA LARGE QR CODE WITH HEARTS ON SIDES */}
             <div className="relative my-2 flex items-center justify-center gap-2 sm:gap-3">
               {/* Left Side Hearts Column */}
-              <div className="flex flex-col items-center justify-center gap-2.5 select-none shrink-0">
-                <div className="w-7 h-7 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
-                  <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+              <div className="flex flex-col items-center justify-center gap-2 select-none shrink-0">
+                <div className="w-8 h-8 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4.5 h-4.5 fill-rose-500 text-rose-500" />
                 </div>
-                <div className="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shadow-2xs">
-                  <Heart className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />
+                <div className="w-7 h-7 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4 h-4 fill-[#D4AF37] text-[#D4AF37]" />
                 </div>
-                <div className="w-7 h-7 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center shadow-2xs">
-                  <Heart className="w-4 h-4 fill-[#E11D48] text-[#E11D48]" />
+                <div className="w-8 h-8 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4.5 h-4.5 fill-[#E11D48] text-[#E11D48]" />
                 </div>
-                <div className="w-5 h-5 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
-                  <Heart className="w-3 h-3 fill-rose-400 text-rose-400" />
+                <div className="w-6 h-6 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-400" />
                 </div>
               </div>
 
               {/* Center: BIG CLEAN QR CODE BOX */}
               <div className="relative p-2.5 sm:p-3 bg-white rounded-3xl shadow-xl border-2 border-rose-200/90 flex flex-col items-center">
                 {/* Top Badge Pin on QR */}
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3.5 py-0.5 rounded-full bg-[#E11D48] text-white border-2 border-white text-[10.5px] font-bold shadow-md whitespace-nowrap flex items-center gap-1.5">
-                  <Heart className="w-3 h-3 fill-white text-white" />
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3.5 py-0.5 rounded-full bg-[#E11D48] text-white border-2 border-white text-[11px] font-bold shadow-md whitespace-nowrap flex items-center gap-1.5">
+                  <Heart className="w-3.5 h-3.5 fill-white text-white" />
                   <span>Scan Barcode Kenangan</span>
                 </div>
 
                 <div ref={qrRef} className="p-1 bg-white rounded-2xl flex items-center justify-center">
                   <QRCodeSVG
                     value={targetUrl}
-                    size={188} // DIBESARKAN SESUAI PERMINTAAN USER!
+                    size={205} // DIBESARKAN AGAR SANGAT MUDAH DILIHAT DARI MEJA!
                     level="H"
                     fgColor="#E11D48" // Ruby Red
                     bgColor="#FFFFFF"
                     includeMargin={false}
                     imageSettings={{
                       src: heartCenterBadge,
-                      height: 46,
-                      width: 46,
+                      height: 50,
+                      width: 50,
                       excavate: true,
                     }}
                   />
                 </div>
 
                 {/* Couple Romance Tag */}
-                <div className="mt-1 flex items-center gap-1.5 text-[10.5px] font-serif font-bold text-[#881337]">
+                <div className="mt-1 flex items-center gap-1.5 text-xs font-serif font-bold text-[#881337]">
                   <span>💖</span>
                   <span>Ahmad Ferdi & Nur Thoifah</span>
                   <span>💖</span>
@@ -435,45 +463,45 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
               </div>
 
               {/* Right Side Hearts Column */}
-              <div className="flex flex-col items-center justify-center gap-2.5 select-none shrink-0">
-                <div className="w-7 h-7 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center shadow-2xs">
-                  <Heart className="w-4 h-4 fill-[#E11D48] text-[#E11D48]" />
+              <div className="flex flex-col items-center justify-center gap-2 select-none shrink-0">
+                <div className="w-8 h-8 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4.5 h-4.5 fill-[#E11D48] text-[#E11D48]" />
                 </div>
-                <div className="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shadow-2xs">
-                  <Heart className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />
+                <div className="w-7 h-7 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4 h-4 fill-[#D4AF37] text-[#D4AF37]" />
                 </div>
-                <div className="w-7 h-7 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
-                  <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                <div className="w-8 h-8 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4.5 h-4.5 fill-rose-500 text-rose-500" />
                 </div>
-                <div className="w-5 h-5 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
-                  <Heart className="w-3 h-3 fill-rose-400 text-rose-400" />
+                <div className="w-6 h-6 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-3.5 h-3.5 fill-rose-400 text-rose-400" />
                 </div>
               </div>
             </div>
 
-            {/* Bottom Section: 3 Steps Guide (Besar & Jelas) */}
+            {/* Bottom Section: 3 Steps Guide (BESAR & TEBAL) */}
             <div>
               <div className="grid grid-cols-3 gap-1.5 pt-2 border-t border-rose-200/60 text-left">
-                <div className="p-1.5 rounded-xl bg-white/95 border border-rose-100 text-center space-y-0.5 shadow-2xs">
-                  <div className="text-base">📱</div>
-                  <div className="text-[10px] font-bold text-[#0A261D]">Buka Kamera</div>
-                  <div className="text-[8.5px] text-gray-500 leading-tight">Arahkan ke QR</div>
+                <div className="p-1.5 sm:p-2 rounded-xl bg-white/95 border border-rose-100 text-center space-y-0.5 shadow-2xs">
+                  <div className="text-xl">📱</div>
+                  <div className="text-xs font-extrabold text-[#0A261D]">1. Buka Kamera</div>
+                  <div className="text-[10px] font-bold text-gray-600 leading-tight">Arahkan ke QR</div>
                 </div>
 
-                <div className="p-1.5 rounded-xl bg-white/95 border border-rose-100 text-center space-y-0.5 shadow-2xs">
-                  <div className="text-base">📸</div>
-                  <div className="text-[10px] font-bold text-[#0A261D]">Pilih / Foto</div>
-                  <div className="text-[8.5px] text-gray-500 leading-tight">Momen terbaik</div>
+                <div className="p-1.5 sm:p-2 rounded-xl bg-white/95 border border-rose-100 text-center space-y-0.5 shadow-2xs">
+                  <div className="text-xl">📸</div>
+                  <div className="text-xs font-extrabold text-[#0A261D]">2. Jepret Foto</div>
+                  <div className="text-[10px] font-bold text-gray-600 leading-tight">Foto bersama</div>
                 </div>
 
-                <div className="p-1.5 rounded-xl bg-white/95 border border-rose-100 text-center space-y-0.5 shadow-2xs">
-                  <div className="text-base">💖</div>
-                  <div className="text-[10px] font-bold text-[#0A261D]">Masuk Album</div>
-                  <div className="text-[8.5px] text-gray-500 leading-tight">Tersimpan abadi</div>
+                <div className="p-1.5 sm:p-2 rounded-xl bg-white/95 border border-rose-100 text-center space-y-0.5 shadow-2xs">
+                  <div className="text-xl">💖</div>
+                  <div className="text-xs font-extrabold text-[#0A261D]">3. Masuk Album</div>
+                  <div className="text-[10px] font-bold text-gray-600 leading-tight">Tersimpan abadi</div>
                 </div>
               </div>
 
-              <div className="mt-1 text-[9px] text-[#8C7355] font-semibold tracking-wider uppercase">
+              <div className="mt-1.5 text-[10px] text-[#8C7355] font-bold tracking-wider uppercase">
                 Ukuran Standee Meja: 8,5 × 13 cm
               </div>
             </div>
@@ -485,7 +513,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
               type="text"
               readOnly
               value={targetUrl}
-              className="flex-1 bg-transparent text-xs text-gray-600 px-3 truncate focus:outline-none font-mono"
+              className="flex-1 bg-transparent text-xs text-gray-700 px-3 truncate focus:outline-none font-mono font-bold"
             />
             <button
               onClick={handleCopyLink}
