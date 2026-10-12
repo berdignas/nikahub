@@ -298,12 +298,20 @@ export const CatalogView: React.FC<CatalogViewProps> = ({
         </div>
 
         {/* 4. PRODUCT & TALENT GRID */}
-        {filteredProducts.length === 0 ? (
+        {products.length === 0 ? (
+          <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300 p-8 my-6">
+            <Sparkles className="w-8 h-8 text-champagne-600 mx-auto mb-3" />
+            <h3 className="font-serif text-xl font-bold text-emerald-950">Katalog Belum Berisi Layanan</h3>
+            <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
+              Saat ini belum ada produk atau layanan yang ditayangkan. Tambahkan paket baru Anda melalui menu Admin Dashboard.
+            </p>
+          </div>
+        ) : filteredProducts.length === 0 ? (
           <div className="text-center py-20 bg-white rounded-3xl border border-dashed border-gray-300 p-8 my-6">
             <Sparkles className="w-8 h-8 text-champagne-600 mx-auto mb-3" />
             <h3 className="font-serif text-xl font-bold text-emerald-950">Layanan atau Talenta Tidak Ditemukan</h3>
             <p className="text-xs text-gray-500 mt-1 max-w-md mx-auto">
-              Tidak ada hasil yang sesuai dengan kata kunci "{searchQuery}". Coba gunakan kata kunci lain atau reset pilihan filter Anda.
+              {searchQuery ? `Tidak ada hasil yang sesuai dengan kata kunci "${searchQuery}". Coba gunakan kata kunci lain atau reset pilihan filter Anda.` : 'Tidak ada produk untuk filter yang dipilih.'}
             </p>
             <button 
               onClick={() => { setSearchQuery(''); setActiveSubCategory('all'); onSelectCategory('all'); }}

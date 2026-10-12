@@ -226,6 +226,493 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
     }
   };
 
+  // Shape & Frame Graphic Renderer (Supports 26+ Architectural, Luxury, Geometric & Romance Shapes)
+  const renderShapeGraphic = (el: CanvasElement) => {
+    const shapeType = el.shapeType || 'rectangle';
+    const strokeColor = el.borderColor || '#C2A676';
+    const fillColor = el.backgroundColor || 'transparent';
+    const strokeWidth = el.borderWidth !== undefined ? el.borderWidth : 2;
+    const strokeStyle = el.borderStyle || 'solid';
+    const strokeDasharray =
+      strokeStyle === 'dashed' ? '6,4' : strokeStyle === 'dotted' ? '2,3' : undefined;
+
+    const renderTextContent = (extraPadding = 'p-2') => {
+      if (!el.content) return null;
+      return (
+        <div
+          className={`relative z-10 text-center whitespace-pre-line pointer-events-none select-none ${extraPadding}`}
+          style={{
+            color: el.textColor || '#FAF9F5',
+            fontFamily: el.fontFamily || 'inherit',
+            fontSize: `${el.fontSize || 14}px`,
+            fontWeight: el.fontWeight || '600',
+            textAlign: el.textAlign || 'center',
+          }}
+        >
+          {el.content}
+        </div>
+      );
+    };
+
+    switch (shapeType) {
+      case 'arch': {
+        const radius = Math.min(Number(el.width) || 0, Number(el.height) || 0) / 2;
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor,
+              borderColor: strokeColor,
+              borderWidth: `${strokeWidth}px`,
+              borderStyle: strokeStyle,
+              borderRadius: `${radius}px ${radius}px 0 0`,
+            }}
+            className="w-full h-full flex items-center justify-center p-3 relative overflow-hidden"
+          >
+            {renderTextContent()}
+          </div>
+        );
+      }
+
+      case 'arch-double': {
+        const outerRadius = Math.min(Number(el.width) || 0, Number(el.height) || 0) / 2;
+        const innerRadius = Math.max(0, outerRadius - 6);
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor,
+              borderColor: strokeColor,
+              borderWidth: `${Math.max(1, strokeWidth)}px`,
+              borderStyle: strokeStyle,
+              borderRadius: `${outerRadius}px ${outerRadius}px 0 0`,
+              padding: '6px',
+            }}
+            className="w-full h-full relative"
+          >
+            <div
+              style={{
+                borderColor: strokeColor,
+                borderWidth: '1px',
+                borderStyle: strokeStyle,
+                borderRadius: `${innerRadius}px ${innerRadius}px 0 0`,
+              }}
+              className="w-full h-full flex items-center justify-center p-2 relative"
+            >
+              {renderTextContent()}
+            </div>
+          </div>
+        );
+      }
+
+      case 'arch-pointed':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 120" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <path
+                d="M 5 115 L 5 45 C 5 20, 30 5, 50 0 C 70 5, 95 20, 95 45 L 95 115 Z"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'arch-inverted': {
+        const radius = Math.min(Number(el.width) || 0, Number(el.height) || 0) / 2;
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor,
+              borderColor: strokeColor,
+              borderWidth: `${strokeWidth}px`,
+              borderStyle: strokeStyle,
+              borderRadius: `0 0 ${radius}px ${radius}px`,
+            }}
+            className="w-full h-full flex items-center justify-center p-3 relative overflow-hidden"
+          >
+            {renderTextContent()}
+          </div>
+        );
+      }
+
+      case 'frame-double':
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor,
+              borderColor: strokeColor,
+              borderWidth: `${Math.max(1, strokeWidth)}px`,
+              borderStyle: strokeStyle,
+              borderRadius: `${el.borderRadius}px`,
+              padding: '6px',
+            }}
+            className="w-full h-full relative"
+          >
+            <div
+              style={{
+                borderColor: strokeColor,
+                borderWidth: '1px',
+                borderStyle: strokeStyle,
+                borderRadius: `${Math.max(0, el.borderRadius - 4)}px`,
+              }}
+              className="w-full h-full flex items-center justify-center p-2"
+            >
+              {renderTextContent()}
+            </div>
+          </div>
+        );
+
+      case 'frame-corner-flourish':
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor,
+              borderColor: strokeColor,
+              borderWidth: `${strokeWidth}px`,
+              borderStyle: strokeStyle,
+              borderRadius: `${el.borderRadius}px`,
+            }}
+            className="w-full h-full relative flex items-center justify-center p-4"
+          >
+            <svg className="absolute top-1.5 left-1.5 w-5 h-5 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="1.6">
+              <path d="M 2 12 C 2 6, 6 2, 12 2 M 2 2 L 6 6" />
+            </svg>
+            <svg className="absolute top-1.5 right-1.5 w-5 h-5 rotate-90 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="1.6">
+              <path d="M 2 12 C 2 6, 6 2, 12 2 M 2 2 L 6 6" />
+            </svg>
+            <svg className="absolute bottom-1.5 left-1.5 w-5 h-5 -rotate-90 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="1.6">
+              <path d="M 2 12 C 2 6, 6 2, 12 2 M 2 2 L 6 6" />
+            </svg>
+            <svg className="absolute bottom-1.5 right-1.5 w-5 h-5 rotate-180 pointer-events-none" viewBox="0 0 24 24" fill="none" stroke={strokeColor} strokeWidth="1.6">
+              <path d="M 2 12 C 2 6, 6 2, 12 2 M 2 2 L 6 6" />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'frame-polaroid':
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor || '#FFFFFF',
+              borderColor: strokeColor,
+              borderWidth: `${Math.max(1, strokeWidth)}px`,
+              borderRadius: '8px',
+              boxShadow: '0 8px 24px rgba(0,0,0,0.18)',
+              padding: '10px 10px 32px 10px',
+            }}
+            className="w-full h-full flex flex-col items-center justify-between relative"
+          >
+            <div className="w-full flex-1 rounded bg-black/5 border border-black/10 flex items-center justify-center p-2 overflow-hidden">
+              <span className="text-[10px] text-black/40 italic">Area Foto</span>
+            </div>
+            <span
+              className="absolute bottom-2 text-center truncate max-w-[90%]"
+              style={{
+                color: el.textColor || '#333333',
+                fontFamily: el.fontFamily || 'inherit',
+                fontSize: `${Math.min(el.fontSize || 13, 14)}px`,
+                fontWeight: el.fontWeight || '600',
+              }}
+            >
+              {el.content || 'Foto Bersama'}
+            </span>
+          </div>
+        );
+
+      case 'frame-ticket':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <path
+                d="M 12 0 L 88 0 A 12 12 0 0 0 100 12 L 100 88 A 12 12 0 0 0 88 100 L 12 100 A 12 12 0 0 0 0 88 L 0 12 A 12 12 0 0 0 12 0 Z"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'frame-scallop':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <rect
+                x="2"
+                y="2"
+                width="96"
+                height="96"
+                rx="16"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray="5,3"
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'diamond':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <polygon
+                points="50,2 98,50 50,98 2,50"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'hexagon':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <polygon
+                points="25,2 75,2 98,50 75,98 25,98 2,50"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'octagon':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <polygon
+                points="20,2 80,2 98,20 98,80 80,98 20,98 2,80 2,20"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'circle':
+      case 'oval':
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor,
+              borderColor: strokeColor,
+              borderWidth: `${strokeWidth}px`,
+              borderStyle: strokeStyle,
+              borderRadius: '9999px',
+            }}
+            className="w-full h-full flex items-center justify-center p-3 relative overflow-hidden"
+          >
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'ring-double':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 60" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <ellipse cx="38" cy="30" rx="28" ry="24" fill={fillColor} stroke={strokeColor} strokeWidth={Math.max(1.5, strokeWidth)} vectorEffect="non-scaling-stroke" />
+              <ellipse cx="62" cy="30" rx="28" ry="24" fill={fillColor} stroke={strokeColor} strokeWidth={Math.max(1.5, strokeWidth)} strokeDasharray="3,2" vectorEffect="non-scaling-stroke" />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'monogram-seal':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <circle cx="50" cy="50" r="48" fill={fillColor || '#51583D'} stroke={strokeColor} strokeWidth={strokeWidth} vectorEffect="non-scaling-stroke" />
+              <circle cx="50" cy="50" r="40" fill="none" stroke={strokeColor} strokeWidth="1" strokeDasharray="2,2" vectorEffect="non-scaling-stroke" />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'ribbon-banner':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 36" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <path
+                d="M 0 0 L 15 18 L 0 36 L 100 36 L 85 18 L 100 0 Z"
+                fill={fillColor || '#C2A676'}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent('px-4')}
+          </div>
+        );
+
+      case 'heart':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 90" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <path
+                d="M 50 85 C 50 85, 5 55, 5 28 C 5 12, 18 2, 32 2 C 41 2, 47 7, 50 14 C 53 7, 59 2, 68 2 C 82 2, 95 12, 95 28 C 95 55, 50 85, 50 85 Z"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                strokeDasharray={strokeDasharray}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'star-sparkle':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <path
+                d="M 50 0 Q 50 50, 100 50 Q 50 50, 50 100 Q 50 50, 0 50 Q 50 50, 50 0 Z"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'star-8point':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <polygon
+                points="50,0 62,38 100,50 62,62 50,100 38,62 0,50 38,38"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'badge-flower':
+        return (
+          <div className="w-full h-full relative flex items-center justify-center">
+            <svg viewBox="0 0 100 100" preserveAspectRatio="none" className="w-full h-full absolute inset-0">
+              <path
+                d="M 50 5 C 60 5, 68 15, 78 12 C 87 10, 92 20, 97 29 C 102 38, 98 48, 98 50 C 98 52, 102 62, 97 71 C 92 80, 87 90, 78 88 C 68 85, 60 95, 50 95 C 40 95, 32 85, 22 88 C 13 90, 8 80, 3 71 C -2 62, 2 52, 2 50 C 2 48, -2 38, 3 29 C 8 20, 13 10, 22 12 C 32 15, 40 5, 50 5 Z"
+                fill={fillColor}
+                stroke={strokeColor}
+                strokeWidth={strokeWidth}
+                vectorEffect="non-scaling-stroke"
+              />
+            </svg>
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'pill':
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor,
+              borderColor: strokeColor,
+              borderWidth: `${strokeWidth}px`,
+              borderStyle: strokeStyle,
+              borderRadius: '9999px',
+            }}
+            className="w-full h-full flex items-center justify-center px-4 py-1"
+          >
+            {renderTextContent()}
+          </div>
+        );
+
+      case 'divider-line':
+        return (
+          <div className="w-full h-full flex items-center justify-center">
+            <div
+              style={{
+                width: '100%',
+                height: `${Math.max(1, strokeWidth || 2)}px`,
+                backgroundColor: strokeColor,
+              }}
+            />
+          </div>
+        );
+
+      case 'divider-diamond':
+        return (
+          <div className="w-full h-full flex items-center justify-center gap-2">
+            <div className="flex-1 h-[1px]" style={{ backgroundColor: strokeColor }} />
+            <div className="w-2 h-2 rotate-45 shrink-0" style={{ backgroundColor: strokeColor }} />
+            <div className="w-3.5 h-3.5 rotate-45 shrink-0 border" style={{ borderColor: strokeColor, backgroundColor: fillColor }} />
+            <div className="w-2 h-2 rotate-45 shrink-0" style={{ backgroundColor: strokeColor }} />
+            <div className="flex-1 h-[1px]" style={{ backgroundColor: strokeColor }} />
+          </div>
+        );
+
+      case 'divider-dots':
+        return (
+          <div className="w-full h-full flex items-center justify-center">
+            <div
+              className="w-full"
+              style={{
+                borderBottom: `${Math.max(2, strokeWidth)}px dotted ${strokeColor}`,
+              }}
+            />
+          </div>
+        );
+
+      case 'divider-flourish':
+        return (
+          <div className="w-full h-full flex items-center justify-center">
+            <svg viewBox="0 0 120 16" preserveAspectRatio="none" className="w-full h-full" fill="none" stroke={strokeColor} strokeWidth="1.2">
+              <path d="M 2 8 C 25 8, 35 15, 50 8 C 55 5, 57 2, 60 8 C 63 2, 65 5, 70 8 C 85 15, 95 8, 118 8" />
+              <circle cx="60" cy="8" r="2.5" fill={strokeColor} />
+            </svg>
+          </div>
+        );
+
+      case 'rectangle':
+      default:
+        return (
+          <div
+            style={{
+              backgroundColor: fillColor,
+              borderColor: strokeColor,
+              borderWidth: `${strokeWidth}px`,
+              borderStyle: strokeStyle,
+              borderRadius: `${el.borderRadius}px`,
+            }}
+            className="w-full h-full flex items-center justify-center p-3 whitespace-pre-line shadow-sm overflow-hidden"
+          >
+            {renderTextContent()}
+          </div>
+        );
+    }
+  };
+
   const getLoopClass = (loopType?: LoopAnimationType) => {
     if (!loopType || loopType === 'none') return '';
     switch (loopType) {
@@ -264,6 +751,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
   const [uploadStatus, setUploadStatus] = useState<string | null>(null);
 
   // Two-Finger Pinch to Zoom State
+  const [shapeFilterCategory, setShapeFilterCategory] = useState<'all' | 'arch' | 'frame' | 'geometric' | 'monogram' | 'divider'>('all');
   const [canvasZoom, setCanvasZoom] = useState<number>(1);
   const touchStartDistRef = useRef<number | null>(null);
   const touchStartZoomRef = useRef<number>(1);
@@ -1442,12 +1930,45 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
             </div>
           )}
 
-          {/* TAB 4: SHAPES & FRAMES */}
+          {/* TAB 4: SHAPES & FRAMES (26+ ARCHITECTURAL & WEDDING FRAMES) */}
           {activeTab === 'shapes' && (
-            <div>
-              <h3 className="font-serif font-bold text-sm text-[#E8D8BA] mb-3">Shape & Frame Arsitektur</h3>
-              <div className="space-y-2">
-                {SHAPE_PRESETS.map((shape, idx) => (
+            <div className="space-y-3">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h3 className="font-serif font-bold text-sm text-[#E8D8BA]">Bentuk, Bingkai & Divider</h3>
+                  <p className="text-[10px] text-[#A0A694]">Koleksi 26+ shape mewah khusus pernikahan</p>
+                </div>
+                <span className="text-[10px] px-2 py-0.5 rounded-full bg-[#C2A676]/20 text-[#E8D8BA] font-semibold">
+                  {SHAPE_PRESETS.filter((s) => shapeFilterCategory === 'all' || s.category === shapeFilterCategory).length} Bentuk
+                </span>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar text-[10px]">
+                {[
+                  { id: 'all', label: 'Semua' },
+                  { id: 'arch', label: 'Kubah' },
+                  { id: 'frame', label: 'Bingkai' },
+                  { id: 'geometric', label: 'Geometris' },
+                  { id: 'monogram', label: 'Simbol' },
+                  { id: 'divider', label: 'Garis' },
+                ].map((cat) => (
+                  <button
+                    key={cat.id}
+                    onClick={() => setShapeFilterCategory(cat.id as any)}
+                    className={`px-2.5 py-1 rounded-lg font-semibold shrink-0 transition ${
+                      shapeFilterCategory === cat.id
+                        ? 'bg-[#C2A676] text-[#1E2218] shadow'
+                        : 'bg-white/5 hover:bg-white/10 text-[#A0A694]'
+                    }`}
+                  >
+                    {cat.label}
+                  </button>
+                ))}
+              </div>
+
+              <div className="space-y-2 max-h-[520px] overflow-y-auto pr-1">
+                {SHAPE_PRESETS.filter((s) => shapeFilterCategory === 'all' || s.category === shapeFilterCategory).map((shape, idx) => (
                   <button
                     key={idx}
                     onClick={() =>
@@ -1460,26 +1981,50 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                         borderRadius: shape.borderRadius,
                         borderWidth: shape.borderWidth,
                         borderColor: shape.borderColor,
+                        borderStyle: shape.borderStyle || 'solid',
                         backgroundColor: shape.backgroundColor,
+                        content: shape.content || '',
+                        textColor: shape.textColor,
+                        fontFamily: shape.fontFamily,
+                        fontSize: shape.fontSize,
+                        fontWeight: shape.fontWeight,
                       })
                     }
-                    className="w-full p-2.5 rounded-xl bg-white/5 hover:bg-[#51583D]/40 border border-[#C2A676]/30 text-left text-xs font-medium transition flex items-center justify-between"
+                    className="w-full p-2.5 rounded-xl bg-white/5 hover:bg-[#51583D]/40 border border-[#C2A676]/30 text-left transition flex items-center justify-between group"
                   >
-                    <span>{shape.name}</span>
-                    <Plus className="w-3.5 h-3.5 text-[#C2A676]" />
+                    <div className="flex items-center gap-2.5">
+                      <div className="w-8 h-8 rounded-lg bg-black/40 border border-white/10 flex items-center justify-center shrink-0 p-1">
+                        <span className="text-[11px] text-[#C2A676] font-mono">
+                          {shape.shapeType === 'arch' || shape.shapeType === 'arch-double' || shape.shapeType === 'arch-pointed'
+                            ? '∩'
+                            : shape.shapeType === 'circle' || shape.shapeType === 'oval'
+                            ? '○'
+                            : shape.shapeType === 'heart'
+                            ? '♥'
+                            : shape.shapeType.includes('divider')
+                            ? '—'
+                            : '▢'}
+                        </span>
+                      </div>
+                      <div>
+                        <span className="block text-xs font-semibold text-[#FAF9F5] group-hover:text-[#E8D8BA]">{shape.name}</span>
+                        <span className="text-[9px] text-[#A0A694] font-mono">{shape.width} × {shape.height}px</span>
+                      </div>
+                    </div>
+                    <Plus className="w-3.5 h-3.5 text-[#C2A676] group-hover:scale-110 transition" />
                   </button>
                 ))}
               </div>
             </div>
           )}
 
-          {/* TAB 5: ANIMATION STUDIO & PRESETS */}
+          {/* TAB 5: ANIMATIONS */}
           {activeTab === 'animation' && (
             <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <h3 className="font-serif font-bold text-sm text-[#E8D8BA]">Studio Animasi & Gerakan</h3>
-                  <p className="text-[10px] text-[#A0A694]">Atur efek masuk, putaran, dan partikel suasana</p>
+                  <h3 className="font-serif font-bold text-sm text-[#E8D8BA]">Animasi & Gerakan</h3>
+                  <p className="text-[10px] text-[#A0A694]">Entrance dan loop gerak dinamis</p>
                 </div>
                 <button
                   onClick={triggerPreviewAnimation}
@@ -2206,24 +2751,10 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                                 </div>
                               )}
 
-                              {/* SHAPE ELEMENT */}
+                              {/* SHAPE ELEMENT (26+ ARCHITECTURAL, LUXURY & GEOMETRIC SHAPES) */}
                               {el.type === 'shape' && (
-                                <div
-                                  style={{
-                                    backgroundColor: el.backgroundColor,
-                                    borderColor: el.borderColor,
-                                    borderWidth: `${el.borderWidth}px`,
-                                    borderStyle: el.borderStyle,
-                                    borderRadius: `${el.borderRadius}px`,
-                                    color: el.textColor,
-                                    fontFamily: el.fontFamily,
-                                    fontSize: `${el.fontSize}px`,
-                                    fontWeight: el.fontWeight,
-                                    textAlign: el.textAlign,
-                                  }}
-                                  className="w-full h-full flex items-center justify-center p-3 whitespace-pre-line shadow-sm pointer-events-none select-none"
-                                >
-                                  {el.content}
+                                <div className="w-full h-full pointer-events-none select-none">
+                                  {renderShapeGraphic(el)}
                                 </div>
                               )}
 
@@ -2818,7 +3349,7 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
 
                 {/* === D. PENGATURAN KHUSUS: BENTUK & KOTAK / SHAPE === */}
                 {isShape && (
-                  <div className="space-y-4">
+                  <div className="space-y-3.5">
                     <div>
                       <label className="block text-[11px] font-semibold text-[#E8D8BA] mb-1">Nama Bentuk</label>
                       <input
@@ -2828,30 +3359,134 @@ export const InvitationStudio: React.FC<InvitationStudioProps> = ({
                         className="w-full px-3 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
                       />
                     </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-[#A0A694]">Warna Latar</span>
-                      <input
-                        type="color"
-                        value={selectedElement.backgroundColor.startsWith('#') ? selectedElement.backgroundColor : '#ffffff'}
-                        onChange={(e) => updateSelectedElement({ backgroundColor: e.target.value })}
-                        className="w-7 h-7 rounded border-none cursor-pointer bg-transparent"
-                      />
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] text-[#A0A694]">Warna Garis</span>
-                      <input
-                        type="color"
-                        value={selectedElement.borderColor.startsWith('#') ? selectedElement.borderColor : '#C2A676'}
-                        onChange={(e) => updateSelectedElement({ borderColor: e.target.value })}
-                        className="w-7 h-7 rounded border-none cursor-pointer bg-transparent"
-                      />
-                    </div>
+
+                    {/* Model Bentuk Dropdown */}
                     <div>
-                      <label className="block text-[10px] text-[#A0A694] mb-1">Radius Sudut ({selectedElement.borderRadius}px)</label>
+                      <label className="block text-[10px] text-[#A0A694] mb-1 font-medium">Model Bentuk / Frame</label>
+                      <select
+                        value={selectedElement.shapeType || 'rectangle'}
+                        onChange={(e) => updateSelectedElement({ shapeType: e.target.value as any })}
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
+                      >
+                        <optgroup label="Kubah & Lengkung">
+                          <option value="arch">Arch Kubah Klasik</option>
+                          <option value="arch-double">Kubah Dobel Emas</option>
+                          <option value="arch-pointed">Kubah Gotik Lancip</option>
+                          <option value="arch-inverted">Lengkung Kubah Bawah</option>
+                        </optgroup>
+                        <optgroup label="Bingkai Mewah & Kartu">
+                          <option value="frame-corner-flourish">Bingkai Ornamen Sudut</option>
+                          <option value="frame-double">Bingkai Dobel Ningrat</option>
+                          <option value="frame-polaroid">Bingkai Foto Polaroid</option>
+                          <option value="frame-ticket">Kartu Tiket Undangan</option>
+                          <option value="frame-scallop">Bingkai Tepi Gelombang</option>
+                          <option value="rectangle">Kartu Persegi Rounded</option>
+                        </optgroup>
+                        <optgroup label="Bentuk Geometris">
+                          <option value="diamond">Belah Ketupat Emas</option>
+                          <option value="hexagon">Heksagon Modern</option>
+                          <option value="octagon">Oktagon Permata Zamrud</option>
+                          <option value="circle">Lingkaran Emas</option>
+                          <option value="oval">Cermin Oval</option>
+                        </optgroup>
+                        <optgroup label="Monogram & Simbol">
+                          <option value="ring-double">Cincin Pengantin Dobel</option>
+                          <option value="monogram-seal">Wax Seal Stempel Lilin</option>
+                          <option value="ribbon-banner">Pita Spanduk Judul</option>
+                          <option value="heart">Bentuk Hati Romantis</option>
+                          <option value="star-sparkle">Bintang Kilau 4 Sudut</option>
+                          <option value="star-8point">Bintang 8 Penjuru</option>
+                          <option value="badge-flower">Badge Bunga 8 Kelopak</option>
+                          <option value="pill">Pill Badge Kapsul</option>
+                        </optgroup>
+                        <optgroup label="Garis Pembatas (Divider)">
+                          <option value="divider-line">Pembatas Garis Lurus</option>
+                          <option value="divider-diamond">Pembatas Aksen Berlian</option>
+                          <option value="divider-dots">Pembatas Titik Mutiara</option>
+                          <option value="divider-flourish">Pembatas Kaligrafi Swash</option>
+                        </optgroup>
+                      </select>
+                    </div>
+
+                    {/* Teks / Konten di dalam Bentuk */}
+                    <div>
+                      <label className="block text-[10px] text-[#A0A694] mb-1 font-medium">Teks / Monogram Dalam Bentuk</label>
+                      <input
+                        type="text"
+                        value={selectedElement.content || ''}
+                        onChange={(e) => updateSelectedElement({ content: e.target.value })}
+                        placeholder="Contoh: D & S atau Save The Date"
+                        className="w-full px-2.5 py-1.5 rounded-lg bg-white/5 border border-white/10 text-xs text-[#FAF9F5] focus:outline-none focus:border-[#C2A676]"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-2 gap-2 pt-1">
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
+                        <span className="text-[10px] text-[#A0A694]">Warna Latar</span>
+                        <input
+                          type="color"
+                          value={selectedElement.backgroundColor.startsWith('#') ? selectedElement.backgroundColor : '#ffffff'}
+                          onChange={(e) => updateSelectedElement({ backgroundColor: e.target.value })}
+                          className="w-6 h-6 rounded border-none cursor-pointer bg-transparent"
+                        />
+                      </div>
+                      <div className="flex items-center justify-between p-2 rounded-lg bg-white/5 border border-white/10">
+                        <span className="text-[10px] text-[#A0A694]">Warna Garis</span>
+                        <input
+                          type="color"
+                          value={selectedElement.borderColor.startsWith('#') ? selectedElement.borderColor : '#C2A676'}
+                          onChange={(e) => updateSelectedElement({ borderColor: e.target.value })}
+                          className="w-6 h-6 rounded border-none cursor-pointer bg-transparent"
+                        />
+                      </div>
+                    </div>
+
+                    {/* Ketebalan Garis */}
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] text-[#A0A694] mb-1">
+                        <span>Ketebalan Garis</span>
+                        <span className="font-mono text-[#E8D8BA] font-semibold">{selectedElement.borderWidth}px</span>
+                      </div>
                       <input
                         type="range"
                         min="0"
-                        max="120"
+                        max="12"
+                        value={selectedElement.borderWidth}
+                        onChange={(e) => updateSelectedElement({ borderWidth: Number(e.target.value) })}
+                        className="w-full accent-[#C2A676]"
+                      />
+                    </div>
+
+                    {/* Gaya Garis (Solid, Dashed, Dotted) */}
+                    <div>
+                      <label className="block text-[10px] text-[#A0A694] mb-1 font-medium">Gaya Garis</label>
+                      <div className="grid grid-cols-3 gap-1">
+                        {(['solid', 'dashed', 'dotted'] as const).map((style) => (
+                          <button
+                            key={style}
+                            onClick={() => updateSelectedElement({ borderStyle: style })}
+                            className={`py-1 rounded text-[10px] capitalize font-medium transition ${
+                              selectedElement.borderStyle === style
+                                ? 'bg-[#C2A676] text-[#1E2218] font-bold'
+                                : 'bg-white/5 border border-white/10 text-[#A0A694]'
+                            }`}
+                          >
+                            {style}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Radius Sudut */}
+                    <div>
+                      <div className="flex items-center justify-between text-[10px] text-[#A0A694] mb-1">
+                        <span>Radius Sudut</span>
+                        <span className="font-mono text-[#E8D8BA] font-semibold">{selectedElement.borderRadius}px</span>
+                      </div>
+                      <input
+                        type="range"
+                        min="0"
+                        max="160"
                         value={selectedElement.borderRadius}
                         onChange={(e) => updateSelectedElement({ borderRadius: Number(e.target.value) })}
                         className="w-full accent-[#C2A676]"

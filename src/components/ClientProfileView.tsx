@@ -35,7 +35,7 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({
 
   const wishlistProducts = allProducts.filter(p => wishlistIds.includes(p.id));
 
-  // Real & Mock Orders
+  // Real Orders from Supabase
   const [realOrders, setRealOrders] = useState<any[]>([]);
 
   React.useEffect(() => {
@@ -56,26 +56,7 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({
     }
   }, [user?.email]);
 
-  const mockOrders = [
-    {
-      id: 'ORD-202610-001',
-      date: '10 Okt 2026',
-      productName: 'Paket Tenda VIP 500 Pax',
-      status: 'Menunggu Pembayaran',
-      price: 18500000,
-      image: "https://images.unsplash.com/photo-1519225421980-715cb0215aed?auto=format&fit=crop&w=800&q=80"
-    },
-    {
-      id: 'ORD-202511-442',
-      date: '15 Nov 2025',
-      productName: 'Paket Intimate Lamaran',
-      status: 'Selesai',
-      price: 4500000,
-      image: "https://images.unsplash.com/photo-1464366400600-7168b8af9bc3?auto=format&fit=crop&w=800&q=80"
-    }
-  ];
-
-  const displayOrders = realOrders.length > 0 ? realOrders : mockOrders;
+  const displayOrders = realOrders;
 
   return (
     <div className="pt-24 pb-20 min-h-screen bg-[#FAF9F5] text-emerald-950 font-sans">
@@ -187,37 +168,50 @@ export const ClientProfileView: React.FC<ClientProfileViewProps> = ({
               {activeTab === 'orders' && (
                 <div>
                   <h2 className="font-serif text-2xl font-bold text-emerald-950 mb-6">Riwayat Pesanan</h2>
-                  <div className="space-y-4">
-                    {displayOrders.map((order, idx) => (
-                      <div key={idx} className="p-4 sm:p-5 rounded-2xl border border-emerald-950/10 hover:border-champagne-400/50 transition-colors bg-white flex flex-col sm:flex-row gap-5">
-                        <img src={order.image} alt={order.productName} className="w-full sm:w-32 h-32 object-cover rounded-xl" />
-                        <div className="flex-1 flex flex-col justify-between">
-                          <div>
-                            <div className="flex items-center justify-between mb-2">
-                              <span className="text-[10px] font-bold text-emerald-950/50 uppercase tracking-widest">{order.id}</span>
-                              <span className="text-[10px] font-bold text-emerald-950/50">{order.date}</span>
+                  {displayOrders.length === 0 ? (
+                    <div className="text-center py-12 bg-white rounded-2xl border border-emerald-950/10">
+                      <ShoppingBag className="w-12 h-12 text-emerald-950/20 mx-auto mb-3" />
+                      <p className="text-emerald-950/60 font-medium text-sm">Belum ada riwayat pesanan.</p>
+                      <button 
+                        onClick={onNavigateToCatalog}
+                        className="mt-4 px-5 py-2.5 rounded-full bg-emerald-950 text-sand text-xs font-semibold hover:bg-emerald-900 transition-colors shadow-sm cursor-pointer"
+                      >
+                        Jelajahi Katalog Layanan
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      {displayOrders.map((order, idx) => (
+                        <div key={idx} className="p-4 sm:p-5 rounded-2xl border border-emerald-950/10 hover:border-champagne-400/50 transition-colors bg-white flex flex-col sm:flex-row gap-5">
+                          <img src={order.image} alt={order.productName} className="w-full sm:w-32 h-32 object-cover rounded-xl" />
+                          <div className="flex-1 flex flex-col justify-between">
+                            <div>
+                              <div className="flex items-center justify-between mb-2">
+                                <span className="text-[10px] font-bold text-emerald-950/50 uppercase tracking-widest">{order.id}</span>
+                                <span className="text-[10px] font-bold text-emerald-950/50">{order.date}</span>
+                              </div>
+                              <h4 className="font-bold text-emerald-950 text-base mb-2">{order.productName}</h4>
+                              <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
+                                order.status === 'Selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
+                              }`}>
+                                {order.status === 'Selesai' ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
+                                {order.status}
+                              </div>
                             </div>
-                            <h4 className="font-bold text-emerald-950 text-base mb-2">{order.productName}</h4>
-                            <div className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
-                              order.status === 'Selesai' ? 'bg-emerald-100 text-emerald-700' : 'bg-amber-100 text-amber-700'
-                            }`}>
-                              {order.status === 'Selesai' ? <CheckCircle2 className="w-3 h-3" /> : <Clock className="w-3 h-3" />}
-                              {order.status}
+                            <div className="mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-gray-100 flex items-center justify-between sm:justify-end gap-4">
+                              <div className="text-right text-left sm:text-right">
+                                <span className="block text-[10px] text-emerald-950/60 font-bold uppercase mb-0.5">Total Pembayaran</span>
+                                <span className="font-bold text-emerald-950">Rp {(order.price / 1000000).toFixed(1)} Jt</span>
+                              </div>
+                              <button className="px-5 py-2.5 rounded-xl bg-emerald-950 text-sand text-[10px] font-bold uppercase hover:bg-emerald-900 transition-colors shadow-sm">
+                                Detail
+                              </button>
                             </div>
-                          </div>
-                          <div className="mt-4 sm:mt-0 pt-4 sm:pt-0 border-t sm:border-0 border-gray-100 flex items-center justify-between sm:justify-end gap-4">
-                            <div className="text-right text-left sm:text-right">
-                              <span className="block text-[10px] text-emerald-950/60 font-bold uppercase mb-0.5">Total Pembayaran</span>
-                              <span className="font-bold text-emerald-950">Rp {(order.price / 1000000).toFixed(1)} Jt</span>
-                            </div>
-                            <button className="px-5 py-2.5 rounded-xl bg-emerald-950 text-sand text-[10px] font-bold uppercase hover:bg-emerald-900 transition-colors shadow-sm">
-                              Detail
-                            </button>
                           </div>
                         </div>
-                      </div>
-                    ))}
-                  </div>
+                      ))}
+                    </div>
+                  )}
                 </div>
               )}
 

@@ -95,3 +95,53 @@ export async function compressImageFile(file: File): Promise<string> {
   });
   return result.dataUrl;
 }
+
+export interface StorageStats {
+  totalBytes: number;
+  totalPhotos: number;
+  usedMb: number;
+  maxMb: number;
+  maxGb: number;
+  percentage: number;
+  isFull: boolean;
+  isNearLimit: boolean;
+}
+
+export function calculateStorageStats(albums: GuestAlbum[], maxGb: number = 1.0): StorageStats {
+  let totalBytes = 0;
+  let totalPhotos = 0;
+
+  for (const album of albums) {
+    if (album.photos) {
+      for (const p of album.photos) {
+        totalPhotos++;
+        if (p.imageUrl?.startsWith('data:')) {
+          totalBytes += Math.round((p.imageUrl.length * 3) / 4);
+        } else {
+          totalBytes += 600 * 1024;
+        }
+      }
+    }
+    if (album.voiceNoteUrl?.startsWith('data:')) {
+      totalBytes += Math.round((album.voiceNoteUrl.length * 3) / 4);
+    }
+  }
+
+  const maxBytes = maxGb * 1024 * 1024 * 1024;
+  const usedMb = totalBytes / (1024 * 1024);
+  const maxMb = maxGb * 1024;
+  const percentage = Math.min(100, Math.round((totalBytes / maxBytes) * 100));
+  const isFull = totalBytes >= maxBytes;
+  const isNearLimit = percentage >= 85;
+
+  return {
+    totalBytes,
+    totalPhotos,
+    usedMb: Number(usedMb.toFixed(1)),
+    maxMb,
+    maxGb,
+    percentage,
+    isFull,
+    isNearLimit,
+  };
+}

@@ -1,16 +1,18 @@
 import React, { useState, useEffect } from 'react';
-import { ShieldCheck, Sparkles, Maximize2, ChevronLeft, ChevronRight, Pause, Play } from 'lucide-react';
-import { MAX_PHOTO_PER_DEVICE } from '../utils/deviceStorage';
+import { ShieldCheck, Sparkles, Maximize2, ChevronLeft, ChevronRight, Pause, Play, Database, AlertTriangle, AlertCircle } from 'lucide-react';
+import { MAX_PHOTO_PER_DEVICE, StorageStats } from '../utils/deviceStorage';
 import { EVENT_INFO } from '../data/initialPhotos';
 
 interface HeaderProps {
   uploadedCount: number;
   onOpenCouplePhoto: () => void;
+  storageStats?: StorageStats;
 }
 
 export const Header: React.FC<HeaderProps> = ({
   uploadedCount,
   onOpenCouplePhoto,
+  storageStats,
 }) => {
   const remaining = Math.max(0, MAX_PHOTO_PER_DEVICE - uploadedCount);
   const isFull = remaining === 0;
@@ -178,44 +180,102 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Quota Indicator Bar (Maksimal 5 Foto Per Tamu) */}
-        <div className="max-w-md mx-auto p-4 sm:p-5 rounded-3xl bg-white border border-[#E6CA92]/50 shadow-xl text-left">
-          <div className="flex items-center justify-between text-xs font-sans mb-2.5">
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#C5A880]" />
-              <span className="font-bold text-[#0A261D]">Jatah Kuota Foto Perangkat:</span>
+        {/* Dual Dashboard Bar: 1.0 GB Cloud Storage + 5-Foto Device Quota */}
+        <div className="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-2">
+          {/* 1. Global Album Cloud Storage Limit (1.0 GB) */}
+          <div className={`p-4 rounded-3xl bg-white border shadow-xl text-left transition-all ${
+            storageStats?.isFull 
+              ? 'border-red-400 bg-red-50/40 ring-2 ring-red-400/40' 
+              : storageStats?.isNearLimit 
+              ? 'border-amber-400/80 bg-amber-50/30' 
+              : 'border-[#E6CA92]/50'
+          }`}>
+            <div className="flex items-center justify-between text-xs font-sans mb-2">
+              <div className="flex items-center gap-2">
+                <Database className={`w-4 h-4 ${storageStats?.isFull ? 'text-red-500' : 'text-[#C5A880]'}`} />
+                <span className="font-bold text-[#0A261D]">Penyimpanan Cloud:</span>
+              </div>
+              <span className={`font-bold px-2 py-0.5 rounded-full text-[11px] ${
+                storageStats?.isFull
+                  ? 'bg-red-100 text-red-700 font-extrabold animate-pulse'
+                  : storageStats?.isNearLimit
+                  ? 'bg-amber-100 text-amber-800'
+                  : 'bg-[#FAF9F5] text-[#0A261D] border border-[#E6CA92]/40'
+              }`}>
+                {storageStats ? `${storageStats.percentage}%` : '0%'} ({storageStats?.usedMb || 0} MB / {storageStats?.maxGb || 1} GB)
+              </span>
             </div>
-            <span className={`font-bold px-2 py-0.5 rounded-full text-xs ${isFull ? 'bg-amber-100 text-amber-800' : 'bg-[#FAF9F5] text-[#0A261D] border border-[#E6CA92]/40'}`}>
-              {uploadedCount} / {MAX_PHOTO_PER_DEVICE} Foto
-            </span>
+
+            {/* Continuous Progress Bar with % */}
+            <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden mb-2 p-0.5 border border-gray-100">
+              <div
+                className={`h-full rounded-full transition-all duration-500 ${
+                  storageStats?.isFull
+                    ? 'bg-gradient-to-r from-red-500 to-rose-600'
+                    : storageStats?.isNearLimit
+                    ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+                    : 'bg-gradient-to-r from-[#0A261D] via-[#164E3D] to-[#E6CA92]'
+                }`}
+                style={{ width: `${Math.max(storageStats?.percentage ? 2 : 0, storageStats?.percentage || 0)}%` }}
+              />
+            </div>
+
+            <div className="flex justify-between items-center text-[11px] font-sans">
+              <span className="text-gray-500">
+                {storageStats?.isFull ? (
+                  <span className="text-red-600 font-bold flex items-center gap-1">
+                    <AlertTriangle className="w-3 h-3 shrink-0" />
+                    Kapasitas Penuh (1.0 GB)!
+                  </span>
+                ) : (
+                  <span>Tersedia <strong>{storageStats ? Math.max(0, storageStats.maxMb - storageStats.usedMb).toFixed(0) : 1024} MB</strong> lagi</span>
+                )}
+              </span>
+              <span className="text-[10px] text-[#C5A880] font-semibold">
+                {storageStats?.totalPhotos || 0} Foto Tersimpan
+              </span>
+            </div>
           </div>
 
-          {/* Progress Bar with 5 segments */}
-          <div className="grid grid-cols-5 gap-1.5 h-2.5 w-full mb-2.5">
-            {[1, 2, 3, 4, 5].map((slot) => {
-              const isFilled = slot <= uploadedCount;
-              return (
-                <div
-                  key={slot}
-                  className={`h-full rounded-full transition-all duration-300 ${
-                    isFilled
-                      ? 'bg-gradient-to-r from-[#0A261D] to-[#164E3D] shadow-xs'
-                      : 'bg-gray-100'
-                  }`}
-                />
-              );
-            })}
-          </div>
+          {/* 2. Device Quota Bar (Maksimal 5 Foto Per Tamu) */}
+          <div className="p-4 rounded-3xl bg-white border border-[#E6CA92]/50 shadow-xl text-left">
+            <div className="flex items-center justify-between text-xs font-sans mb-2">
+              <div className="flex items-center gap-2">
+                <ShieldCheck className="w-4 h-4 text-[#C5A880]" />
+                <span className="font-bold text-[#0A261D]">Jatah Kuota Anda:</span>
+              </div>
+              <span className={`font-bold px-2 py-0.5 rounded-full text-[11px] ${isFull ? 'bg-amber-100 text-amber-800' : 'bg-[#FAF9F5] text-[#0A261D] border border-[#E6CA92]/40'}`}>
+                {uploadedCount} / {MAX_PHOTO_PER_DEVICE} Foto
+              </span>
+            </div>
 
-          <div className="flex justify-between items-center text-[11px] font-sans text-gray-500">
-            <span>
-              {isFull ? (
-                <span className="text-amber-700 font-semibold">✨ Kuota Anda telah lengkap (5/5 foto)!</span>
-              ) : (
-                <span>Tersisa <strong className="text-[#0A261D] font-bold">{remaining} foto</strong> lagi dari perangkat ini</span>
-              )}
-            </span>
-            <span className="text-[10px] text-gray-400 font-medium">Batas 5 foto/tamu</span>
+            {/* Progress Bar with 5 segments */}
+            <div className="grid grid-cols-5 gap-1.5 h-2.5 w-full mb-2">
+              {[1, 2, 3, 4, 5].map((slot) => {
+                const isFilled = slot <= uploadedCount;
+                return (
+                  <div
+                    key={slot}
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      isFilled
+                        ? 'bg-gradient-to-r from-[#0A261D] to-[#164E3D] shadow-xs'
+                        : 'bg-gray-100'
+                    }`}
+                  />
+                );
+              })}
+            </div>
+
+            <div className="flex justify-between items-center text-[11px] font-sans text-gray-500">
+              <span>
+                {isFull ? (
+                  <span className="text-amber-700 font-semibold">✨ Kuota 5/5 lengkap!</span>
+                ) : (
+                  <span>Tersisa <strong className="text-[#0A261D] font-bold">{remaining} foto</strong> lagi</span>
+                )}
+              </span>
+              <span className="text-[10px] text-gray-400 font-medium">Batas 5 foto/tamu</span>
+            </div>
           </div>
         </div>
       </div>

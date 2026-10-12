@@ -76,11 +76,31 @@ export type ShapeType =
   | 'rectangle'
   | 'circle'
   | 'arch'
+  | 'arch-double'
+  | 'arch-pointed'
+  | 'arch-inverted'
   | 'oval'
+  | 'diamond'
+  | 'hexagon'
+  | 'octagon'
   | 'pill'
   | 'frame'
+  | 'frame-double'
+  | 'frame-corner-flourish'
+  | 'frame-polaroid'
+  | 'frame-ticket'
+  | 'frame-scallop'
+  | 'monogram-seal'
+  | 'ring-double'
+  | 'ribbon-banner'
+  | 'heart'
+  | 'star-sparkle'
+  | 'star-8point'
+  | 'badge-flower'
   | 'divider-line'
-  | 'monogram-seal';
+  | 'divider-diamond'
+  | 'divider-dots'
+  | 'divider-flourish';
 
 export interface CanvasElement {
   id: string;

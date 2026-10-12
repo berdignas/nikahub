@@ -15,6 +15,7 @@ const supabase = createClient(url, key);
 
 async function deleteDummy() {
   const dummyIds = [
+    'vintage-01',
     'prod-tenda-maroko-vip',
     'prod-catering-sultan-500',
     'prod-mua-signature-glam',

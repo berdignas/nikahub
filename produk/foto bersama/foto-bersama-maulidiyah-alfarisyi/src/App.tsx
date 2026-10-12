@@ -16,6 +16,7 @@ import {
   saveAlbums,
   getOrCreateDeviceId,
   MAX_PHOTO_PER_DEVICE,
+  calculateStorageStats,
 } from './utils/deviceStorage';
 import {
   supabase,
@@ -253,6 +254,9 @@ export function App() {
   // Flat photo list for TV Slideshow & Download All
   const allPhotos: PhotoMoment[] = albums.flatMap((a) => a.photos || []);
 
+  // Calculate 1.0 GB Cloud Storage stats & limits
+  const storageStats = calculateStorageStats(albums, 1.0);
+
   return (
     <div className="min-h-screen bg-[#FAF9F5] text-[#0A261D] flex flex-col font-sans selection:bg-[#E6CA92]/40 selection:text-[#0A261D]">
       {/* Top Navigation */}
@@ -263,10 +267,11 @@ export function App() {
         onExitAdminMode={handleLockAdmin}
       />
 
-      {/* Hero Header with FOTO UTAMA MEMPELAI on top */}
+      {/* Hero Header with FOTO UTAMA MEMPELAI and Storage Stats */}
       <Header
         uploadedCount={uploadedCount}
         onOpenCouplePhoto={() => setIsCouplePhotoOpen(true)}
+        storageStats={storageStats}
       />
 
       {/* Main Editorial Guest Albums Collage Grid */}
@@ -299,10 +304,18 @@ export function App() {
 
           <button
             onClick={() => setIsUploadOpen(true)}
-            className="flex-[2] py-3 px-4 rounded-2xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] text-xs font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer"
+            className={`flex-[2] py-3 px-4 rounded-2xl text-[#FAF9F5] text-xs font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${
+              storageStats.isFull
+                ? 'bg-red-700 hover:bg-red-800'
+                : 'bg-[#0A261D] hover:bg-[#164E3D]'
+            }`}
           >
             <Camera className="w-4 h-4 text-[#E6CA92]" />
-            <span>Upload Foto ({uploadedCount}/5)</span>
+            <span>
+              {storageStats.isFull
+                ? 'Storage Penuh (1 GB)'
+                : `Upload Foto (${uploadedCount}/5)`}
+            </span>
           </button>
         </div>
       </div>
@@ -334,6 +347,7 @@ export function App() {
         onGoToMyPhotos={() => {
           setActiveTab('mine');
         }}
+        isStorageFull={storageStats.isFull}
       />
 
       {/* Guest Album Folder Modal: Displays all 5 photos with carousel, thumbs, greetings, likes, live comments, & delete */}

@@ -190,6 +190,7 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
     }
   };
   const [addCategory, setAddCategory] = useState<'text' | 'flower' | 'shape' | 'image'>('text');
+  const [shapeMobileCat, setShapeMobileCat] = useState<'all' | 'arch' | 'frame' | 'geometric' | 'monogram' | 'divider'>('all');
   const [colorTarget, setColorTarget] = useState<'text' | 'bg' | 'border'>('text');
   const [stagedAddId, setStagedAddId] = useState<string | null>(null);
 
@@ -502,16 +503,39 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                     </div>
                   )}
 
-                  {/* Add Shapes with Double-Tap confirmation */}
+                  {/* Add Shapes - Single Click Instant Add with 26+ Shapes & Category Filters */}
                   {addCategory === 'shape' && (
-                    <div className="grid grid-cols-2 gap-1.5">
-                      {SHAPE_PRESETS.map((shape, idx) => {
-                        const isStaged = stagedAddId === shape.name;
-                        return (
+                    <div className="space-y-1.5">
+                      {/* Sub-category Filter Pills */}
+                      <div className="flex items-center gap-1 overflow-x-auto pb-1 no-scrollbar text-[10px]">
+                        {[
+                          { id: 'all', label: 'Semua' },
+                          { id: 'arch', label: 'Kubah' },
+                          { id: 'frame', label: 'Bingkai' },
+                          { id: 'geometric', label: 'Geometri' },
+                          { id: 'monogram', label: 'Simbol' },
+                          { id: 'divider', label: 'Garis' },
+                        ].map((cat) => (
+                          <button
+                            key={cat.id}
+                            onClick={() => setShapeMobileCat(cat.id as any)}
+                            className={`px-2 py-0.5 rounded-lg font-semibold shrink-0 transition ${
+                              shapeMobileCat === cat.id
+                                ? 'bg-[#C2A676] text-[#1E2218] shadow'
+                                : 'bg-white/5 text-[#A0A694]'
+                            }`}
+                          >
+                            {cat.label}
+                          </button>
+                        ))}
+                      </div>
+
+                      <div className="grid grid-cols-2 gap-1.5">
+                        {SHAPE_PRESETS.filter((s) => shapeMobileCat === 'all' || s.category === shapeMobileCat).map((shape, idx) => (
                           <button
                             key={idx}
-                            onClick={() =>
-                              handleAddWithConfirm(shape.name, {
+                            onClick={() => {
+                              onAddElement({
                                 name: shape.name,
                                 type: 'shape',
                                 shapeType: shape.shapeType as any,
@@ -520,22 +544,28 @@ export const CanvaMobileDock: React.FC<CanvaMobileDockProps> = ({
                                 borderRadius: shape.borderRadius,
                                 borderWidth: shape.borderWidth,
                                 borderColor: shape.borderColor,
+                                borderStyle: shape.borderStyle || 'solid',
                                 backgroundColor: shape.backgroundColor,
-                              })
-                            }
-                            className={`p-2 rounded-xl border text-left transition ${
-                              isStaged
-                                ? 'bg-[#C2A676]/25 border-[#C2A676] ring-1 ring-[#C2A676]'
-                                : 'bg-white/5 hover:bg-white/10 border-white/10'
-                            }`}
+                                content: shape.content || '',
+                                textColor: shape.textColor,
+                                fontFamily: shape.fontFamily,
+                                fontSize: shape.fontSize,
+                                fontWeight: shape.fontWeight,
+                              });
+                              closeDrawer();
+                            }}
+                            className="p-2 rounded-xl border bg-white/5 hover:bg-[#51583D]/40 border-white/10 text-left transition flex flex-col justify-between"
                           >
-                            <p className="font-bold text-xs text-[#E8D8BA]">{shape.name}</p>
-                            <p className="text-[9px] text-[#C2A676]">
-                              {isStaged ? '✓ Ketuk lagi pasang' : 'Garis & Kotak Mewah'}
-                            </p>
+                            <div>
+                              <p className="font-bold text-[11px] text-[#E8D8BA] truncate">{shape.name}</p>
+                              <p className="text-[9px] text-[#C2A676] font-mono">{shape.width}×{shape.height}px</p>
+                            </div>
+                            <span className="text-[8px] mt-1 text-[#A0A694] uppercase tracking-wider font-semibold">
+                              + Tambah
+                            </span>
                           </button>
-                        );
-                      })}
+                        ))}
+                      </div>
                     </div>
                   )}
                 </div>

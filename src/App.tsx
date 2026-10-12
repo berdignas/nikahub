@@ -71,7 +71,19 @@ export function App() {
       const stored = localStorage.getItem('nikahub_products_data');
       if (stored) {
         const parsed = JSON.parse(stored);
-        if (parsed.length > 0) return parsed;
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          const dummyIds = [
+            'vintage-01',
+            'prod-tenda-maroko-vip',
+            'prod-catering-sultan-500',
+            'prod-mua-signature-glam',
+            'prod-foto-sinema-cinematic',
+            'prod-undangan-web-luxury',
+            'prod-dummy-pelaminan-mewah'
+          ];
+          const cleaned = parsed.filter((p: any) => !dummyIds.includes(p?.id));
+          return cleaned;
+        }
       }
       return [];
     } catch {
@@ -272,7 +284,7 @@ export function App() {
 
         setCurrentPage(state.page);
         if (state.selectedProductId) {
-          const found = products.find(p => p.id === state.selectedProductId) || WEDDING_PRODUCTS.find(p => p.id === state.selectedProductId);
+          const found = products.find(p => p.id === state.selectedProductId);
           if (found) {
             setSelectedProduct(found);
           }

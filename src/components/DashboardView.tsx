@@ -76,7 +76,7 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
   // Metrics calculations
   const totalServices = products.length;
   const totalValue = products.reduce((acc, curr) => acc + curr.price, 0);
-  const avgRating = (products.reduce((acc, curr) => acc + curr.rating, 0) / products.length).toFixed(2);
+  const avgRating = products.length > 0 ? (products.reduce((acc, curr) => acc + curr.rating, 0) / products.length).toFixed(1) : '0.0';
 
   // Group summary by category
   const categoryCounts = products.reduce((acc, p) => {
@@ -175,10 +175,10 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
               </div>
             </div>
             <div>
-              <span className="font-serif text-3xl font-bold text-emerald-950">24 Acara</span>
+              <span className="font-serif text-3xl font-bold text-emerald-950">{MOCK_ORDERS.length} Acara</span>
               <p className="text-[11px] text-emerald-700 font-medium mt-1 flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
-                <span>+4 jadwal baru minggu ini</span>
+                <span>{MOCK_ORDERS.length > 0 ? `${MOCK_ORDERS.length} jadwal tercatat` : 'Belum ada reservasi baru'}</span>
               </p>
             </div>
           </div>
@@ -308,40 +308,48 @@ export const DashboardView: React.FC<DashboardViewProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-champagne-50">
-                  {MOCK_ORDERS.map((ord) => (
-                    <tr key={ord.id} className="hover:bg-sand/40 transition-colors">
-                      <td className="py-3 px-2 font-medium text-emerald-950">
-                        <div>{ord.clientName}</div>
-                        <div className="text-[10px] text-emerald-950/50">{ord.clientPhone}</div>
-                      </td>
-                      <td className="py-3 px-2 text-emerald-950/80 max-w-[200px] truncate">
-                        {ord.productName}
-                      </td>
-                      <td className="py-3 px-2 text-emerald-950/70 whitespace-nowrap">
-                        {ord.date}
-                      </td>
-                      <td className="py-3 px-2 font-bold text-emerald-950">
-                        {formatRupiah(ord.amount)}
-                      </td>
-                      <td className="py-3 px-2">
-                        {ord.status === 'confirmed' && (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
-                            Terkonfirmasi
-                          </span>
-                        )}
-                        {ord.status === 'pending_dp' && (
-                          <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
-                            Menunggu DP
-                          </span>
-                        )}
-                        {ord.status === 'completed' && (
-                          <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">
-                            Selesai Acara
-                          </span>
-                        )}
+                  {MOCK_ORDERS.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="py-8 text-center text-emerald-950/50 text-xs italic">
+                        Belum ada reservasi aktif.
                       </td>
                     </tr>
-                  ))}
+                  ) : (
+                    MOCK_ORDERS.map((ord) => (
+                      <tr key={ord.id} className="hover:bg-sand/40 transition-colors">
+                        <td className="py-3 px-2 font-medium text-emerald-950">
+                          <div>{ord.clientName}</div>
+                          <div className="text-[10px] text-emerald-950/50">{ord.clientPhone}</div>
+                        </td>
+                        <td className="py-3 px-2 text-emerald-950/80 max-w-[200px] truncate">
+                          {ord.productName}
+                        </td>
+                        <td className="py-3 px-2 text-emerald-950/70 whitespace-nowrap">
+                          {ord.date}
+                        </td>
+                        <td className="py-3 px-2 font-bold text-emerald-950">
+                          {formatRupiah(ord.amount)}
+                        </td>
+                        <td className="py-3 px-2">
+                          {ord.status === 'confirmed' && (
+                            <span className="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">
+                              Terkonfirmasi
+                            </span>
+                          )}
+                          {ord.status === 'pending_dp' && (
+                            <span className="px-2 py-0.5 rounded-full bg-amber-100 text-amber-800 text-[10px] font-bold">
+                              Menunggu DP
+                            </span>
+                          )}
+                          {ord.status === 'completed' && (
+                            <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-800 text-[10px] font-bold">
+                              Selesai Acara
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>

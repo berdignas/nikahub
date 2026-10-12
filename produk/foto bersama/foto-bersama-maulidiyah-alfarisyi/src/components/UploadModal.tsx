@@ -11,6 +11,7 @@ interface UploadModalProps {
   uploadedCount: number;
   onAlbumCreated: (newAlbum: GuestAlbum) => void;
   onGoToMyPhotos: () => void;
+  isStorageFull?: boolean;
 }
 
 export const UploadModal: React.FC<UploadModalProps> = ({
@@ -19,6 +20,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   uploadedCount,
   onAlbumCreated,
   onGoToMyPhotos,
+  isStorageFull = false,
 }) => {
   const [senderName, setSenderName] = useState('');
   const [caption, setCaption] = useState('');
@@ -439,8 +441,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                           {availableSlots > 0 && (
                             <button
                               type="button"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="aspect-square rounded-xl border-2 border-dashed border-[#E6CA92] hover:border-[#0A261D] bg-white flex flex-col items-center justify-center text-[#C5A880] hover:text-[#0A261D] transition-colors cursor-pointer"
+                              disabled={isStorageFull}
+                              onClick={() => !isStorageFull && fileInputRef.current?.click()}
+                              className="aspect-square rounded-xl border-2 border-dashed border-[#E6CA92] hover:border-[#0A261D] bg-white flex flex-col items-center justify-center text-[#C5A880] hover:text-[#0A261D] transition-colors cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                               title="Tambah foto lagi"
                             >
                               <Plus className="w-5 h-5" />
@@ -454,22 +457,35 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                           <div className="flex items-center justify-center gap-2 pt-1 text-xs">
                             <button
                               type="button"
-                              onClick={() => cameraInputRef.current?.click()}
-                              className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#0A261D] text-[#0A261D] text-[11px] font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                              disabled={isStorageFull}
+                              onClick={() => !isStorageFull && cameraInputRef.current?.click()}
+                              className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#0A261D] text-[#0A261D] text-[11px] font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                             >
                               <Camera className="w-3.5 h-3.5 text-[#C5A880]" />
                               <span>Ambil Foto HP</span>
                             </button>
                             <button
                               type="button"
-                              onClick={() => fileInputRef.current?.click()}
-                              className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#0A261D] text-[#0A261D] text-[11px] font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer"
+                              disabled={isStorageFull}
+                              onClick={() => !isStorageFull && fileInputRef.current?.click()}
+                              className="px-3 py-1.5 rounded-lg bg-white border border-gray-200 hover:border-[#0A261D] text-[#0A261D] text-[11px] font-semibold flex items-center gap-1.5 shadow-xs cursor-pointer disabled:opacity-50 disabled:pointer-events-none"
                             >
                               <ImageIcon className="w-3.5 h-3.5 text-[#C5A880]" />
                               <span>Pilih Galeri</span>
                             </button>
                           </div>
                         )}
+                      </div>
+                    )}
+
+                    {/* Storage Full Banner */}
+                    {isStorageFull && (
+                      <div className="p-3.5 mb-3 rounded-2xl bg-red-50 border border-red-300 flex items-start gap-2.5 text-left text-xs text-red-700 shadow-xs">
+                        <AlertCircle className="w-4 h-4 text-red-600 shrink-0 mt-0.5" />
+                        <div>
+                          <strong className="block font-bold text-red-800">Penyimpanan Album Penuh (1.0 GB Tercapai)</strong>
+                          <span className="text-[11px] text-red-600">Batas kuota album pernikahan telah mencapai kapasitas maksimal. Pengunggahan foto baru sementara ditutup.</span>
+                        </div>
                       </div>
                     )}
 
@@ -481,9 +497,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                           {/* Option 1: Native Internal Phone Camera App (Most reliable on all smartphones) */}
                           <button
                             type="button"
-                            disabled={isCompressing}
-                            onClick={() => cameraInputRef.current?.click()}
-                            className="p-4 rounded-2xl border-2 border-dashed border-[#D4AF37]/60 bg-gradient-to-br from-[#FAF9F5] to-white hover:border-[#0A261D] hover:shadow-md transition-all flex items-center gap-3.5 text-left cursor-pointer group"
+                            disabled={isCompressing || isStorageFull}
+                            onClick={() => !isStorageFull && cameraInputRef.current?.click()}
+                            className="p-4 rounded-2xl border-2 border-dashed border-[#D4AF37]/60 bg-gradient-to-br from-[#FAF9F5] to-white hover:border-[#0A261D] hover:shadow-md transition-all flex items-center gap-3.5 text-left cursor-pointer group disabled:opacity-50 disabled:pointer-events-none"
                           >
                             <div className="w-12 h-12 rounded-2xl bg-[#0A261D] text-[#E6CA92] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-sm">
                               <Smartphone className="w-6 h-6" />
@@ -501,9 +517,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                           {/* Option 2: Live Web Browser Camera */}
                           <button
                             type="button"
-                            disabled={isCompressing}
-                            onClick={() => startLiveCamera('environment')}
-                            className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] hover:shadow-md transition-all flex items-center gap-3.5 text-left cursor-pointer group"
+                            disabled={isCompressing || isStorageFull}
+                            onClick={() => !isStorageFull && startLiveCamera('environment')}
+                            className="p-4 rounded-2xl border-2 border-dashed border-gray-200 bg-[#FAF9F5] hover:bg-white hover:border-[#0A261D] hover:shadow-md transition-all flex items-center gap-3.5 text-left cursor-pointer group disabled:opacity-50 disabled:pointer-events-none"
                           >
                             <div className="w-12 h-12 rounded-2xl bg-white border border-[#E6CA92]/50 text-[#C5A880] flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-xs">
                               <Camera className="w-6 h-6" />
@@ -522,9 +538,9 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                         {/* Option 3: Pick from Phone Gallery */}
                         <button
                           type="button"
-                          disabled={isCompressing}
-                          onClick={() => fileInputRef.current?.click()}
-                          className="w-full p-3.5 rounded-2xl border border-gray-200 bg-white hover:border-[#0A261D] hover:bg-[#FAF9F5] transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-xs"
+                          disabled={isCompressing || isStorageFull}
+                          onClick={() => !isStorageFull && fileInputRef.current?.click()}
+                          className="w-full p-3.5 rounded-2xl border border-gray-200 bg-white hover:border-[#0A261D] hover:bg-[#FAF9F5] transition-all flex items-center justify-center gap-2.5 cursor-pointer shadow-xs disabled:opacity-50 disabled:pointer-events-none"
                         >
                           <ImageIcon className="w-4 h-4 text-[#C5A880]" />
                           <span className="text-xs font-bold text-[#0A261D]">
@@ -620,7 +636,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               <div className="pt-2">
                 <button
                   type="submit"
-                  disabled={isSubmitting || isCompressing || selectedImages.length === 0}
+                  disabled={isSubmitting || isCompressing || selectedImages.length === 0 || isStorageFull}
                   className="w-full py-3.5 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] font-bold text-xs shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
                 >
                   {isSubmitting ? (
