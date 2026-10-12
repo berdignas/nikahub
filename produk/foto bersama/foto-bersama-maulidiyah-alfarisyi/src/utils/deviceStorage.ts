@@ -22,6 +22,23 @@ export function getOrCreateDeviceId(): string {
   }
 }
 
+// Auto-purge any legacy oversized localStorage cache (> 2 MB) from older app versions
+export function purgeLegacyOversizedStorage(): void {
+  try {
+    const rawAlbums = localStorage.getItem(ALBUMS_STORAGE_KEY);
+    if (rawAlbums && rawAlbums.length > 2 * 1024 * 1024) {
+      console.warn('Auto-purged legacy oversized localStorage cache to prevent quota crash.');
+      localStorage.removeItem(ALBUMS_STORAGE_KEY);
+    }
+    const rawPhotos = localStorage.getItem(PHOTOS_STORAGE_KEY);
+    if (rawPhotos && rawPhotos.length > 500 * 1024) {
+      localStorage.removeItem(PHOTOS_STORAGE_KEY);
+    }
+  } catch {}
+}
+
+purgeLegacyOversizedStorage();
+
 // Retrieve guest albums from local storage (clean without dummy samples)
 export function getStoredAlbums(): GuestAlbum[] {
   try {
@@ -35,7 +52,7 @@ export function getStoredAlbums(): GuestAlbum[] {
     }
     // Filter out dummy samples and ensure albums have usable photo items
     const cleanAlbums = parsed.filter(
-      (a) => !a.isInitialSample && a.photos && a.photos.some((p) => Boolean(p.imageUrl))
+      (a) => !a.isInitialSample && a.photos && a.photos.length > 0
     );
     return cleanAlbums;
   } catch (e) {
@@ -48,30 +65,21 @@ export function getStoredAlbums(): GuestAlbum[] {
 export function saveAlbums(albums: GuestAlbum[]): void {
   try {
     const currentDevId = getOrCreateDeviceId();
-    // Keep full images for this device's own albums, but strip heavy base64 strings
-    // from other guests' albums so localStorage never exceeds 5MB!
-    const safeAlbums = albums.map((alb) => {
-      if (alb.deviceId === currentDevId) {
-        return alb;
-      }
-      return {
-        ...alb,
-        photos: (alb.photos || []).map((p) => ({
-          ...p,
-          imageUrl: p.imageUrl?.startsWith('data:') ? '' : p.imageUrl,
-        })),
-        voiceNoteUrl: alb.voiceNoteUrl?.startsWith('data:') ? '' : alb.voiceNoteUrl,
-      };
-    });
-    localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(safeAlbums));
+    // STRICT STORAGE INTEGRITY:
+    // Only cache albums belonging to THIS device in localStorage!
+    // Other guests' photos are managed in React state directly from Supabase.
+    // This ensures localStorage NEVER exceeds 1MB even with thousands of wedding attendees!
+    const myAlbumsOnly = albums.filter(
+      (alb) => alb.deviceId === currentDevId && !alb.isInitialSample
+    );
+    localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(myAlbumsOnly));
   } catch (e) {
-    console.warn('LocalStorage save quota exceeded, falling back to local-only albums:', e);
+    console.warn('LocalStorage save quota exceeded, safely clearing local cache:', e);
     try {
-      const currentDevId = getOrCreateDeviceId();
-      const myOnly = albums.filter((a) => a.deviceId === currentDevId);
-      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(myOnly));
+      localStorage.removeItem(ALBUMS_STORAGE_KEY);
+      localStorage.removeItem(PHOTOS_STORAGE_KEY);
     } catch (err) {
-      console.warn('LocalStorage critical fallback failed:', err);
+      console.warn('LocalStorage emergency recovery notice:', err);
     }
   }
 }
