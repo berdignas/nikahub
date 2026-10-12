@@ -233,7 +233,12 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         isInitialSample: false,
       };
 
-      await Promise.resolve(onAlbumCreated(newAlbum));
+      const uploadSuccess = await Promise.resolve(onAlbumCreated(newAlbum));
+      if (uploadSuccess === false) {
+        setErrorMsg('Gagal mengunggah folder foto ke database server. Silakan periksa koneksi internet Anda dan tekan coba lagi.');
+        setIsSubmitting(false);
+        return;
+      }
 
       // Trigger Confetti
       confetti({

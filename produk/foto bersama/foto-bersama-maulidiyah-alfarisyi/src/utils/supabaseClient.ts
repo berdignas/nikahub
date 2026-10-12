@@ -13,27 +13,40 @@ export const EVENT_SLUG = 'maulidiyah-alfarisyi';
  */
 export async function insertAlbumToDatabase(album: GuestAlbum): Promise<boolean> {
   try {
-    // 1. Insert album record into wedding_albums table if present
-    await supabase.from('wedding_albums').upsert([
-      {
-        id: album.id,
-        event_slug: EVENT_SLUG,
-        device_id: album.deviceId,
-        sender_name: album.senderName,
-        caption: album.caption,
-        photos_data: {
-          photos: album.photos,
-          voiceNoteUrl: album.voiceNoteUrl || null,
-          voiceDuration: album.voiceDuration || null,
-        },
-        likes_count: album.likesCount || 1,
-        liked_by_devices: album.likedByDevices || [],
-        comments_data: album.comments || [],
-        created_at: album.createdAt,
+    const albumRow = {
+      id: album.id,
+      event_slug: EVENT_SLUG,
+      device_id: album.deviceId,
+      sender_name: album.senderName,
+      caption: album.caption,
+      photos_data: {
+        photos: album.photos,
+        voiceNoteUrl: album.voiceNoteUrl || null,
+        voiceDuration: album.voiceDuration || null,
       },
-    ]);
+      likes_count: album.likesCount || 1,
+      liked_by_devices: album.likedByDevices || [],
+      comments_data: album.comments || [],
+      created_at: album.createdAt,
+    };
 
-    // 2. Also insert individual photos into wedding_photos table as fallback/flat store
+    // 25-second timeout guard to prevent endless hanging on congested venue cellular networks
+    const timeoutPromise = new Promise<{ error: any }>((_, reject) => {
+      setTimeout(() => reject(new Error('Koneksi internet lambat / request timeout (25s)')), 25000);
+    });
+
+    // 1. Primary insert to wedding_albums table
+    const upsertPromise = supabase.from('wedding_albums').upsert([albumRow]);
+    const { error: err1 } = (await Promise.race([upsertPromise, timeoutPromise])) as any;
+
+    if (!err1) {
+      // Primary table succeeded! Avoid sending duplicate payload to prevent network congestion
+      return true;
+    }
+
+    console.warn('wedding_albums upsert error, trying wedding_photos fallback:', err1);
+
+    // 2. Fallback: only if wedding_albums failed, try inserting into wedding_photos table
     if (album.photos && album.photos.length > 0) {
       const rows = album.photos.map((p) => ({
         id: p.id,
@@ -46,11 +59,17 @@ export async function insertAlbumToDatabase(album: GuestAlbum): Promise<boolean>
         likes_count: p.likesCount || 1,
         created_at: p.createdAt || album.createdAt,
       }));
-      await supabase.from('wedding_photos').upsert(rows);
+      const { error: err2 } = await supabase.from('wedding_photos').upsert(rows);
+      if (!err2) {
+        return true;
+      }
+      console.error('Both wedding tables failed to upsert:', { err1, err2 });
+      return false;
     }
-    return true;
+
+    return false;
   } catch (err) {
-    console.warn('Supabase DB Insert Warning (Falling back to local cache):', err);
+    console.warn('Supabase DB Insert Exception:', err);
     return false;
   }
 }

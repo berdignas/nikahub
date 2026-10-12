@@ -118,17 +118,21 @@ export function App() {
 
   // Upload new album handler (with 1 to 5 photos) + database sync
   const handleAlbumCreated = async (newAlbum: GuestAlbum): Promise<boolean> => {
+    // 1. Sync album record & photos to Supabase database first with timeout protection
+    const syncSuccess = await insertAlbumToDatabase(newAlbum);
+
+    if (!syncSuccess) {
+      console.warn('Database upload failed. Preserving modal state for retry.');
+      return false;
+    }
+
+    // 2. Once verified by database, add to live React state & safe local persistence
     const updated = [newAlbum, ...albums];
     updateAlbums(updated);
 
-    // Auto-select the newly created album for immediate preview
+    // 3. Auto-select the newly created album for immediate preview
     setSelectedAlbum(newAlbum);
 
-    // Sync album record & photos to Supabase database for global visibility on all devices
-    const syncSuccess = await insertAlbumToDatabase(newAlbum);
-    if (!syncSuccess) {
-      console.warn('Background Supabase sync notice: Album kept in local state.');
-    }
     return true;
   };
 
