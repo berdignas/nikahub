@@ -131,7 +131,8 @@ export async function fetchAlbumsFromDatabase(): Promise<GuestAlbum[] | null> {
       .eq('event_slug', EVENT_SLUG)
       .order('created_at', { ascending: false });
 
-    if (photoError || !photoData || photoData.length === 0) return null;
+    if (photoError) return null;
+    if (!photoData || photoData.length === 0) return [];
 
     // Group photos by album_id or (device_id + sender_name)
     const albumMap = new Map<string, GuestAlbum>();
@@ -207,7 +208,11 @@ export async function fetchPhotosFromDatabase(): Promise<PhotoMoment[] | null> {
 /**
  * Permanently delete album from Supabase Database
  */
-export async function deleteAlbumFromDatabase(albumId: string): Promise<boolean> {
+export async function deleteAlbumFromDatabase(
+  albumId: string,
+  photoIds: string[] = [],
+  albumObj?: GuestAlbum
+): Promise<boolean> {
   try {
     // 1. Delete from wedding_albums table
     const { error: err1 } = await supabase
@@ -227,10 +232,28 @@ export async function deleteAlbumFromDatabase(albumId: string): Promise<boolean>
       .delete()
       .eq('id', albumId);
 
+    // 4. Delete all photo IDs directly from wedding_photos table (Essential Fix!)
+    if (photoIds && photoIds.length > 0) {
+      await supabase
+        .from('wedding_photos')
+        .delete()
+        .in('id', photoIds);
+    }
+
+    // 5. Fallback delete by sender_name and device_id
+    if (albumObj?.senderName && albumObj?.deviceId) {
+      await supabase
+        .from('wedding_photos')
+        .delete()
+        .eq('event_slug', EVENT_SLUG)
+        .eq('device_id', albumObj.deviceId)
+        .eq('sender_name', albumObj.senderName);
+    }
+
     if (err1 || err2 || err3) {
       console.warn('Supabase delete response:', { err1, err2, err3 });
     }
-    return !err1;
+    return true;
   } catch (err) {
     console.warn('Failed to delete album from Supabase DB:', err);
     return false;

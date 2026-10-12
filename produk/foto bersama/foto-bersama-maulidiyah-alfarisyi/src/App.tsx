@@ -59,29 +59,28 @@ export function App() {
     const local = getStoredAlbums();
     setAlbums(local);
 
-    // 2. Sync remote albums from Supabase so all devices see uploads from other HP/devices!
+    // 2. Sync remote albums from Supabase so all devices see uploads and deletions!
     fetchAlbumsFromDatabase().then((remoteAlbums) => {
-      if (remoteAlbums && remoteAlbums.length > 0) {
-        // Merge remote and local albums (remote takes priority)
-        const albumMap = new Map<string, GuestAlbum>();
-        local.forEach((a) => albumMap.set(a.id, a));
-        remoteAlbums.forEach((a) => albumMap.set(a.id, a));
-
-        const merged = Array.from(albumMap.values()).sort(
-          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-        );
-
-        setAlbums(merged);
-        saveAlbums(merged);
+      if (remoteAlbums !== null) {
+        setAlbums(remoteAlbums);
+        saveAlbums(remoteAlbums);
       }
     });
 
-    // 3. Setup Supabase Realtime channel so when device A uploads, device B updates instantly!
+    // 3. Setup Supabase Realtime channel for instant sync across all devices
     const channel = supabase
-      .channel('public:wedding_albums')
-      .on('postgres_changes', { event: '*', schema: 'public' }, () => {
+      .channel('public:wedding_realtime_sync')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wedding_photos' }, () => {
         fetchAlbumsFromDatabase().then((remoteAlbums) => {
-          if (remoteAlbums && remoteAlbums.length > 0) {
+          if (remoteAlbums !== null) {
+            setAlbums(remoteAlbums);
+            saveAlbums(remoteAlbums);
+          }
+        });
+      })
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wedding_albums' }, () => {
+        fetchAlbumsFromDatabase().then((remoteAlbums) => {
+          if (remoteAlbums !== null) {
             setAlbums(remoteAlbums);
             saveAlbums(remoteAlbums);
           }
@@ -206,12 +205,14 @@ export function App() {
 
   // Delete entire album handler (refunds all upload slots!)
   const handleDeleteAlbum = (albumId: string) => {
+    const targetAlbum = albums.find((alb) => alb.id === albumId);
+    const photoIds = targetAlbum?.photos?.map((p) => p.id) || [];
     const updated = albums.filter((alb) => alb.id !== albumId);
     updateAlbums(updated);
     if (selectedAlbum?.id === albumId) {
       setSelectedAlbum(null);
     }
-    deleteAlbumFromDatabase(albumId);
+    deleteAlbumFromDatabase(albumId, photoIds, targetAlbum);
   };
 
   // Delete single photo from album
