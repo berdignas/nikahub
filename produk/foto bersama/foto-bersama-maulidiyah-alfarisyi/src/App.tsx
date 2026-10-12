@@ -117,7 +117,7 @@ export function App() {
   };
 
   // Upload new album handler (with 1 to 5 photos) + database sync
-  const handleAlbumCreated = (newAlbum: GuestAlbum) => {
+  const handleAlbumCreated = async (newAlbum: GuestAlbum): Promise<boolean> => {
     const updated = [newAlbum, ...albums];
     updateAlbums(updated);
 
@@ -125,7 +125,11 @@ export function App() {
     setSelectedAlbum(newAlbum);
 
     // Sync album record & photos to Supabase database for global visibility on all devices
-    insertAlbumToDatabase(newAlbum);
+    const syncSuccess = await insertAlbumToDatabase(newAlbum);
+    if (!syncSuccess) {
+      console.warn('Background Supabase sync notice: Album kept in local state.');
+    }
+    return true;
   };
 
   // Like toggle for album
@@ -135,24 +139,20 @@ export function App() {
     const updated = albums.map((alb) => {
       if (alb.id !== albumId) return alb;
 
-      const currentLikes = alb.likesCount || 0;
       const deviceLiked = alb.likedByDevices || [];
       const alreadyLiked = deviceLiked.includes(deviceId);
 
       let newLikedBy: string[];
-      let newCount: number;
 
       if (alreadyLiked) {
         newLikedBy = deviceLiked.filter((id) => id !== deviceId);
-        newCount = Math.max(0, currentLikes - 1);
       } else {
         newLikedBy = [...deviceLiked, deviceId];
-        newCount = currentLikes + 1;
       }
 
       const updatedAlbum: GuestAlbum = {
         ...alb,
-        likesCount: newCount,
+        likesCount: newLikedBy.length,
         likedByDevices: newLikedBy,
       };
 

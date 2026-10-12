@@ -60,7 +60,8 @@ export async function insertAlbumToDatabase(album: GuestAlbum): Promise<boolean>
  */
 export async function updateAlbumInDatabase(album: GuestAlbum): Promise<boolean> {
   try {
-    await supabase.from('wedding_albums').upsert([
+    const computedLikes = Array.isArray(album.likedByDevices) ? album.likedByDevices.length : (album.likesCount || 0);
+    const { error } = await supabase.from('wedding_albums').upsert([
       {
         id: album.id,
         event_slug: EVENT_SLUG,
@@ -72,12 +73,15 @@ export async function updateAlbumInDatabase(album: GuestAlbum): Promise<boolean>
           voiceNoteUrl: album.voiceNoteUrl || null,
           voiceDuration: album.voiceDuration || null,
         },
-        likes_count: album.likesCount || 0,
+        likes_count: computedLikes,
         liked_by_devices: album.likedByDevices || [],
         comments_data: album.comments || [],
         created_at: album.createdAt,
       },
     ]);
+    if (error) {
+      console.warn('Update album in database notice:', error);
+    }
     return true;
   } catch {
     return false;

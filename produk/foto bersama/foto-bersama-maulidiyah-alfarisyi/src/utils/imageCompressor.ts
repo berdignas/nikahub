@@ -4,8 +4,8 @@
  */
 
 export interface CompressionOptions {
-  maxDimension?: number; // 2560px preserves crisp Quad HD / 2.5K studio details
-  quality?: number;      // 0.90 gives studio-grade visual clarity & ultra-fine sharpness
+  maxDimension?: number; // 1920px preserves crisp Full HD+ / 2K studio details
+  quality?: number;      // 0.82 gives studio-grade visual clarity & ultra-fine sharpness with minimal payload
   outputFormat?: 'image/webp' | 'image/jpeg';
 }
 
@@ -13,8 +13,8 @@ export async function compressVisuallyLossless(
   file: File | Blob,
   options: CompressionOptions = {}
 ): Promise<{ dataUrl: string; originalSizeKb: number; compressedSizeKb: number }> {
-  const maxDimension = options.maxDimension || 2560;
-  const quality = options.quality || 0.90;
+  const maxDimension = options.maxDimension || 1920;
+  const quality = options.quality || 0.82;
 
   const originalSizeKb = Math.round(file.size / 1024);
 

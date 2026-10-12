@@ -26,6 +26,7 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
   const audioChunksRef = useRef<Blob[]>([]);
   const timerIntervalRef = useRef<number | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  const durationRef = useRef<number>(0);
 
   useEffect(() => {
     return () => {
@@ -51,6 +52,7 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
   const startRecording = async () => {
     setErrorMsg('');
     audioChunksRef.current = [];
+    durationRef.current = 0;
     setRecordingSeconds(0);
 
     try {
@@ -61,14 +63,24 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
       streamRef.current = stream;
 
-      // Select supported mimeType
-      const mimeType = MediaRecorder.isTypeSupported('audio/webm;codecs=opus')
-        ? 'audio/webm;codecs=opus'
-        : MediaRecorder.isTypeSupported('audio/mp4')
-        ? 'audio/mp4'
-        : 'audio/webm';
+      // Select best supported mimeType across iOS Safari and Android Chrome
+      let mimeType = 'audio/webm';
+      const candidateMimes = [
+        'audio/webm;codecs=opus',
+        'audio/mp4',
+        'audio/aac',
+        'audio/webm',
+        'audio/ogg;codecs=opus',
+      ];
+      for (const candidate of candidateMimes) {
+        if (typeof MediaRecorder.isTypeSupported === 'function' && MediaRecorder.isTypeSupported(candidate)) {
+          mimeType = candidate;
+          break;
+        }
+      }
 
-      const mediaRecorder = new MediaRecorder(stream, { mimeType });
+      const options: MediaRecorderOptions = mimeType ? { mimeType } : {};
+      const mediaRecorder = new MediaRecorder(stream, options);
       mediaRecorderRef.current = mediaRecorder;
 
       mediaRecorder.ondataavailable = (event) => {
@@ -77,13 +89,15 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
         }
       };
 
+      let seconds = 0;
       mediaRecorder.onstop = async () => {
         const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = () => {
           const base64Audio = reader.result as string;
-          onAudioRecorded(base64Audio, recordingSeconds || 1);
+          const finalDuration = durationRef.current || seconds || 1;
+          onAudioRecorded(base64Audio, finalDuration);
         };
       };
 
@@ -91,9 +105,9 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
       setIsRecording(true);
 
       // Start timer
-      let seconds = 0;
       timerIntervalRef.current = window.setInterval(() => {
         seconds += 1;
+        durationRef.current = seconds;
         setRecordingSeconds(seconds);
         // Max 60 seconds limit
         if (seconds >= 60) {

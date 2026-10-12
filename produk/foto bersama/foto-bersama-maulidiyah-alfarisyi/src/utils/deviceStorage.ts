@@ -27,16 +27,16 @@ export function getStoredAlbums(): GuestAlbum[] {
   try {
     const raw = localStorage.getItem(ALBUMS_STORAGE_KEY);
     if (!raw) {
-      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify([]));
       return [];
     }
     const parsed: GuestAlbum[] = JSON.parse(raw);
     if (!Array.isArray(parsed)) {
-      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify([]));
       return [];
     }
-    // Filter out any legacy dummy samples if present
-    const cleanAlbums = parsed.filter((a) => !a.isInitialSample);
+    // Filter out dummy samples and ensure albums have usable photo items
+    const cleanAlbums = parsed.filter(
+      (a) => !a.isInitialSample && a.photos && a.photos.some((p) => Boolean(p.imageUrl))
+    );
     return cleanAlbums;
   } catch (e) {
     console.error('Error reading stored albums:', e);
@@ -44,12 +44,35 @@ export function getStoredAlbums(): GuestAlbum[] {
   }
 }
 
-// Save guest albums to local storage
+// Save guest albums to local storage safely without overflowing 5MB localStorage quota
 export function saveAlbums(albums: GuestAlbum[]): void {
   try {
-    localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(albums));
+    const currentDevId = getOrCreateDeviceId();
+    // Keep full images for this device's own albums, but strip heavy base64 strings
+    // from other guests' albums so localStorage never exceeds 5MB!
+    const safeAlbums = albums.map((alb) => {
+      if (alb.deviceId === currentDevId) {
+        return alb;
+      }
+      return {
+        ...alb,
+        photos: (alb.photos || []).map((p) => ({
+          ...p,
+          imageUrl: p.imageUrl?.startsWith('data:') ? '' : p.imageUrl,
+        })),
+        voiceNoteUrl: alb.voiceNoteUrl?.startsWith('data:') ? '' : alb.voiceNoteUrl,
+      };
+    });
+    localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(safeAlbums));
   } catch (e) {
-    console.error('Failed to save albums to localStorage:', e);
+    console.warn('LocalStorage save quota exceeded, falling back to local-only albums:', e);
+    try {
+      const currentDevId = getOrCreateDeviceId();
+      const myOnly = albums.filter((a) => a.deviceId === currentDevId);
+      localStorage.setItem(ALBUMS_STORAGE_KEY, JSON.stringify(myOnly));
+    } catch (err) {
+      console.warn('LocalStorage critical fallback failed:', err);
+    }
   }
 }
 
@@ -64,7 +87,7 @@ export function savePhotos(photos: PhotoMoment[]): void {
   try {
     localStorage.setItem(PHOTOS_STORAGE_KEY, JSON.stringify(photos));
   } catch (e) {
-    console.error('Failed to save photos to localStorage:', e);
+    console.warn('Failed to save photos to localStorage:', e);
   }
 }
 
@@ -87,11 +110,11 @@ export function getRemainingUploadQuota(deviceId?: string): number {
   return Math.max(0, MAX_PHOTO_PER_DEVICE - count);
 }
 
-// Client-side automatic Visually Lossless image compression (Studio Grade 2.5K)
+// Client-side automatic Visually Lossless image compression (Optimized Full HD+ / 2K Studio Sharpness)
 export async function compressImageFile(file: File): Promise<string> {
   const result = await compressVisuallyLossless(file, {
-    maxDimension: 2560,
-    quality: 0.90,
+    maxDimension: 1920,
+    quality: 0.82,
   });
   return result.dataUrl;
 }

@@ -9,7 +9,7 @@ interface UploadModalProps {
   isOpen: boolean;
   onClose: () => void;
   uploadedCount: number;
-  onAlbumCreated: (newAlbum: GuestAlbum) => void;
+  onAlbumCreated: (newAlbum: GuestAlbum) => Promise<boolean | void> | void;
   onGoToMyPhotos: () => void;
   isStorageFull?: boolean;
 }
@@ -185,7 +185,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     setSelectedImages((prev) => prev.filter((_, idx) => idx !== indexToRemove));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (selectedImages.length === 0) {
       setErrorMsg('Silakan pilih atau ambil minimal 1 foto.');
@@ -233,7 +233,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         isInitialSample: false,
       };
 
-      onAlbumCreated(newAlbum);
+      await Promise.resolve(onAlbumCreated(newAlbum));
 
       // Trigger Confetti
       confetti({
@@ -251,7 +251,8 @@ export const UploadModal: React.FC<UploadModalProps> = ({
       setIsSubmitting(false);
       onClose();
     } catch (err) {
-      setErrorMsg('Terjadi kendala saat menyimpan album foto.');
+      console.warn('Error creating guest album:', err);
+      setErrorMsg('Terjadi kendala saat menyimpan album foto. Silakan periksa koneksi internet Anda dan coba lagi.');
       setIsSubmitting(false);
     }
   };

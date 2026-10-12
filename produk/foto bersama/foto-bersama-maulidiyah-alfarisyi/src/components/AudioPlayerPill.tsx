@@ -25,7 +25,7 @@ export const AudioPlayerPill: React.FC<AudioPlayerPillProps> = ({
     audioRef.current = audio;
 
     const handleLoadedMetadata = () => {
-      if (audio.duration && !isNaN(audio.duration)) {
+      if (audio.duration && !isNaN(audio.duration) && isFinite(audio.duration)) {
         setTotalDuration(Math.round(audio.duration));
       }
     };
