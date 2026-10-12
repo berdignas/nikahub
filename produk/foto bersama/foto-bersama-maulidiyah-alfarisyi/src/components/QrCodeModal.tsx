@@ -9,7 +9,6 @@ import {
   Sparkles,
   Heart,
   Camera,
-  Tv,
   MessageCircleHeart,
   Image as ImageIcon,
 } from 'lucide-react';
@@ -241,7 +240,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
         const steps = [
           { icon: '📱', title: '1. Buka Kamera HP', desc: 'Arahkan kamera ke barcode tanpa download aplikasi apapun' },
           { icon: '📸', title: '2. Jepret / Pilih Foto', desc: 'Ambil foto selfie atau foto bersama rombongan Anda' },
-          { icon: '📺', title: '3. Langsung Tayang di TV', desc: 'Momen Anda otomatis tampil di layar proyektor acara!' },
+          { icon: '💖', title: '3. Album Kenangan', desc: 'Foto Anda tersimpan abadi di album pengantin!' },
         ];
 
         steps.forEach((step, idx) => {
@@ -480,11 +479,11 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
               </div>
 
               <div className="p-2 sm:p-2.5 rounded-xl bg-white/90 border border-rose-100 text-center space-y-1 shadow-2xs">
-                <div className="w-7 h-7 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold mx-auto flex items-center justify-center">
-                  📺
+                <div className="w-7 h-7 rounded-full bg-rose-100 text-rose-700 text-xs font-bold mx-auto flex items-center justify-center">
+                  💖
                 </div>
-                <div className="text-[10px] font-bold text-[#0A261D]">Tayang di TV</div>
-                <div className="text-[9px] text-gray-500 leading-tight">Tampil di layar pesta!</div>
+                <div className="text-[10px] font-bold text-[#0A261D]">Album Kenangan</div>
+                <div className="text-[9px] text-gray-500 leading-tight">Tersimpan abadi!</div>
               </div>
             </div>
           </div>
