@@ -87,11 +87,11 @@ export function getRemainingUploadQuota(deviceId?: string): number {
   return Math.max(0, MAX_PHOTO_PER_DEVICE - count);
 }
 
-// Client-side automatic Visually Lossless image compression
+// Client-side automatic Visually Lossless image compression (Studio Grade 2.5K)
 export async function compressImageFile(file: File): Promise<string> {
   const result = await compressVisuallyLossless(file, {
-    maxDimension: 2048,
-    quality: 0.85,
+    maxDimension: 2560,
+    quality: 0.90,
   });
   return result.dataUrl;
 }
