@@ -169,12 +169,20 @@ export const UploadModal: React.FC<UploadModalProps> = ({
     try {
       const compressedList: string[] = [];
       for (const file of filesToProcess) {
-        const compressed = await compressImageFile(file);
-        compressedList.push(compressed);
+        try {
+          const compressed = await compressImageFile(file);
+          compressedList.push(compressed);
+        } catch (singleErr) {
+          console.warn('Gagal memproses 1 gambar, lewati ke file berikutnya:', singleErr);
+        }
       }
-      setSelectedImages((prev) => [...prev, ...compressedList]);
+      if (compressedList.length > 0) {
+        setSelectedImages((prev) => [...prev, ...compressedList]);
+      } else {
+        setErrorMsg('Format foto tidak didukung oleh browser Anda.');
+      }
     } catch (err) {
-      setErrorMsg('Gagal memproses beberapa gambar. Silakan coba kembali.');
+      setErrorMsg('Gagal memproses gambar. Silakan coba kembali.');
     } finally {
       setIsCompressing(false);
       if (e.target) e.target.value = '';

@@ -82,6 +82,7 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
   };
 
   const formatTime = (seconds: number) => {
+    if (!seconds || isNaN(seconds) || !isFinite(seconds)) return '0:00';
     const mins = Math.floor(seconds / 60);
     const secs = Math.floor(seconds % 60);
     return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
@@ -102,7 +103,7 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
           <Mic className="w-3 h-3 text-[#E6CA92]" />
           <span className="text-[11px] font-bold text-[#E6CA92]">VN</span>
           <span className="text-[10px] text-white/80">
-            {isPlaying ? formatTime(currentTime) : formatTime(totalDuration || 15)}
+            {isPlaying ? formatTime(currentTime) : formatTime(totalDuration || duration || 0)}
           </span>
         </div>
       </div>

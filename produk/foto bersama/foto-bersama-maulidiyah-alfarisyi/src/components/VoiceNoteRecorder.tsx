@@ -64,11 +64,11 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
       streamRef.current = stream;
 
       // Select best supported mimeType across iOS Safari and Android Chrome
-      let mimeType = 'audio/webm';
+      let mimeType = '';
       const candidateMimes = [
-        'audio/webm;codecs=opus',
         'audio/mp4',
         'audio/aac',
+        'audio/webm;codecs=opus',
         'audio/webm',
         'audio/ogg;codecs=opus',
       ];
@@ -91,7 +91,8 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
 
       let seconds = 0;
       mediaRecorder.onstop = async () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: mimeType });
+        const actualMime = mediaRecorder.mimeType || mimeType || 'audio/mp4';
+        const audioBlob = new Blob(audioChunksRef.current, { type: actualMime });
         const reader = new FileReader();
         reader.readAsDataURL(audioBlob);
         reader.onloadend = () => {
@@ -169,6 +170,7 @@ export const VoiceNoteRecorder: React.FC<VoiceNoteRecorderProps> = ({
   };
 
   const formatTime = (secs: number) => {
+    if (!secs || isNaN(secs) || !isFinite(secs)) return '0:00';
     const mins = Math.floor(secs / 60);
     const remSecs = secs % 60;
     return `${mins}:${remSecs < 10 ? '0' : ''}${remSecs}`;
