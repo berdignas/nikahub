@@ -162,13 +162,15 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
         </div>
       </div>
 
-      {/* Editorial Collage Grid of Guest Folders */}
+      {/* Editorial Asymmetrical Mosaic Grid of Guest Folders */}
       {filtered.length > 0 ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-7">
-          {filtered.map((album) => (
+        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
+          {filtered.map((album, idx) => (
             <PhotoCard
               key={album.id}
               album={album}
+              index={idx}
+              totalCount={filtered.length}
               currentDeviceId={currentDeviceId}
               isAdminModerator={isAdminModerator}
               onLikeToggle={onLikeToggle}
