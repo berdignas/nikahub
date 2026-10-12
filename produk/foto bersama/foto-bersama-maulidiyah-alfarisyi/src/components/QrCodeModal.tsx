@@ -120,24 +120,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
         drawFlowerCorner(canvas.width - 85, canvas.height - 85, Math.PI);
         drawFlowerCorner(85, canvas.height - 85, (Math.PI * 3) / 2);
 
-        // 4. Background Floating Hearts
-        const hearts = [
-          { x: 140, y: 180, s: 22 },
-          { x: 880, y: 190, s: 24 },
-          { x: 120, y: 840, s: 26 },
-          { x: 900, y: 860, s: 26 },
-          { x: 140, y: 1240, s: 22 },
-          { x: 880, y: 1260, s: 24 },
-        ];
-        hearts.forEach((h) => {
-          ctx.save();
-          ctx.font = `${h.s}px sans-serif`;
-          ctx.textAlign = 'center';
-          ctx.fillText('💖', h.x, h.y);
-          ctx.restore();
-        });
-
-        // 5. Header Badge: Standee Meja 8,5 x 13 cm
+        // 4. Header Badge: Standee Meja 8,5 x 13 cm
         ctx.fillStyle = '#E11D48';
         ctx.beginPath();
         ctx.roundRect(canvas.width / 2 - 200, 75, 400, 44, 22);
@@ -148,9 +131,9 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
         ctx.textAlign = 'center';
         ctx.fillText('💖 LIVE WEDDING PHOTO & GUESTBOOK 💖', canvas.width / 2, 103);
 
-        // 6. Couple Title (Besar & Mewah)
+        // 5. Couple Title (Besar & Mewah)
         ctx.fillStyle = '#0A261D';
-        ctx.font = 'bold 50px "Playfair Display", Georgia, serif';
+        ctx.font = 'bold 52px "Playfair Display", Georgia, serif';
         ctx.textAlign = 'center';
         ctx.fillText('Alfarisyi & Maulidiyah', canvas.width / 2, 185);
 
@@ -158,7 +141,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
         ctx.font = 'italic 22px Georgia, serif';
         ctx.fillText('Selasa & Rabu, 13 - 14 Oktober 2026', canvas.width / 2, 225);
 
-        // 7. Warm Sweet Invitation Headline (Besar & Menarik Perhatian)
+        // 6. Warm Sweet Invitation Headline (Besar & Menggoda)
         ctx.fillStyle = '#881337';
         ctx.font = 'bold 32px "Playfair Display", Georgia, serif';
         ctx.textAlign = 'center';
@@ -166,99 +149,89 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
 
         ctx.fillStyle = '#4B5563';
         ctx.font = 'bold 18px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.fillText('Scan Barcode Hati di Bawah Ini dengan Kamera HP Anda ✨', canvas.width / 2, 335);
+        ctx.fillText('Scan Barcode di Bawah Ini dengan Kamera HP Anda ✨', canvas.width / 2, 335);
 
-        // 8. BIG HEART SHAPE WITH BARCODE BOX INSIDE (Warna merah solid di sekeliling kotak barcode)
-        const heartCenterX = canvas.width / 2;
-        const heartCenterY = 660;
-        const heartW = 540;
-        const heartH = 490;
+        // 7. CENTER SECTION: BIG QR CODE WITH DECORATIVE HEARTS ON THE SIDES
+        const qrCenterY = 660;
+        const boxSize = 460; // DIBESARKAN SESUAI REQUEST
+        const boxX = canvas.width / 2 - (boxSize / 2);
+        const boxY = qrCenterY - (boxSize / 2);
 
-        // Draw Big Red Solid Heart Shape
-        ctx.save();
-        ctx.beginPath();
-        const topH = heartCenterY - 180;
-        ctx.moveTo(heartCenterX, heartCenterY + 230);
-        // Left side curve
-        ctx.bezierCurveTo(
-          heartCenterX - 340, heartCenterY + 80,
-          heartCenterX - 340, topH,
-          heartCenterX - 150, topH - 40
-        );
-        ctx.bezierCurveTo(
-          heartCenterX - 55, topH - 40,
-          heartCenterX, topH + 45,
-          heartCenterX, topH + 70
-        );
-        // Right side curve
-        ctx.bezierCurveTo(
-          heartCenterX, topH + 45,
-          heartCenterX + 55, topH - 40,
-          heartCenterX + 150, topH - 40
-        );
-        ctx.bezierCurveTo(
-          heartCenterX + 340, topH,
-          heartCenterX + 340, heartCenterY + 80,
-          heartCenterX, heartCenterY + 230
-        );
-        ctx.closePath();
-
-        // Fill Solid Ruby Red Heart
-        ctx.shadowColor = 'rgba(225, 29, 72, 0.45)';
-        ctx.shadowBlur = 35;
-        ctx.shadowOffsetY = 15;
-        ctx.fillStyle = '#E11D48';
-        ctx.fill();
-
-        ctx.strokeStyle = '#BE123C';
-        ctx.lineWidth = 6;
-        ctx.stroke();
-        ctx.restore();
-
-        // 9. White Box for Barcode inside the heart (Fit completely inside, tidak keluar dari shape hati)
-        const boxSize = 350;
-        const boxX = heartCenterX - (boxSize / 2);
-        const boxY = heartCenterY - (boxSize / 2) + 20;
-
+        // Draw Big White Box for QR
         ctx.save();
         ctx.fillStyle = '#FFFFFF';
-        ctx.shadowColor = 'rgba(0, 0, 0, 0.15)';
-        ctx.shadowBlur = 15;
-        ctx.shadowOffsetY = 4;
+        ctx.shadowColor = 'rgba(225, 29, 72, 0.25)';
+        ctx.shadowBlur = 30;
+        ctx.shadowOffsetY = 10;
         ctx.beginPath();
-        ctx.roundRect(boxX, boxY, boxSize, boxSize, 28);
+        ctx.roundRect(boxX, boxY, boxSize, boxSize, 36);
         ctx.fill();
 
-        ctx.strokeStyle = '#FFE4E6';
-        ctx.lineWidth = 3;
+        ctx.strokeStyle = '#FECDD3';
+        ctx.lineWidth = 4;
         ctx.stroke();
         ctx.restore();
 
-        // Draw QR Code inside the white box
-        const qrDrawSize = 300;
+        // Draw QR Code inside box (Ukuran Besar & Jernih!)
+        const qrDrawSize = 400;
         ctx.drawImage(
           qrImg,
-          heartCenterX - (qrDrawSize / 2),
-          boxY + (boxSize - qrDrawSize) / 2,
+          canvas.width / 2 - (qrDrawSize / 2),
+          qrCenterY - (qrDrawSize / 2),
           qrDrawSize,
           qrDrawSize
         );
 
-        // Top Pin on Heart
-        ctx.fillStyle = '#FFFFFF';
-        ctx.beginPath();
-        ctx.roundRect(heartCenterX - 160, heartCenterY - 215, 320, 38, 19);
-        ctx.fill();
-        ctx.strokeStyle = '#E11D48';
-        ctx.lineWidth = 2;
-        ctx.stroke();
-
+        // Top Badge on QR Code
         ctx.fillStyle = '#E11D48';
-        ctx.font = 'bold 15px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
-        ctx.textAlign = 'center';
-        ctx.fillText('💖 SCAN BARCODE HATI 💖', heartCenterX, heartCenterY - 190);
+        ctx.beginPath();
+        ctx.roundRect(canvas.width / 2 - 160, boxY - 20, 320, 40, 20);
+        ctx.fill();
 
-        // 10. Three Cheerful Steps Guide (Lebih Besar & Jelas)
+        ctx.fillStyle = '#FFFFFF';
+        ctx.font = 'bold 16px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText('💖 SCAN BARCODE KENANGAN 💖', canvas.width / 2, boxY + 6);
+
+        // 8. DECORATIVE HEARTS ON BOTH SIDES (GAMBAR HATI DI SAMPING-SAMPINGNYA)
+        // Helper to draw hearts on canvas
+        const drawHeartIcon = (cx: number, cy: number, size: number, color: string) => {
+          ctx.save();
+          ctx.translate(cx, cy);
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          ctx.moveTo(0, size * 0.3);
+          ctx.bezierCurveTo(-size * 0.5, -size * 0.4, -size, size * 0.2, 0, size);
+          ctx.bezierCurveTo(size, size * 0.2, size * 0.5, -size * 0.4, 0, size * 0.3);
+          ctx.fill();
+          ctx.restore();
+        };
+
+        // Left Side Hearts
+        const leftHearts = [
+          { y: qrCenterY - 140, s: 34, c: '#E11D48' },
+          { y: qrCenterY - 60, s: 26, c: '#D4AF37' },
+          { y: qrCenterY + 20, s: 38, c: '#F43F5E' },
+          { y: qrCenterY + 100, s: 28, c: '#E11D48' },
+          { y: qrCenterY + 160, s: 22, c: '#D4AF37' },
+        ];
+        leftHearts.forEach((h) => {
+          drawHeartIcon(boxX - 60, h.y, h.s, h.c);
+        });
+
+        // Right Side Hearts
+        const rightHearts = [
+          { y: qrCenterY - 140, s: 34, c: '#E11D48' },
+          { y: qrCenterY - 60, s: 26, c: '#D4AF37' },
+          { y: qrCenterY + 20, s: 38, c: '#F43F5E' },
+          { y: qrCenterY + 100, s: 28, c: '#E11D48' },
+          { y: qrCenterY + 160, s: 22, c: '#D4AF37' },
+        ];
+        rightHearts.forEach((h) => {
+          drawHeartIcon(boxX + boxSize + 60, h.y, h.s, h.c);
+        });
+
+        // 9. Three Cheerful Steps Guide (Lebih Besar & Jelas)
         const stepY = 1010;
         const stepWidth = 270;
         const stepGap = 25;
@@ -299,13 +272,13 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
           ctx.fillText(words.slice(4).join(' '), x + stepWidth / 2, stepY + 144);
         });
 
-        // 11. Romantic Love Quote
+        // 10. Romantic Love Quote
         ctx.fillStyle = '#0A261D';
         ctx.font = 'italic 18px "Playfair Display", Georgia, serif';
         ctx.textAlign = 'center';
         ctx.fillText('"Kehadiran dan senyuman Anda adalah kado terindah bagi hari bahagia kami"', canvas.width / 2, 1260);
 
-        // 12. Direct URL Footer
+        // 11. Direct URL Footer
         ctx.fillStyle = '#6B7280';
         ctx.font = '14px -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif';
         ctx.fillText('Atau buka langsung melalui browser HP Anda:', canvas.width / 2, 1340);
@@ -318,7 +291,7 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
         ctx.font = '13px sans-serif';
         ctx.fillText('Ukuran Standee 8,5 x 13 cm • Batas 5 Foto per Tamu • NikaHub Atelier', canvas.width / 2, 1490);
 
-        // 13. Trigger Download
+        // 12. Trigger Download
         const pngUrl = canvas.toDataURL('image/png');
         const downloadLink = document.createElement('a');
         downloadLink.href = pngUrl;
@@ -405,75 +378,75 @@ export const QrCodeModal: React.FC<QrCodeModalProps> = ({ isOpen, onClose }) => 
                   "Abadikan Momen Manis Anda Bersama Kami!"
                 </h4>
                 <p className="text-[11px] text-gray-600 leading-tight mt-0.5">
-                  Scan Barcode Hati di bawah untuk mengunggah foto Anda ✨
+                  Scan Barcode di bawah untuk mengunggah foto Anda ✨
                 </p>
               </div>
             </div>
 
-            {/* Middle Section: SOLID RED HEART WITH BARCODE BOX SAFELY INSIDE */}
-            <div className="relative my-2 flex items-center justify-center">
-              <div className="relative w-[260px] h-[235px] sm:w-[280px] sm:h-[250px] flex items-center justify-center">
-                {/* SVG Siluet Hati Merah Penuh (Solid Red Heart) */}
-                <svg
-                  viewBox="0 0 320 290"
-                  className="absolute inset-0 w-full h-full drop-shadow-lg"
-                >
-                  {/* Outer Red Heart Fill */}
-                  <path
-                    d="M 160 280
-                       C 160 280, 20 190, 20 100
-                       C 20 35, 75 8, 130 8
-                       C 150 8, 160 25, 160 38
-                       C 160 25, 170 8, 190 8
-                       C 245 8, 300 35, 300 100
-                       C 300 190, 160 280, 160 280 Z"
-                    fill="#E11D48"
-                  />
-                  {/* Subtle Golden Outline */}
-                  <path
-                    d="M 160 274
-                       C 160 274, 25 186, 25 100
-                       C 25 39, 77 14, 130 14
-                       C 148 14, 160 28, 160 40
-                       C 160 28, 172 14, 190 14
-                       C 243 14, 295 39, 295 100
-                       C 295 186, 160 274, 160 274 Z"
-                    fill="none"
-                    stroke="#FFD1DC"
-                    strokeWidth="2.5"
-                  />
-                </svg>
+            {/* Middle Section: BIG QR CODE WITH DECORATIVE HEARTS ON SIDES */}
+            <div className="relative my-2 flex items-center justify-center gap-2 sm:gap-3">
+              {/* Left Side Hearts Column */}
+              <div className="flex flex-col items-center justify-center gap-2.5 select-none shrink-0">
+                <div className="w-7 h-7 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                </div>
+                <div className="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />
+                </div>
+                <div className="w-7 h-7 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4 h-4 fill-[#E11D48] text-[#E11D48]" />
+                </div>
+                <div className="w-5 h-5 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-3 h-3 fill-rose-400 text-rose-400" />
+                </div>
+              </div>
 
-                {/* White Barcode Box Fit Perfectly Inside (Tidak keluar dari shape hati) */}
-                <div
-                  ref={qrRef}
-                  className="relative z-10 p-2.5 sm:p-3 bg-white rounded-2xl shadow-md border-2 border-rose-100 flex items-center justify-center"
-                  style={{
-                    width: '170px',
-                    height: '170px',
-                    marginTop: '15px',
-                  }}
-                >
+              {/* Center: BIG CLEAN QR CODE BOX */}
+              <div className="relative p-2.5 sm:p-3 bg-white rounded-3xl shadow-xl border-2 border-rose-200/90 flex flex-col items-center">
+                {/* Top Badge Pin on QR */}
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 z-20 px-3.5 py-0.5 rounded-full bg-[#E11D48] text-white border-2 border-white text-[10.5px] font-bold shadow-md whitespace-nowrap flex items-center gap-1.5">
+                  <Heart className="w-3 h-3 fill-white text-white" />
+                  <span>Scan Barcode Kenangan</span>
+                </div>
+
+                <div ref={qrRef} className="p-1 bg-white rounded-2xl flex items-center justify-center">
                   <QRCodeSVG
                     value={targetUrl}
-                    size={146}
+                    size={188} // DIBESARKAN SESUAI PERMINTAAN USER!
                     level="H"
                     fgColor="#E11D48" // Ruby Red
                     bgColor="#FFFFFF"
                     includeMargin={false}
                     imageSettings={{
                       src: heartCenterBadge,
-                      height: 38,
-                      width: 38,
+                      height: 46,
+                      width: 46,
                       excavate: true,
                     }}
                   />
                 </div>
 
-                {/* Top Badge Pin on Heart */}
-                <div className="absolute top-0 left-1/2 -translate-x-1/2 z-20 px-3 py-0.5 rounded-full bg-white text-[#E11D48] border border-rose-300 text-[10px] font-bold shadow-xs whitespace-nowrap flex items-center gap-1">
-                  <Heart className="w-3 h-3 fill-[#E11D48]" />
-                  <span>Barcode Hati Meja</span>
+                {/* Couple Romance Tag */}
+                <div className="mt-1 flex items-center gap-1.5 text-[10.5px] font-serif font-bold text-[#881337]">
+                  <span>💖</span>
+                  <span>Ahmad Ferdi & Nur Thoifah</span>
+                  <span>💖</span>
+                </div>
+              </div>
+
+              {/* Right Side Hearts Column */}
+              <div className="flex flex-col items-center justify-center gap-2.5 select-none shrink-0">
+                <div className="w-7 h-7 rounded-full bg-rose-100 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4 h-4 fill-[#E11D48] text-[#E11D48]" />
+                </div>
+                <div className="w-6 h-6 rounded-full bg-amber-50 border border-amber-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-3.5 h-3.5 fill-[#D4AF37] text-[#D4AF37]" />
+                </div>
+                <div className="w-7 h-7 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-4 h-4 fill-rose-500 text-rose-500" />
+                </div>
+                <div className="w-5 h-5 rounded-full bg-rose-50 border border-rose-200 flex items-center justify-center shadow-2xs">
+                  <Heart className="w-3 h-3 fill-rose-400 text-rose-400" />
                 </div>
               </div>
             </div>
