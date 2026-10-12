@@ -20,6 +20,12 @@ export const VoiceNotePlayer: React.FC<VoiceNotePlayerProps> = ({
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
+    if (duration && duration > 0) {
+      setTotalDuration(duration);
+    }
+  }, [duration]);
+
+  useEffect(() => {
     const audio = new Audio(audioUrl);
     audioRef.current = audio;
 
