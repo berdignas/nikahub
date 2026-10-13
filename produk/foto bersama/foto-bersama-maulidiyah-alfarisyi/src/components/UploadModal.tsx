@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { X, Camera, Image as ImageIcon, Sparkles, AlertCircle, Trash2, Loader2, RefreshCw, Plus, FolderArchive, Smartphone } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { compressImageFile, MAX_PHOTO_PER_DEVICE, getOrCreateDeviceId } from '../utils/deviceStorage';
+import { uploadAlbumAssetsToR2 } from '../utils/r2Storage';
 import { GuestAlbum, PhotoMoment } from '../types';
 import { VoiceNoteRecorder } from './VoiceNoteRecorder';
 
@@ -29,6 +30,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isCompressing, setIsCompressing] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitStatusText, setSubmitStatusText] = useState('Menyimpan Folder Foto...');
   const [errorMsg, setErrorMsg] = useState('');
 
   // Live Stream Camera State
@@ -207,6 +209,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
 
     setIsSubmitting(true);
     setErrorMsg('');
+    setSubmitStatusText('Memproses foto...');
 
     try {
       const deviceId = getOrCreateDeviceId();
@@ -226,7 +229,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         isInitialSample: false,
       }));
 
-      const newAlbum: GuestAlbum = {
+      const draftAlbum: GuestAlbum = {
         id: albumId,
         deviceId: deviceId,
         senderName: guestName,
@@ -241,7 +244,15 @@ export const UploadModal: React.FC<UploadModalProps> = ({
         isInitialSample: false,
       };
 
-      const uploadSuccess = await Promise.resolve(onAlbumCreated(newAlbum));
+      // 1. Upload photos and voice note to Cloudflare R2
+      setSubmitStatusText('Mengunggah ke Cloudflare R2...');
+      const r2Album = await uploadAlbumAssetsToR2(draftAlbum, (status) => {
+        setSubmitStatusText(status);
+      });
+
+      // 2. Sync R2 URLs to Supabase database
+      setSubmitStatusText('Menyimpan ke buku tamu...');
+      const uploadSuccess = await Promise.resolve(onAlbumCreated(r2Album));
       if (uploadSuccess === false) {
         setErrorMsg('Gagal mengunggah folder foto ke database server. Silakan periksa koneksi internet Anda dan tekan coba lagi.');
         setIsSubmitting(false);
@@ -656,7 +667,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                   {isSubmitting ? (
                     <>
                       <Loader2 className="w-4 h-4 animate-spin text-[#E6CA92]" />
-                      <span>Menyimpan Folder Foto...</span>
+                      <span>{submitStatusText}</span>
                     </>
                   ) : (
                     <>

@@ -6,6 +6,8 @@ import { fileURLToPath } from 'url';
 import nodemailer from 'nodemailer';
 import dns from 'dns';
 import net from 'net';
+import https from 'https';
+import crypto from 'crypto';
 
 // Force Linux / Node.js to prioritize IPv4 over unrouted IPv6
 if (dns.setDefaultResultOrder) {
@@ -26,7 +28,8 @@ const WHATSAPP_NUMBER = process.env.WHATSAPP_NUMBER || '6281234567890';
 
 // Middleware
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // In-Memory Databases (Ready to connect to MongoDB / PostgreSQL)
 const usersDB = new Map();
@@ -136,8 +139,128 @@ const sendEmailWithFallback = async ({ from, to, subject, html }) => {
 };
 
 // ==========================================
+// CLOUDFLARE R2 UPLOAD HELPER & ENDPOINT
+// ==========================================
+const uploadToR2 = async ({ base64, filename, folder = 'events/maulidiyah-alfarisyi', contentType = 'image/jpeg' }) => {
+  const accountId = process.env.CLOUDFLARE_R2_ACCOUNT_ID || '3ef8535af55826b8c4eda431366988ae';
+  const bucket = process.env.CLOUDFLARE_R2_BUCKET_NAME || 'bdnstorage';
+  const accessKeyId = process.env.CLOUDFLARE_R2_ACCESS_KEY_ID || 'b11257a112d8a90399fe56bc2a3ac5bf';
+  const secretAccessKey = process.env.CLOUDFLARE_R2_SECRET_ACCESS_KEY || '32d542f3911c9bd1fdb44a519fcdff6e65a1fe86fdb01fd654ca7c12f9ab6a66';
+  const publicUrl = (process.env.CLOUDFLARE_R2_PUBLIC_URL || 'https://pub-05dae10551b54a49b1b92a3dedd919d6.r2.dev').replace(/\/$/, '');
+
+  let cleanBase64 = base64;
+  let detectedType = contentType;
+  const match = base64.match(/^data:([^;]+);base64,(.*)$/);
+  if (match) {
+    detectedType = match[1];
+    cleanBase64 = match[2];
+  }
+
+  const buffer = Buffer.from(cleanBase64, 'base64');
+  const key = `${folder.replace(/\/$/, '')}/${filename}`;
+  const host = `${accountId}.r2.cloudflarestorage.com`;
+  const region = 'auto';
+  const service = 's3';
+
+  const now = new Date();
+  const amzDate = now.toISOString().replace(/[:-]|\.\d{3}/g, '');
+  const dateStamp = amzDate.slice(0, 8);
+
+  const payloadHash = crypto.createHash('sha256').update(buffer).digest('hex');
+  const canonicalUri = `/${bucket}/${key}`;
+  const canonicalHeaders = `host:${host}\nx-amz-content-sha256:${payloadHash}\nx-amz-date:${amzDate}\n`;
+  const signedHeaders = 'host;x-amz-content-sha256;x-amz-date';
+
+  const canonicalRequest = [
+    'PUT',
+    canonicalUri,
+    '',
+    canonicalHeaders,
+    signedHeaders,
+    payloadHash
+  ].join('\n');
+
+  const canonicalHash = crypto.createHash('sha256').update(canonicalRequest).digest('hex');
+  const credentialScope = `${dateStamp}/${region}/${service}/aws4_request`;
+  const stringToSign = [
+    'AWS4-HMAC-SHA256',
+    amzDate,
+    credentialScope,
+    canonicalHash
+  ].join('\n');
+
+  const hmac = (k, str) => crypto.createHmac('sha256', k).update(str).digest();
+  const kDate = hmac('AWS4' + secretAccessKey, dateStamp);
+  const kRegion = hmac(kDate, region);
+  const kService = hmac(kRegion, service);
+  const kSigning = hmac(kService, 'aws4_request');
+  const signature = crypto.createHmac('sha256', kSigning).update(stringToSign).digest('hex');
+
+  const authHeader = `AWS4-HMAC-SHA256 Credential=${accessKeyId}/${credentialScope}, SignedHeaders=${signedHeaders}, Signature=${signature}`;
+
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: host,
+      path: canonicalUri,
+      method: 'PUT',
+      headers: {
+        'Host': host,
+        'x-amz-date': amzDate,
+        'x-amz-content-sha256': payloadHash,
+        'Authorization': authHeader,
+        'Content-Length': buffer.length,
+        'Content-Type': detectedType
+      }
+    }, (res) => {
+      let data = '';
+      res.on('data', chunk => data += chunk);
+      res.on('end', () => {
+        if (res.statusCode >= 200 && res.statusCode < 300) {
+          resolve({
+            url: `${publicUrl}/${key}`,
+            key,
+            statusCode: res.statusCode
+          });
+        } else {
+          reject(new Error(`R2 HTTP ${res.statusCode}: ${data}`));
+        }
+      });
+    });
+
+    req.on('error', reject);
+    req.write(buffer);
+    req.end();
+  });
+};
+
+// ==========================================
 // REST API ROUTES
 // ==========================================
+
+// Cloudflare R2 Direct Upload Endpoint
+app.post(['/api/upload-r2', '/upload-r2'], async (req, res) => {
+  try {
+    const { base64, filename, folder, contentType } = req.body;
+    if (!base64) {
+      return res.status(400).json({ success: false, message: 'Data base64 tidak boleh kosong.' });
+    }
+
+    const ext = contentType?.includes('mp4') ? 'mp4' : contentType?.includes('webm') ? 'webm' : 'jpg';
+    const finalFilename = filename || `upload_${Date.now()}_${Math.random().toString(36).substring(2, 6)}.${ext}`;
+
+    const result = await uploadToR2({
+      base64,
+      filename: finalFilename,
+      folder: folder || 'events/maulidiyah-alfarisyi',
+      contentType: contentType || 'image/jpeg'
+    });
+
+    return res.json({ success: true, url: result.url, key: result.key });
+  } catch (err) {
+    console.error('R2 Server Upload Error:', err);
+    return res.status(500).json({ success: false, message: err.message });
+  }
+});
 
 // Health Check Endpoint (supports both /api/health and /health)
 app.get(['/api/health', '/health'], (req, res) => {
