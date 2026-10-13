@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { Navbar } from './components/Navbar';
 import { Header } from './components/Header';
 import { PhotoGrid } from './components/PhotoGrid';
@@ -9,6 +9,7 @@ import { TvSlideshowMode } from './components/TvSlideshowMode';
 import { QrCodeModal } from './components/QrCodeModal';
 import { DownloadAllModal } from './components/DownloadAllModal';
 import { AdminPinModal } from './components/AdminPinModal';
+import { RealtimeNotificationBanner, RealtimeAlertData } from './components/RealtimeNotificationBanner';
 import { EVENT_INFO } from './data/initialPhotos';
 import { GuestAlbum, PhotoMoment, FilterTab, CommentItem } from './types';
 import {
@@ -29,6 +30,34 @@ import {
   deletePhotoFromDatabase,
 } from './utils/supabaseClient';
 import { Heart, Camera, QrCode, KeyRound, ShieldCheck } from 'lucide-react';
+
+/**
+ * Elegant soft synthesizer bell chime using Web Audio API
+ */
+function playSoftNotificationChime() {
+  try {
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    if (!AudioContextClass) return;
+    const ctx = new AudioContextClass();
+    if (ctx.state === 'suspended') {
+      ctx.resume().catch(() => {});
+    }
+    const now = ctx.currentTime;
+    // Elegant two-tone bell chime (C5 523Hz -> E5 659Hz)
+    [523.25, 659.25].forEach((freq, idx) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, now + idx * 0.12);
+      gain.gain.setValueAtTime(0.035, now + idx * 0.12);
+      gain.gain.exponentialRampToValueAtTime(0.0001, now + idx * 0.12 + 0.65);
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start(now + idx * 0.12);
+      osc.stop(now + idx * 0.12 + 0.65);
+    });
+  } catch {}
+}
 
 export function App() {
   const [albums, setAlbums] = useState<GuestAlbum[]>([]);
@@ -56,6 +85,11 @@ export function App() {
   const [isCouplePhotoOpen, setIsCouplePhotoOpen] = useState(false);
   const [selectedAlbum, setSelectedAlbum] = useState<GuestAlbum | null>(null);
 
+  // Live Toast Notification for New Guest Uploads
+  const [realtimeAlert, setRealtimeAlert] = useState<RealtimeAlertData | null>(null);
+  const lastAlertTimeRef = useRef<number>(0);
+  const lastAlertKeyRef = useRef<string>('');
+
   // Initialize data on mount and fetch remote albums from Supabase Database
   useEffect(() => {
     const devId = getOrCreateDeviceId();
@@ -74,10 +108,65 @@ export function App() {
       }
     });
 
+    // Helper to process live incoming upload events & trigger luxury notification toast
+    const handleNewUploadEvent = (payload: any) => {
+      const newRecord = payload.new;
+      if (!newRecord) return;
+
+      // Ignore notifications for uploads triggered by THIS local device (user already saw confetti)
+      if (newRecord.device_id && newRecord.device_id === devId) {
+        return;
+      }
+
+      const albumId = newRecord.id || newRecord.album_id;
+      const dedupeKey = albumId || newRecord.sender_name || 'unknown';
+
+      // De-duplicate if same album triggers events on both wedding_albums and wedding_photos within 2.5s
+      const now = Date.now();
+      if (now - lastAlertTimeRef.current < 2500 && lastAlertKeyRef.current === dedupeKey) {
+        return;
+      }
+      lastAlertTimeRef.current = now;
+      lastAlertKeyRef.current = dedupeKey;
+
+      const senderName = newRecord.sender_name || 'Tamu Undangan';
+      const caption = newRecord.caption || undefined;
+
+      let photoCount = 1;
+      let thumbnailUrl: string | undefined = undefined;
+
+      if (newRecord.photos_data) {
+        const rawPhotos = Array.isArray(newRecord.photos_data)
+          ? newRecord.photos_data
+          : newRecord.photos_data.photos;
+        if (Array.isArray(rawPhotos) && rawPhotos.length > 0) {
+          photoCount = rawPhotos.length;
+          thumbnailUrl = rawPhotos[0]?.imageUrl;
+        }
+      } else if (newRecord.image_url) {
+        thumbnailUrl = newRecord.image_url;
+      }
+
+      setRealtimeAlert({
+        id: 'alert_' + now + '_' + Math.random().toString(36).substring(2, 6),
+        senderName,
+        caption,
+        photoCount,
+        thumbnailUrl,
+        albumId,
+        timestamp: now,
+      });
+
+      playSoftNotificationChime();
+    };
+
     // 3. Setup Supabase Realtime channel for instant sync across all devices
     const channel = supabase
       .channel('public:wedding_realtime_sync')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wedding_photos' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wedding_photos' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          handleNewUploadEvent(payload);
+        }
         fetchAlbumsFromDatabase().then((remoteAlbums) => {
           if (remoteAlbums !== null) {
             const merged = mergeDeviceLikesIntoAlbums(remoteAlbums, devId);
@@ -86,7 +175,10 @@ export function App() {
           }
         });
       })
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'wedding_albums' }, () => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'wedding_albums' }, (payload) => {
+        if (payload.eventType === 'INSERT') {
+          handleNewUploadEvent(payload);
+        }
         fetchAlbumsFromDatabase().then((remoteAlbums) => {
           if (remoteAlbums !== null) {
             const merged = mergeDeviceLikesIntoAlbums(remoteAlbums, devId);
@@ -354,8 +446,36 @@ export function App() {
   // Calculate 1.0 GB Cloud Storage stats & limits
   const storageStats = calculateStorageStats(albums, 1.0);
 
+  // Handler when user clicks on a live realtime notification toast
+  const handleViewAlertAlbum = (albumId?: string) => {
+    setRealtimeAlert(null);
+    if (!albumId) return;
+
+    const target = albums.find((a) => a.id === albumId);
+    if (target) {
+      setSelectedAlbum(target);
+      return;
+    }
+
+    fetchAlbumsFromDatabase().then((fresh) => {
+      if (fresh) {
+        const found = fresh.find((a) => a.id === albumId);
+        if (found) {
+          setSelectedAlbum(found);
+        }
+      }
+    });
+  };
+
   return (
     <div className="min-h-screen bg-[#FAF9F5] text-[#0A261D] flex flex-col font-sans selection:bg-[#E6CA92]/40 selection:text-[#0A261D]">
+      {/* Floating Real-time Notification Banner for New Guest Uploads */}
+      <RealtimeNotificationBanner
+        alert={realtimeAlert}
+        onDismiss={() => setRealtimeAlert(null)}
+        onViewAlbum={handleViewAlertAlbum}
+      />
+
       {/* Top Navigation */}
       <Navbar
         onOpenTv={() => setIsTvOpen(true)}
