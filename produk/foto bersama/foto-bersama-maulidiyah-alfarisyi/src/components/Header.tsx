@@ -46,35 +46,41 @@ export const Header: React.FC<HeaderProps> = ({
   };
 
   return (
-    <div className="relative overflow-hidden pt-8 pb-8 sm:pt-12 sm:pb-12 border-b border-[#E6CA92]/30 bg-gradient-to-b from-white via-[#FAF9F5] to-[#F5F2E9]">
-      {/* Decorative ambient gold glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[800px] h-[380px] bg-gradient-to-b from-[#E6CA92]/20 via-[#D4AF37]/10 to-transparent blur-3xl pointer-events-none rounded-full" />
+    <div className="relative overflow-hidden pt-8 pb-10 sm:pt-14 sm:pb-14 border-b border-[#E6CA92]/30 bg-gradient-to-b from-[#FAF9F5] via-[#FAF9F5] to-[#F5F1E8]">
+      {/* Decorative ambient diffuse luxury glow */}
+      <div className="absolute top-0 left-1/4 -translate-x-1/2 w-[500px] h-[350px] bg-gradient-to-br from-[#E6CA92]/20 via-[#D4AF37]/10 to-transparent blur-3xl pointer-events-none rounded-full" />
+      <div className="absolute top-10 right-1/4 translate-x-1/2 w-[500px] h-[350px] bg-gradient-to-bl from-[#C5A880]/15 via-[#E6CA92]/10 to-transparent blur-3xl pointer-events-none rounded-full" />
 
       <div className="max-w-5xl mx-auto px-4 relative z-10 text-center">
-        {/* Subtle Luxury Wedding Badge */}
-        <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-white/90 border border-[#D4AF37]/40 text-[#0A261D] text-xs font-sans mb-4 shadow-xs backdrop-blur-md">
-          <Sparkles className="w-3.5 h-3.5 text-[#C5A880]" />
-          <span className="font-semibold tracking-wider uppercase text-[10px] text-[#0A261D]">Live Shared Album & Guest Story</span>
+        {/* Micro-Pill Luxury Eyebrow Tag */}
+        <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-white/90 border border-[#E6CA92]/50 text-[#0A261D] text-[10px] font-sans tracking-[0.2em] uppercase mb-4 shadow-[0_2px_10px_rgba(10,38,29,0.04)] backdrop-blur-md">
+          <Sparkles className="w-3 h-3 text-[#C5A880]" />
+          <span className="font-semibold text-[#0A261D]">Live Shared Album & Guest Story</span>
         </div>
 
-        {/* Big Romantic Titles: Alfarisyi & Maulidiyah */}
-        <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-[#0A261D] font-bold tracking-tight leading-[1.15] mb-2">
+        {/* Big Romantic Editorial Titles: Alfarisyi & Maulidiyah */}
+        <h1 className="font-serif text-3xl sm:text-5xl lg:text-6xl text-[#0A261D] font-bold tracking-tight leading-[1.15] mb-2 drop-shadow-[0_1px_1px_rgba(255,255,255,0.8)]">
           Ahmad Ferdi Al-Farisyi <br className="sm:hidden" />
           <span className="font-serif italic font-normal text-[#C5A880] px-2 text-2xl sm:text-4xl">&</span>
           Nur Thoifah Maulidiyah
         </h1>
         
-        <p className="font-serif italic text-sm sm:text-base text-[#0A261D]/75 mb-6 max-w-xl mx-auto">
-          {EVENT_INFO.eventDateText} • {EVENT_INFO.venueName}
-        </p>
+        {/* Refined Event Meta with Gold Hairline Separator */}
+        <div className="flex items-center justify-center gap-2 max-w-md mx-auto mb-7">
+          <div className="h-[1px] w-6 bg-[#E6CA92]/60" />
+          <p className="font-serif italic text-xs sm:text-sm text-[#0A261D]/75 tracking-wide">
+            {EVENT_INFO.eventDateText} • {EVENT_INFO.venueName}
+          </p>
+          <div className="h-[1px] w-6 bg-[#E6CA92]/60" />
+        </div>
 
-        {/* FOTO UTAMA MEMPELAI (Automatic Auto-Sliding Carousel) */}
+        {/* FOTO UTAMA MEMPELAI: The "Double-Bezel" (Nested Machined Frame Architecture) */}
         <div 
           onClick={onOpenCouplePhoto}
-          className="group relative max-w-4xl mx-auto rounded-3xl sm:rounded-[32px] overflow-hidden shadow-2xl border border-[#E6CA92]/50 bg-[#121915] cursor-pointer mb-8 transition-all duration-500 hover:shadow-3xl hover:border-[#C5A880]"
+          className="group relative max-w-4xl mx-auto p-1.5 sm:p-2.5 rounded-[26px] sm:rounded-[36px] bg-gradient-to-b from-[#E6CA92]/40 via-white/80 to-[#E6CA92]/25 border border-[#E6CA92]/60 shadow-[0_20px_50px_rgba(10,38,29,0.12)] cursor-pointer mb-8 transition-all duration-500 hover:shadow-[0_25px_60px_rgba(10,38,29,0.18)] hover:border-[#C5A880] active:scale-[0.99]"
         >
-          {/* Main Hero Photo Aspect Ratio */}
-          <div className="relative w-full h-[290px] sm:h-[430px] md:h-[500px] overflow-hidden">
+          {/* Inner Core: concentric squircle with filmic dark base */}
+          <div className="relative w-full h-[300px] sm:h-[440px] md:h-[500px] rounded-[20px] sm:rounded-[28px] overflow-hidden bg-[#0A261D] shadow-[inset_0_1px_2px_rgba(255,255,255,0.25)]">
             {/* Sliding Photo Stack */}
             {galleryImages.map((imgUrl, idx) => (
               <img
@@ -93,23 +99,23 @@ export const Header: React.FC<HeaderProps> = ({
             <div className="absolute inset-0 z-15 bg-gradient-to-t from-black/90 via-black/25 to-black/30 pointer-events-none" />
 
             {/* Top Badges & Controls */}
-            <div className="absolute top-4 left-4 right-4 flex items-center justify-between z-20">
-              <span className="px-3.5 py-1.5 rounded-full bg-[#0A261D]/85 backdrop-blur-md border border-[#E6CA92]/50 text-[#E6CA92] text-xs font-sans font-bold flex items-center gap-1.5 shadow-lg">
-                <Sparkles className="w-3.5 h-3.5 text-[#E6CA92]" />
+            <div className="absolute top-3.5 left-3.5 right-3.5 sm:top-4 sm:left-4 sm:right-4 flex items-center justify-between z-20">
+              <span className="px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full bg-[#0A261D]/85 backdrop-blur-md border border-[#E6CA92]/50 text-[#E6CA92] text-[10px] sm:text-xs font-sans font-bold flex items-center gap-1.5 shadow-lg">
+                <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#E6CA92]" />
                 Foto Resmi Mempelai ({currentSlideIndex + 1}/{galleryImages.length})
               </span>
 
-              <div className="flex items-center gap-2">
+              <div className="flex items-center gap-1.5 sm:gap-2">
                 <button
                   type="button"
                   onClick={(e) => {
                     e.stopPropagation();
                     setIsAutoPlaying(!isAutoPlaying);
                   }}
-                  className="p-2 rounded-full bg-black/60 hover:bg-[#0A261D] text-white backdrop-blur-md transition-all border border-white/20 shadow-md"
+                  className="p-1.5 sm:p-2 rounded-full bg-black/60 hover:bg-[#0A261D] text-white backdrop-blur-md transition-all border border-white/20 shadow-md active:scale-90 cursor-pointer"
                   title={isAutoPlaying ? "Jeda Carousel" : "Putar Carousel Otomatis"}
                 >
-                  {isAutoPlaying ? <Pause className="w-3.5 h-3.5 text-[#E6CA92]" /> : <Play className="w-3.5 h-3.5 text-[#E6CA92]" />}
+                  {isAutoPlaying ? <Pause className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#E6CA92]" /> : <Play className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#E6CA92]" />}
                 </button>
 
                 <button
@@ -118,10 +124,10 @@ export const Header: React.FC<HeaderProps> = ({
                     e.stopPropagation();
                     onOpenCouplePhoto();
                   }}
-                  className="w-9 h-9 rounded-full bg-black/60 hover:bg-[#0A261D] text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 shadow-md group-hover:scale-110"
+                  className="w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/60 hover:bg-[#0A261D] text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 shadow-md group-hover:scale-110 active:scale-90 cursor-pointer"
                   title="Lihat Potret Lengkap Mempelai"
                 >
-                  <Maximize2 className="w-4 h-4 text-[#E6CA92]" />
+                  <Maximize2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#E6CA92]" />
                 </button>
               </div>
             </div>
@@ -130,30 +136,30 @@ export const Header: React.FC<HeaderProps> = ({
             <button
               type="button"
               onClick={handlePrevSlide}
-              className="absolute left-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 shadow-lg cursor-pointer"
+              className="absolute left-2.5 sm:left-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 shadow-lg active:scale-90 cursor-pointer"
               title="Foto Mempelai Sebelumnya"
             >
-              <ChevronLeft className="w-5 h-5 text-white" />
+              <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </button>
 
             <button
               type="button"
               onClick={handleNextSlide}
-              className="absolute right-3 top-1/2 -translate-y-1/2 z-20 w-10 h-10 rounded-full bg-black/50 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 shadow-lg cursor-pointer"
+              className="absolute right-2.5 sm:right-3 top-1/2 -translate-y-1/2 z-20 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/50 hover:bg-black/85 text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 shadow-lg active:scale-90 cursor-pointer"
               title="Foto Mempelai Berikutnya"
             >
-              <ChevronRight className="w-5 h-5 text-white" />
+              <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </button>
 
             {/* Editorial Text Overlay at Bottom */}
-            <div className="absolute bottom-6 left-5 right-5 sm:bottom-8 sm:left-8 sm:right-8 z-20 text-left text-white pointer-events-none">
-              <p className="text-[11px] font-sans font-bold uppercase tracking-widest text-[#E6CA92] mb-1">
+            <div className="absolute bottom-6 left-4 right-4 sm:bottom-8 sm:left-8 sm:right-8 z-20 text-left text-white pointer-events-none">
+              <p className="text-[10px] sm:text-[11px] font-sans font-bold uppercase tracking-[0.18em] text-[#E6CA92] mb-1">
                 The Royal Wedding Gallery • Alfarisyi & Maulidiyah
               </p>
-              <h2 className="font-serif font-bold text-2xl sm:text-4xl text-white leading-tight drop-shadow-md">
+              <h2 className="font-serif font-bold text-xl sm:text-4xl text-white leading-tight drop-shadow-md">
                 Alfarisyi & Maulidiyah
               </h2>
-              <p className="font-serif italic text-xs sm:text-sm text-white/90 mt-1 max-w-xl drop-shadow line-clamp-2">
+              <p className="font-serif italic text-[11px] sm:text-sm text-white/90 mt-1 max-w-xl drop-shadow line-clamp-2">
                 "Mengukir janji suci abadi dalam naungan cinta dan keberkahan. Terima kasih telah menjadi bagian dari kisah indah kami."
               </p>
             </div>
@@ -180,101 +186,109 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
         </div>
 
-        {/* Dual Dashboard Bar: 1.0 GB Cloud Storage + 5-Foto Device Quota */}
+        {/* Dual Dashboard Bar: Double-Bezel Architecture */}
         <div className="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-2">
           {/* 1. Global Album Cloud Storage Limit (1.0 GB) */}
-          <div className={`p-4 rounded-3xl bg-white border shadow-xl text-left transition-all ${
+          <div className={`p-1 rounded-[24px] bg-gradient-to-b from-white to-[#FAF9F5] border shadow-[0_8px_25px_rgba(10,38,29,0.04)] transition-all ${
             storageStats?.isFull 
-              ? 'border-red-400 bg-red-50/40 ring-2 ring-red-400/40' 
+              ? 'border-red-400 ring-2 ring-red-400/40' 
               : storageStats?.isNearLimit 
-              ? 'border-amber-400/80 bg-amber-50/30' 
-              : 'border-[#E6CA92]/50'
+              ? 'border-amber-400/80' 
+              : 'border-[#E6CA92]/40'
           }`}>
-            <div className="flex items-center justify-between text-xs font-sans mb-2">
-              <div className="flex items-center gap-2">
-                <Database className={`w-4 h-4 ${storageStats?.isFull ? 'text-red-500' : 'text-[#C5A880]'}`} />
-                <span className="font-bold text-[#0A261D]">Penyimpanan Cloud:</span>
-              </div>
-              <span className={`font-bold px-2 py-0.5 rounded-full text-[11px] ${
-                storageStats?.isFull
-                  ? 'bg-red-100 text-red-700 font-extrabold animate-pulse'
-                  : storageStats?.isNearLimit
-                  ? 'bg-amber-100 text-amber-800'
-                  : 'bg-[#FAF9F5] text-[#0A261D] border border-[#E6CA92]/40'
-              }`}>
-                {storageStats ? `${storageStats.percentage}%` : '0%'} ({storageStats?.usedMb || 0} MB / {storageStats?.maxGb || 1} GB)
-              </span>
-            </div>
-
-            {/* Continuous Progress Bar with % */}
-            <div className="h-2.5 w-full bg-gray-100 rounded-full overflow-hidden mb-2 p-0.5 border border-gray-100">
-              <div
-                className={`h-full rounded-full transition-all duration-500 ${
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-white/90 backdrop-blur-sm text-left">
+              <div className="flex items-center justify-between text-xs font-sans mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-[#FAF9F5] border border-[#E6CA92]/40 flex items-center justify-center">
+                    <Database className={`w-3.5 h-3.5 ${storageStats?.isFull ? 'text-red-500' : 'text-[#C5A880]'}`} />
+                  </div>
+                  <span className="font-bold text-[#0A261D] text-xs">Penyimpanan Cloud</span>
+                </div>
+                <span className={`font-bold px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] ${
                   storageStats?.isFull
-                    ? 'bg-gradient-to-r from-red-500 to-rose-600'
+                    ? 'bg-red-100 text-red-700 font-extrabold animate-pulse'
                     : storageStats?.isNearLimit
-                    ? 'bg-gradient-to-r from-amber-500 to-orange-500'
-                    : 'bg-gradient-to-r from-[#0A261D] via-[#164E3D] to-[#E6CA92]'
-                }`}
-                style={{ width: `${Math.max(storageStats?.percentage ? 2 : 0, storageStats?.percentage || 0)}%` }}
-              />
-            </div>
+                    ? 'bg-amber-100 text-amber-800'
+                    : 'bg-[#FAF9F5] text-[#0A261D] border border-[#E6CA92]/40'
+                }`}>
+                  {storageStats ? `${storageStats.percentage}%` : '0%'} ({storageStats?.usedMb || 0} MB / {storageStats?.maxGb || 1} GB)
+                </span>
+              </div>
 
-            <div className="flex justify-between items-center text-[11px] font-sans">
-              <span className="text-gray-500">
-                {storageStats?.isFull ? (
-                  <span className="text-red-600 font-bold flex items-center gap-1">
-                    <AlertTriangle className="w-3 h-3 shrink-0" />
-                    Kapasitas Penuh (1.0 GB)!
-                  </span>
-                ) : (
-                  <span>Tersedia <strong>{storageStats ? Math.max(0, storageStats.maxMb - storageStats.usedMb).toFixed(0) : 1024} MB</strong> lagi</span>
-                )}
-              </span>
-              <span className="text-[10px] text-[#C5A880] font-semibold">
-                {storageStats?.totalPhotos || 0} Foto Tersimpan
-              </span>
+              {/* Continuous Progress Bar with % */}
+              <div className="h-2 w-full bg-gray-100 rounded-full overflow-hidden mb-2 p-0.5 border border-gray-100/80">
+                <div
+                  className={`h-full rounded-full transition-all duration-500 ${
+                    storageStats?.isFull
+                      ? 'bg-gradient-to-r from-red-500 to-rose-600'
+                      : storageStats?.isNearLimit
+                      ? 'bg-gradient-to-r from-amber-500 to-orange-500'
+                      : 'bg-gradient-to-r from-[#0A261D] via-[#164E3D] to-[#E6CA92]'
+                  }`}
+                  style={{ width: `${Math.max(storageStats?.percentage ? 2 : 0, storageStats?.percentage || 0)}%` }}
+                />
+              </div>
+
+              <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-sans">
+                <span className="text-gray-500">
+                  {storageStats?.isFull ? (
+                    <span className="text-red-600 font-bold flex items-center gap-1">
+                      <AlertTriangle className="w-3 h-3 shrink-0" />
+                      Penuh (1.0 GB)
+                    </span>
+                  ) : (
+                    <span>Sisa <strong>{storageStats ? Math.max(0, storageStats.maxMb - storageStats.usedMb).toFixed(0) : 1024} MB</strong></span>
+                  )}
+                </span>
+                <span className="text-[#C5A880] font-semibold">
+                  {storageStats?.totalPhotos || 0} Foto Tersimpan
+                </span>
+              </div>
             </div>
           </div>
 
           {/* 2. Device Quota Bar (Maksimal 5 Foto Per Tamu) */}
-          <div className="p-4 rounded-3xl bg-white border border-[#E6CA92]/50 shadow-xl text-left">
-            <div className="flex items-center justify-between text-xs font-sans mb-2">
-              <div className="flex items-center gap-2">
-                <ShieldCheck className="w-4 h-4 text-[#C5A880]" />
-                <span className="font-bold text-[#0A261D]">Jatah Kuota Anda:</span>
+          <div className="p-1 rounded-[24px] bg-gradient-to-b from-white to-[#FAF9F5] border border-[#E6CA92]/40 shadow-[0_8px_25px_rgba(10,38,29,0.04)] text-left">
+            <div className="p-3.5 sm:p-4 rounded-[20px] bg-white/90 backdrop-blur-sm">
+              <div className="flex items-center justify-between text-xs font-sans mb-2">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-full bg-[#FAF9F5] border border-[#E6CA92]/40 flex items-center justify-center">
+                    <ShieldCheck className="w-3.5 h-3.5 text-[#C5A880]" />
+                  </div>
+                  <span className="font-bold text-[#0A261D] text-xs">Jatah Kuota Anda</span>
+                </div>
+                <span className={`font-bold px-2 py-0.5 rounded-full text-[10px] sm:text-[11px] ${isFull ? 'bg-amber-100 text-amber-800' : 'bg-[#FAF9F5] text-[#0A261D] border border-[#E6CA92]/40'}`}>
+                  {uploadedCount} / {MAX_PHOTO_PER_DEVICE} Foto
+                </span>
               </div>
-              <span className={`font-bold px-2 py-0.5 rounded-full text-[11px] ${isFull ? 'bg-amber-100 text-amber-800' : 'bg-[#FAF9F5] text-[#0A261D] border border-[#E6CA92]/40'}`}>
-                {uploadedCount} / {MAX_PHOTO_PER_DEVICE} Foto
-              </span>
-            </div>
 
-            {/* Progress Bar with 5 segments */}
-            <div className="grid grid-cols-5 gap-1.5 h-2.5 w-full mb-2">
-              {[1, 2, 3, 4, 5].map((slot) => {
-                const isFilled = slot <= uploadedCount;
-                return (
-                  <div
-                    key={slot}
-                    className={`h-full rounded-full transition-all duration-300 ${
-                      isFilled
-                        ? 'bg-gradient-to-r from-[#0A261D] to-[#164E3D] shadow-xs'
-                        : 'bg-gray-100'
-                    }`}
-                  />
-                );
-              })}
-            </div>
+              {/* Progress Bar with 5 segments */}
+              <div className="grid grid-cols-5 gap-1.5 h-2 w-full mb-2">
+                {[1, 2, 3, 4, 5].map((slot) => {
+                  const isFilled = slot <= uploadedCount;
+                  return (
+                    <div
+                      key={slot}
+                      className={`h-full rounded-full transition-all duration-300 ${
+                        isFilled
+                          ? 'bg-gradient-to-r from-[#0A261D] to-[#164E3D] shadow-xs'
+                          : 'bg-gray-100'
+                      }`}
+                    />
+                  );
+                })}
+              </div>
 
-            <div className="flex justify-between items-center text-[11px] font-sans text-gray-500">
-              <span>
-                {isFull ? (
-                  <span className="text-amber-700 font-semibold">✨ Kuota 5/5 lengkap!</span>
-                ) : (
-                  <span>Tersisa <strong className="text-[#0A261D] font-bold">{remaining} foto</strong> lagi</span>
-                )}
-              </span>
-              <span className="text-[10px] text-gray-400 font-medium">Batas 5 foto/tamu</span>
+              <div className="flex justify-between items-center text-[10px] sm:text-[11px] font-sans text-gray-500">
+                <span>
+                  {isFull ? (
+                    <span className="text-amber-700 font-semibold">✨ Kuota 5/5 lengkap!</span>
+                  ) : (
+                    <span>Tersisa <strong className="text-[#0A261D] font-bold">{remaining} foto</strong> lagi</span>
+                  )}
+                </span>
+                <span className="text-gray-400 font-medium">Batas 5 foto/tamu</span>
+              </div>
             </div>
           </div>
         </div>

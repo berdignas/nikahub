@@ -129,23 +129,26 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
 
   return (
     <div 
-      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-[#0A261D]/85 backdrop-blur-md animate-fade-in"
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-6 bg-[#0A261D]/80 backdrop-blur-xl animate-fade-in"
       onClick={onClose}
     >
       <div 
-        className="relative max-w-5xl w-full bg-white border border-[#E6CA92]/40 rounded-3xl overflow-hidden shadow-2xl flex flex-col md:flex-row max-h-[92vh]"
+        className="relative max-w-5xl w-full bg-white border-t sm:border border-[#E6CA92]/45 rounded-t-[32px] sm:rounded-[32px] overflow-hidden shadow-[0_25px_60px_rgba(10,38,29,0.35)] flex flex-col md:flex-row max-h-[92dvh] sm:max-h-[90vh]"
         onClick={(e) => e.stopPropagation()}
       >
+        {/* Mobile Pull-Down Handle */}
+        <div className="md:hidden w-12 h-1.5 bg-gray-300/80 rounded-full mx-auto my-2.5 shrink-0" />
+
         {/* Close Button */}
         <button
           onClick={onClose}
-          className="absolute top-4 right-4 z-30 w-9 h-9 rounded-full bg-black/60 text-white hover:bg-black/90 flex items-center justify-center backdrop-blur-md transition-all shadow-md cursor-pointer"
+          className="absolute top-3.5 right-3.5 sm:top-4 sm:right-4 z-30 w-8 h-8 sm:w-9 sm:h-9 rounded-full bg-black/60 text-white hover:bg-black/90 flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-90 cursor-pointer"
         >
-          <X className="w-5 h-5" />
+          <X className="w-4 h-4 sm:w-5 sm:h-5" />
         </button>
 
         {/* Left Side: Photo Carousel & Thumbnails */}
-        <div className="relative md:w-3/5 bg-[#101915] flex flex-col justify-between overflow-hidden min-h-[340px] md:min-h-[580px] p-4">
+        <div className="relative md:w-3/5 bg-[#0A261D] flex flex-col justify-between overflow-hidden min-h-[290px] sm:min-h-[340px] md:min-h-[580px] p-3 sm:p-4">
           {/* Active Photo Container (Click to view Fullscreen) */}
           <div
             onClick={() => setIsFullscreenPhotoOpen(true)}
@@ -157,26 +160,26 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                 key={currentPhoto.id || safeIndex}
                 src={currentPhoto.imageUrl}
                 alt={currentPhoto.caption || album.senderName}
-                className="max-w-full max-h-[55vh] object-contain rounded-xl shadow-2xl transition-all duration-300 group-hover:scale-[1.02]"
+                className="max-w-full max-h-[46vh] sm:max-h-[55vh] object-contain rounded-2xl shadow-2xl transition-all duration-300 group-hover:scale-[1.02]"
               />
             ) : (
-              <div className="text-gray-400 text-xs">Foto tidak tersedia</div>
+              <div className="text-gray-400 text-xs font-sans">Foto tidak tersedia</div>
             )}
 
             {/* Fullscreen Expand Indicator */}
-            <div className="absolute bottom-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/75 hover:bg-black/90 backdrop-blur-md border border-[#E6CA92]/50 text-[#FAF9F5] text-[10px] font-sans font-bold flex items-center gap-1.5 shadow-md transition-all">
+            <div className="absolute bottom-2.5 right-2.5 sm:bottom-3 sm:right-3 z-20 px-2.5 py-1 rounded-full bg-black/75 hover:bg-black/90 backdrop-blur-md border border-[#E6CA92]/50 text-[#FAF9F5] text-[10px] font-sans font-bold flex items-center gap-1.5 shadow-md transition-all">
               <Maximize2 className="w-3 h-3 text-[#E6CA92]" />
               <span className="hidden sm:inline">Layar Penuh</span>
             </div>
 
-            {/* Top Right Action on Photo: Delete this single photo */}
+            {/* Top Left Action on Photo: Delete this single photo */}
             {canDelete && currentPhoto && (
               <button
                 onClick={handleDeleteCurrentPhoto}
-                className="absolute top-3 right-3 z-20 px-3 py-1.5 rounded-full bg-red-600/90 hover:bg-red-700 text-white text-xs font-sans font-bold flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-all active:scale-95 cursor-pointer"
+                className="absolute top-2.5 left-2.5 sm:top-3 sm:left-3 z-20 px-3 py-1.5 rounded-full bg-red-600/90 hover:bg-red-700 text-white text-[11px] font-sans font-bold flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-all active:scale-95 cursor-pointer"
                 title={isMine ? "Hapus foto milik Anda (mengembalikan kuota)" : "👑 [Mode Pengantin] Hapus foto tamu"}
               >
-                <Trash2 className="w-3.5 h-3.5" />
+                <Trash2 className="w-3 h-3" />
                 <span>{isMine ? "Hapus Foto Saya" : "👑 Hapus Foto Tamu"}</span>
               </button>
             )}
@@ -186,36 +189,36 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
               <>
                 <button
                   onClick={handlePrev}
-                  className="absolute left-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 cursor-pointer shadow-lg"
+                  className="absolute left-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 active:scale-90 cursor-pointer shadow-lg"
                   title="Foto Sebelumnya"
                 >
-                  <ChevronLeft className="w-5 h-5" />
+                  <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
                 <button
                   onClick={handleNext}
-                  className="absolute right-2 top-1/2 -translate-y-1/2 w-10 h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 cursor-pointer shadow-lg"
+                  className="absolute right-2 top-1/2 -translate-y-1/2 w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-black/60 hover:bg-black/90 text-white flex items-center justify-center backdrop-blur-md transition-all border border-white/20 active:scale-90 cursor-pointer shadow-lg"
                   title="Foto Berikutnya"
                 >
-                  <ChevronRight className="w-5 h-5" />
+                  <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
                 </button>
               </>
             )}
 
             {/* Photo Counter Pill */}
-            <div className="absolute bottom-3 left-3 px-3 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#E6CA92]/40 text-[#FAF9F5] text-[11px] font-sans font-bold flex items-center gap-1.5 shadow-md">
-              <FolderArchive className="w-3.5 h-3.5 text-[#E6CA92]" />
+            <div className="absolute bottom-2.5 left-2.5 sm:bottom-3 sm:left-3 px-2.5 py-1 rounded-full bg-black/70 backdrop-blur-md border border-[#E6CA92]/40 text-[#FAF9F5] text-[10px] sm:text-[11px] font-sans font-bold flex items-center gap-1.5 shadow-md">
+              <FolderArchive className="w-3 h-3 text-[#E6CA92]" />
               <span>Foto {safeIndex + 1} dari {photos.length}</span>
             </div>
           </div>
 
           {/* Thumbnail Bar (5 photos) */}
           {photos.length > 1 && (
-            <div className="pt-3 border-t border-white/10 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1">
+            <div className="pt-2 sm:pt-3 border-t border-white/10 flex items-center justify-center gap-2 overflow-x-auto no-scrollbar py-1">
               {photos.map((p, idx) => (
                 <button
                   key={p.id || idx}
                   onClick={() => setCurrentPhotoIndex(idx)}
-                  className={`relative w-14 h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
+                  className={`relative w-12 h-12 sm:w-14 sm:h-14 rounded-xl overflow-hidden shrink-0 border-2 transition-all cursor-pointer ${
                     safeIndex === idx
                       ? 'border-[#E6CA92] scale-105 shadow-md ring-2 ring-[#E6CA92]/40'
                       : 'border-white/20 opacity-50 hover:opacity-100'

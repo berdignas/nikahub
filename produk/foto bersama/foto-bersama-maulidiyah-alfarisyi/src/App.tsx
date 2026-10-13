@@ -514,32 +514,40 @@ export function App() {
         />
       </main>
 
-      {/* Floating Bottom Bar for Mobile Visitors */}
-      <div className="sm:hidden fixed bottom-4 left-4 right-4 z-30">
-        <div className="p-2.5 rounded-3xl bg-white/95 border border-[#D4AF37]/40 shadow-2xl backdrop-blur-xl flex items-center justify-between gap-2.5">
+      {/* Floating Bottom Bar for Mobile Visitors: Luxury Island with Button-in-Button Architecture */}
+      <div className="sm:hidden fixed bottom-4 left-3.5 right-3.5 z-40 max-w-md mx-auto pointer-events-auto">
+        <div className="p-1.5 rounded-full bg-[#0A261D]/92 backdrop-blur-2xl border border-[#E6CA92]/45 shadow-[0_16px_40px_rgba(10,38,29,0.35)] flex items-center justify-between gap-2">
+          {/* Secondary Action: QR Code */}
           <button
             onClick={() => setIsQrOpen(true)}
-            className="flex-1 py-3 px-3 rounded-2xl bg-[#FAF9F5] border border-gray-200 text-[#0A261D] text-xs font-bold flex items-center justify-center gap-1.5 cursor-pointer shadow-xs active:scale-95 transition-all"
+            className="flex items-center gap-1.5 pl-3 pr-3.5 py-2.5 rounded-full bg-white/10 hover:bg-white/15 text-[#FAF9F5] border border-white/10 text-xs font-sans font-semibold transition-all active:scale-95 cursor-pointer shrink-0"
             title="Buka QR Code Meja Acara"
           >
-            <QrCode className="w-3.5 h-3.5 text-[#C5A880]" />
-            <span>QR Code</span>
+            <QrCode className="w-3.5 h-3.5 text-[#E6CA92]" />
+            <span>QR</span>
           </button>
 
+          {/* Primary CTA: Button-in-Button Architecture */}
           <button
             onClick={() => setIsUploadOpen(true)}
-            className={`flex-[2] py-3 px-4 rounded-2xl text-[#FAF9F5] text-xs font-bold flex items-center justify-center gap-2 shadow-md active:scale-95 transition-all cursor-pointer ${
+            className={`flex-1 py-1.5 pl-4 pr-1.5 rounded-full text-xs font-sans font-bold flex items-center justify-between shadow-md active:scale-95 transition-all cursor-pointer group ${
               storageStats.isFull
-                ? 'bg-red-700 hover:bg-red-800'
-                : 'bg-[#0A261D] hover:bg-[#164E3D]'
+                ? 'bg-gradient-to-r from-red-600 to-rose-700 text-white'
+                : 'bg-gradient-to-r from-[#E6CA92] via-[#F2DFBA] to-[#C5A880] text-[#0A261D]'
             }`}
           >
-            <Camera className="w-4 h-4 text-[#E6CA92]" />
-            <span>
+            <span className="truncate pr-1 text-[11px] font-bold tracking-tight">
               {storageStats.isFull
                 ? 'Storage Penuh (1 GB)'
                 : `Upload Foto (${uploadedCount}/5)`}
             </span>
+            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 shadow-xs group-hover:scale-105 transition-transform ${
+              storageStats.isFull
+                ? 'bg-black/30 text-white'
+                : 'bg-[#0A261D] text-[#E6CA92]'
+            }`}>
+              <Camera className="w-3.5 h-3.5" />
+            </div>
           </button>
         </div>
       </div>

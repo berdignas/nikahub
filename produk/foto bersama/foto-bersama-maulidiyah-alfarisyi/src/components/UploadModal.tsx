@@ -282,19 +282,24 @@ export const UploadModal: React.FC<UploadModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-[#0A261D]/80 backdrop-blur-sm animate-fade-in">
-      <div className="relative w-full max-w-lg bg-white border border-[#E6CA92]/40 text-[#0A261D] rounded-3xl shadow-2xl overflow-hidden max-h-[94vh] flex flex-col font-sans">
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4 bg-[#0A261D]/80 backdrop-blur-xl animate-fade-in">
+      <div className="relative w-full max-w-lg bg-white border-t sm:border border-[#E6CA92]/45 text-[#0A261D] rounded-t-[32px] sm:rounded-[32px] shadow-[0_25px_60px_rgba(10,38,29,0.35)] overflow-hidden max-h-[92dvh] sm:max-h-[90vh] flex flex-col font-sans">
+        {/* Mobile Pull-Down Handle */}
+        <div className="sm:hidden w-12 h-1.5 bg-gray-300/80 rounded-full mx-auto my-2.5 shrink-0" />
+
         {/* Modal Header */}
-        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 bg-[#FAF9F5]">
+        <div className="flex items-center justify-between px-5 sm:px-6 py-4 border-b border-gray-100 bg-[#FAF9F5]/90">
           <div className="flex items-center gap-2.5">
-            <div className="w-9 h-9 rounded-full bg-white flex items-center justify-center border border-[#E6CA92]/40 shadow-xs">
-              <FolderArchive className="w-4 h-4 text-[#C5A880]" />
+            <div className="w-10 h-10 rounded-full p-[1.5px] bg-gradient-to-tr from-[#E6CA92] via-white/80 to-[#C5A880] shadow-xs shrink-0">
+              <div className="w-full h-full rounded-full bg-white flex items-center justify-center">
+                <FolderArchive className="w-4 h-4 text-[#C5A880]" />
+              </div>
             </div>
             <div>
-              <h3 className="font-serif font-bold text-lg sm:text-xl text-[#0A261D] leading-none">
+              <h3 className="font-serif font-bold text-lg sm:text-xl text-[#0A261D] leading-tight">
                 Unggah Folder Foto Tamu
               </h3>
-              <p className="text-[11px] text-gray-500 mt-0.5">
+              <p className="text-[11px] text-[#0A261D]/60 mt-0.5">
                 Pilih 1 hingga {remaining} foto untuk folder Anda (Batas 5 foto/tamu)
               </p>
             </div>
@@ -304,7 +309,7 @@ export const UploadModal: React.FC<UploadModalProps> = ({
               stopLiveCamera();
               onClose();
             }}
-            className="w-8 h-8 rounded-full bg-gray-100 text-gray-400 hover:text-gray-700 flex items-center justify-center transition-all hover:bg-gray-200 cursor-pointer"
+            className="w-8 h-8 rounded-full bg-black/5 hover:bg-black/10 text-gray-500 hover:text-gray-800 flex items-center justify-center transition-all active:scale-90 cursor-pointer"
           >
             <X className="w-4 h-4" />
           </button>
@@ -662,17 +667,21 @@ export const UploadModal: React.FC<UploadModalProps> = ({
                 <button
                   type="submit"
                   disabled={isSubmitting || isCompressing || selectedImages.length === 0 || isStorageFull}
-                  className="w-full py-3.5 rounded-xl bg-[#0A261D] hover:bg-[#164E3D] text-[#FAF9F5] font-bold text-xs shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-center gap-2 cursor-pointer"
+                  className="w-full py-2.5 pl-5 pr-2 rounded-full bg-gradient-to-r from-[#0A261D] via-[#164E3D] to-[#0A261D] hover:from-[#164E3D] hover:to-[#0A261D] text-[#FAF9F5] font-bold text-xs shadow-lg hover:shadow-xl active:scale-[0.98] transition-all disabled:opacity-50 disabled:pointer-events-none flex items-center justify-between cursor-pointer group"
                 >
                   {isSubmitting ? (
-                    <>
+                    <div className="flex items-center gap-2">
                       <Loader2 className="w-4 h-4 animate-spin text-[#E6CA92]" />
                       <span>{submitStatusText}</span>
-                    </>
+                    </div>
                   ) : (
                     <>
-                      <Sparkles className="w-4 h-4 text-[#E6CA92]" />
-                      <span>Publikasikan Folder ({selectedImages.length} Foto)</span>
+                      <span className="text-[#FAF9F5] font-bold text-xs sm:text-sm">
+                        Publikasikan Folder ({selectedImages.length} Foto)
+                      </span>
+                      <div className="w-8 h-8 rounded-full bg-white/10 group-hover:bg-white/20 border border-white/10 flex items-center justify-center shrink-0 transition-transform group-hover:scale-105">
+                        <Sparkles className="w-4 h-4 text-[#E6CA92]" />
+                      </div>
                     </>
                   )}
                 </button>

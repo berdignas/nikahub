@@ -88,27 +88,27 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
       )}
 
       {/* Section Header */}
-      <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E6CA92]/20 pb-4">
+      <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-[#E6CA92]/30 pb-4">
         <div>
-          <span className="text-[10px] font-sans font-bold tracking-widest uppercase text-[#C5A880] block mb-1">
+          <span className="text-[10px] font-sans font-bold tracking-[0.2em] uppercase text-[#C5A880] block mb-1">
             Guest Story & Photo Collection
           </span>
-          <h2 className="font-serif font-bold text-2xl sm:text-3xl text-[#0A261D]">
+          <h2 className="font-serif font-bold text-2xl sm:text-3xl text-[#0A261D] tracking-tight">
             Folder & Momen Tamu Undangan
           </h2>
-          <p className="text-xs font-sans text-gray-500 mt-1">
+          <p className="text-xs font-sans text-[#0A261D]/70 mt-1">
             Menampilkan {allCount} folder tamu ({totalAllPhotos} foto dibagikan). Tekan folder untuk melihat seluruh foto di dalamnya.
           </p>
         </div>
       </div>
 
       {/* Filter Tabs & Search Bar */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
-        {/* Navigation Tabs */}
-        <div className="flex items-center gap-1.5 p-1 rounded-full bg-white border border-gray-200/90 font-sans text-xs shadow-xs overflow-x-auto no-scrollbar">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-3.5 mb-7">
+        {/* Navigation Tabs: Machined Capsule */}
+        <div className="p-1 rounded-full bg-white/95 border border-[#E6CA92]/40 backdrop-blur-md font-sans text-xs shadow-[0_2px_12px_rgba(10,38,29,0.04)] flex items-center gap-1 overflow-x-auto no-scrollbar">
           <button
             onClick={() => onChangeTab('all')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap cursor-pointer ${
               activeTab === 'all'
                 ? 'bg-[#0A261D] text-[#FAF9F5] font-bold shadow-sm'
                 : 'text-gray-600 hover:text-[#0A261D] font-medium'
@@ -123,7 +123,7 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
 
           <button
             onClick={() => onChangeTab('mine')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap cursor-pointer ${
               activeTab === 'mine'
                 ? 'bg-[#0A261D] text-[#FAF9F5] font-bold shadow-sm'
                 : 'text-gray-600 hover:text-[#0A261D] font-medium'
@@ -132,32 +132,32 @@ export const PhotoGrid: React.FC<PhotoGridProps> = ({
             <User className="w-3.5 h-3.5 text-[#E6CA92]" />
             <span>Folder Saya</span>
             <span className={`text-[10px] px-2 py-0.5 rounded-full font-bold ${activeTab === 'mine' ? 'bg-white/20 text-[#FAF9F5]' : myPhotoCount >= 5 ? 'bg-amber-100 text-amber-800' : 'bg-gray-100 text-gray-700'}`}>
-              {myPhotoCount}/5 Foto
+              {myPhotoCount}/5
             </span>
           </button>
 
           <button
             onClick={() => onChangeTab('popular')}
-            className={`flex items-center gap-2 px-4 py-2 rounded-full transition-all whitespace-nowrap cursor-pointer ${
+            className={`flex items-center gap-2 px-3.5 py-1.5 sm:px-4 sm:py-2 rounded-full transition-all duration-300 whitespace-nowrap cursor-pointer ${
               activeTab === 'popular'
                 ? 'bg-[#0A261D] text-[#FAF9F5] font-bold shadow-sm'
                 : 'text-gray-600 hover:text-[#0A261D] font-medium'
             }`}
           >
             <Heart className="w-3.5 h-3.5 text-rose-500" />
-            <span>Paling Populer</span>
+            <span>Populer</span>
           </button>
         </div>
 
-        {/* Search input */}
+        {/* Search input with refined gold hairline */}
         <div className="relative w-full md:w-72">
-          <Search className="w-4 h-4 text-gray-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+          <Search className="w-4 h-4 text-[#C5A880] absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Cari pengirim atau ucapan..."
-            className="w-full pl-10 pr-4 py-2 rounded-full bg-white border border-gray-200/90 text-xs font-sans text-[#0A261D] placeholder-gray-400 focus:outline-none focus:border-[#0A261D] focus:ring-1 focus:ring-[#0A261D] transition-all shadow-xs"
+            className="w-full pl-10 pr-4 py-2 rounded-full bg-white/95 border border-[#E6CA92]/40 text-xs font-sans text-[#0A261D] placeholder-gray-400 focus:outline-none focus:border-[#0A261D] focus:ring-1 focus:ring-[#0A261D] transition-all shadow-[0_2px_8px_rgba(0,0,0,0.03)]"
           />
         </div>
       </div>
