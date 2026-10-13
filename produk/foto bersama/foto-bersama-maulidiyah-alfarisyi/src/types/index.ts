@@ -2,6 +2,8 @@ export interface CommentItem {
   id: string;
   senderName: string;
   commentText: string;
+  replyToName?: string;
+  replyToId?: string;
   voiceNoteUrl?: string;
   voiceDuration?: number;
   createdAt: string;

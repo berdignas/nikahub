@@ -79,7 +79,39 @@ export async function insertAlbumToDatabase(album: GuestAlbum): Promise<boolean>
  */
 export async function updateAlbumInDatabase(album: GuestAlbum): Promise<boolean> {
   try {
-    const computedLikes = Array.isArray(album.likedByDevices) ? album.likedByDevices.length : (album.likesCount || 0);
+    // 1. Fetch current remote row to merge concurrent likes and comments safely without data loss
+    const { data: remoteRow } = await supabase
+      .from('wedding_albums')
+      .select('liked_by_devices, comments_data, likes_count')
+      .eq('id', album.id)
+      .maybeSingle();
+
+    let mergedLikedBy = album.likedByDevices || [];
+    if (remoteRow && Array.isArray(remoteRow.liked_by_devices)) {
+      const remoteSet = new Set(remoteRow.liked_by_devices);
+      // Ensure local device like/unlike intent is respected while preserving other guests' likes
+      (album.likedByDevices || []).forEach((id) => remoteSet.add(id));
+      mergedLikedBy = Array.from(remoteSet);
+    }
+
+    // Merge comments by unique comment ID so no concurrent comment from another guest is ever lost!
+    const commentMap = new Map<string, CommentItem>();
+    if (remoteRow && Array.isArray(remoteRow.comments_data)) {
+      remoteRow.comments_data.forEach((c: CommentItem) => {
+        if (c && c.id) commentMap.set(c.id, c);
+      });
+    }
+    if (Array.isArray(album.comments)) {
+      album.comments.forEach((c) => {
+        if (c && c.id) commentMap.set(c.id, c);
+      });
+    }
+    const mergedComments = Array.from(commentMap.values()).sort(
+      (a, b) => new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime()
+    );
+
+    const computedLikes = Math.max(mergedLikedBy.length, album.likesCount || 0);
+
     const { error } = await supabase.from('wedding_albums').upsert([
       {
         id: album.id,
@@ -93,8 +125,8 @@ export async function updateAlbumInDatabase(album: GuestAlbum): Promise<boolean>
           voiceDuration: album.voiceDuration || null,
         },
         likes_count: computedLikes,
-        liked_by_devices: album.likedByDevices || [],
-        comments_data: album.comments || [],
+        liked_by_devices: mergedLikedBy,
+        comments_data: mergedComments,
         created_at: album.createdAt,
       },
     ]);
@@ -102,7 +134,8 @@ export async function updateAlbumInDatabase(album: GuestAlbum): Promise<boolean>
       console.warn('Update album in database notice:', error);
     }
     return true;
-  } catch {
+  } catch (err) {
+    console.warn('Update album exception:', err);
     return false;
   }
 }

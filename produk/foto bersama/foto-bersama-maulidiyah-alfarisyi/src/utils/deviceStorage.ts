@@ -5,8 +5,72 @@ import { compressVisuallyLossless } from './imageCompressor';
 const DEVICE_ID_KEY = 'fb_device_id_maulidiyah_alfarisyi';
 const PHOTOS_STORAGE_KEY = 'fb_photos_v2_clean_maulidiyah_alfarisyi';
 const ALBUMS_STORAGE_KEY = 'fb_albums_v3_clean_maulidiyah_alfarisyi';
+const LIKED_ALBUMS_STORAGE_KEY = 'fb_liked_albums_maulidiyah_alfarisyi';
 
 export const MAX_PHOTO_PER_DEVICE = 5;
+
+// Retrieve all album IDs liked by this device (never lost across page reloads)
+export function getStoredLikedAlbumIds(): string[] {
+  try {
+    const raw = localStorage.getItem(LIKED_ALBUMS_STORAGE_KEY);
+    if (!raw) return [];
+    const parsed = JSON.parse(raw);
+    return Array.isArray(parsed) ? parsed : [];
+  } catch {
+    return [];
+  }
+}
+
+// Save all album IDs liked by this device
+export function saveStoredLikedAlbumIds(likedIds: string[]): void {
+  try {
+    localStorage.setItem(LIKED_ALBUMS_STORAGE_KEY, JSON.stringify(likedIds));
+  } catch {}
+}
+
+// Toggle an album ID in local liked list
+export function toggleStoredLikedAlbumId(albumId: string): boolean {
+  try {
+    const current = getStoredLikedAlbumIds();
+    const isCurrentlyLiked = current.includes(albumId);
+    let updated: string[];
+    if (isCurrentlyLiked) {
+      updated = current.filter((id) => id !== albumId);
+    } else {
+      updated = [...current, albumId];
+    }
+    saveStoredLikedAlbumIds(updated);
+    return !isCurrentlyLiked;
+  } catch {
+    return false;
+  }
+}
+
+// Synchronize and merge device likes into albums list so likes never disappear on the phone
+export function mergeDeviceLikesIntoAlbums(albums: GuestAlbum[], currentDeviceId: string): GuestAlbum[] {
+  const likedIds = new Set(getStoredLikedAlbumIds());
+  return albums.map((alb) => {
+    const remoteLikes = Array.isArray(alb.likedByDevices) ? alb.likedByDevices : [];
+    const shouldBeLiked = likedIds.has(alb.id) || remoteLikes.includes(currentDeviceId);
+
+    let mergedLikedBy = [...remoteLikes];
+    if (shouldBeLiked && !mergedLikedBy.includes(currentDeviceId)) {
+      mergedLikedBy.push(currentDeviceId);
+    } else if (!shouldBeLiked && mergedLikedBy.includes(currentDeviceId)) {
+      mergedLikedBy = mergedLikedBy.filter((id) => id !== currentDeviceId);
+    }
+
+    if (shouldBeLiked) {
+      likedIds.add(alb.id);
+    }
+
+    return {
+      ...alb,
+      likedByDevices: mergedLikedBy,
+      likesCount: Math.max(mergedLikedBy.length, alb.likesCount || 0),
+    };
+  });
+}
 
 // Generate or retrieve persistent device UUID
 export function getOrCreateDeviceId(): string {

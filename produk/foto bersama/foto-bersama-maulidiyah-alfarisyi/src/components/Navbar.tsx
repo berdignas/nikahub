@@ -1,5 +1,5 @@
 import React from 'react';
-import { Tv, KeyRound, ShieldCheck, Lock } from 'lucide-react';
+import { Tv, KeyRound, ShieldCheck, Lock, ArrowLeft } from 'lucide-react';
 
 interface NavbarProps {
   onOpenTv: () => void;
@@ -36,6 +36,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 
         {/* Action Controls */}
         <div className="flex items-center gap-2 sm:gap-2.5">
+          {/* Back to Wedding Invitation Dashboard Button */}
+          <a
+            href="/undangan-maulidiyah-alfarisyi"
+            className="flex items-center gap-1.5 px-3 sm:px-3.5 py-1.5 rounded-full bg-[#FAF9F5] hover:bg-[#0A261D] text-[#0A261D] hover:text-[#FAF9F5] border border-[#E6CA92]/50 hover:border-[#0A261D] text-xs font-sans transition-all hover:scale-105 active:scale-95 shadow-xs cursor-pointer group"
+            title="Kembali ke Dashboard Utama Undangan Pernikahan"
+          >
+            <ArrowLeft className="w-3.5 h-3.5 text-[#C5A880] group-hover:text-[#E6CA92]" />
+            <span className="font-semibold text-xs">Undangan</span>
+          </a>
+
           {/* TV Projector Mode */}
           <button
             onClick={onOpenTv}

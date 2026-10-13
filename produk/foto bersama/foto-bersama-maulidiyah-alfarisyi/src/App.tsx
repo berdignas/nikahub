@@ -17,6 +17,8 @@ import {
   getOrCreateDeviceId,
   MAX_PHOTO_PER_DEVICE,
   calculateStorageStats,
+  mergeDeviceLikesIntoAlbums,
+  toggleStoredLikedAlbumId,
 } from './utils/deviceStorage';
 import {
   supabase,
@@ -57,15 +59,16 @@ export function App() {
     const devId = getOrCreateDeviceId();
     setDeviceId(devId);
 
-    // 1. Instant rendering from local storage
+    // 1. Instant rendering from local storage merged with persistent device likes
     const local = getStoredAlbums();
-    setAlbums(local);
+    setAlbums(mergeDeviceLikesIntoAlbums(local, devId));
 
     // 2. Sync remote albums from Supabase so all devices see uploads and deletions!
     fetchAlbumsFromDatabase().then((remoteAlbums) => {
       if (remoteAlbums !== null) {
-        setAlbums(remoteAlbums);
-        saveAlbums(remoteAlbums);
+        const merged = mergeDeviceLikesIntoAlbums(remoteAlbums, devId);
+        setAlbums(merged);
+        saveAlbums(merged);
       }
     });
 
@@ -75,16 +78,18 @@ export function App() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wedding_photos' }, () => {
         fetchAlbumsFromDatabase().then((remoteAlbums) => {
           if (remoteAlbums !== null) {
-            setAlbums(remoteAlbums);
-            saveAlbums(remoteAlbums);
+            const merged = mergeDeviceLikesIntoAlbums(remoteAlbums, devId);
+            setAlbums(merged);
+            saveAlbums(merged);
           }
         });
       })
       .on('postgres_changes', { event: '*', schema: 'public', table: 'wedding_albums' }, () => {
         fetchAlbumsFromDatabase().then((remoteAlbums) => {
           if (remoteAlbums !== null) {
-            setAlbums(remoteAlbums);
-            saveAlbums(remoteAlbums);
+            const merged = mergeDeviceLikesIntoAlbums(remoteAlbums, devId);
+            setAlbums(merged);
+            saveAlbums(merged);
           }
         });
       })
@@ -94,6 +99,77 @@ export function App() {
       supabase.removeChannel(channel);
     };
   }, []);
+
+  // Ensure history state exists on mount so mobile hardware back button never exits the browser
+  useEffect(() => {
+    try {
+      window.history.replaceState({ weddingRoot: true }, '');
+      window.history.pushState({ weddingGallery: true }, '');
+    } catch {}
+  }, []);
+
+  // Mobile Hardware & Browser Back Navigation Handler (Go to main wedding dashboard if no modal is open)
+  useEffect(() => {
+    const hasAnyModalOpen = !!(
+      selectedAlbum ||
+      isUploadOpen ||
+      isCouplePhotoOpen ||
+      isQrOpen ||
+      isTvOpen ||
+      isPinModalOpen ||
+      isDownloadAllOpen
+    );
+
+    if (hasAnyModalOpen) {
+      window.history.pushState({ modalOpen: true }, '');
+    }
+
+    const handlePopState = () => {
+      // If a modal is open, close the modal first!
+      if (selectedAlbum) {
+        setSelectedAlbum(null);
+        return;
+      }
+      if (isUploadOpen) {
+        setIsUploadOpen(false);
+        return;
+      }
+      if (isCouplePhotoOpen) {
+        setIsCouplePhotoOpen(false);
+        return;
+      }
+      if (isQrOpen) {
+        setIsQrOpen(false);
+        return;
+      }
+      if (isTvOpen) {
+        setIsTvOpen(false);
+        return;
+      }
+      if (isPinModalOpen) {
+        setIsPinModalOpen(false);
+        return;
+      }
+      if (isDownloadAllOpen) {
+        setIsDownloadAllOpen(false);
+        return;
+      }
+
+      // If no modal is open and user presses back on phone: navigate to main invitation dashboard!
+      window.location.href = '/undangan-maulidiyah-alfarisyi';
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, [
+    selectedAlbum,
+    isUploadOpen,
+    isCouplePhotoOpen,
+    isQrOpen,
+    isTvOpen,
+    isPinModalOpen,
+    isDownloadAllOpen,
+  ]);
 
   // Save whenever albums change
   const updateAlbums = (newAlbums: GuestAlbum[]) => {
@@ -140,6 +216,10 @@ export function App() {
   const handleLikeToggle = (albumId: string) => {
     let targetAlbum: GuestAlbum | undefined;
 
+    // 1. Immediately toggle and save to device local storage so like is NEVER lost
+    toggleStoredLikedAlbumId(albumId);
+
+    // 2. Update React State
     const updated = albums.map((alb) => {
       if (alb.id !== albumId) return alb;
 
@@ -170,18 +250,26 @@ export function App() {
 
     updateAlbums(updated);
 
+    // 3. Atomically sync to Supabase database
     if (targetAlbum) {
       updateAlbumInDatabase(targetAlbum);
     }
   };
 
-  // Add Comment to album
-  const handleAddComment = (albumId: string, senderName: string, commentText: string) => {
+  // Add Comment or Reply to album
+  const handleAddComment = (
+    albumId: string,
+    senderName: string,
+    commentText: string,
+    replyToName?: string,
+    replyToId?: string
+  ) => {
     const newComment: CommentItem = {
       id: 'cmt-' + Date.now() + '-' + Math.random().toString(36).substring(2, 6),
       senderName,
       commentText,
       createdAt: new Date().toISOString(),
+      ...(replyToName ? { replyToName, replyToId } : {}),
     };
 
     let targetAlbum: GuestAlbum | undefined;

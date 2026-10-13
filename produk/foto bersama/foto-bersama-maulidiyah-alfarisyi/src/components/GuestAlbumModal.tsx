@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
-import { X, Heart, MessageSquare, Download, ChevronLeft, ChevronRight, User, Send, Sparkles, FolderArchive, Trash2, Calendar, Check, ShieldAlert } from 'lucide-react';
+import { X, Heart, MessageSquare, Download, ChevronLeft, ChevronRight, User, Send, Sparkles, FolderArchive, Trash2, Calendar, Check, ShieldAlert, Maximize2, Reply } from 'lucide-react';
 import { GuestAlbum, CommentItem } from '../types';
 import { VoiceNotePlayer } from './VoiceNotePlayer';
+import { FullscreenPhotoModal } from './FullscreenPhotoModal';
 
 interface GuestAlbumModalProps {
   album: GuestAlbum | null;
@@ -9,7 +10,7 @@ interface GuestAlbumModalProps {
   isAdminModerator?: boolean;
   onClose: () => void;
   onLikeToggle: (albumId: string) => void;
-  onAddComment: (albumId: string, senderName: string, commentText: string) => void;
+  onAddComment: (albumId: string, senderName: string, commentText: string, replyToName?: string, replyToId?: string) => void;
   onDeletePhoto?: (albumId: string, photoId: string) => void;
   onDeleteAlbum?: (albumId: string) => void;
 }
@@ -28,6 +29,8 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
   const [commentName, setCommentName] = useState('');
   const [commentText, setCommentText] = useState('');
   const [commentSuccess, setCommentSuccess] = useState(false);
+  const [isFullscreenPhotoOpen, setIsFullscreenPhotoOpen] = useState(false);
+  const [replyingTo, setReplyingTo] = useState<CommentItem | null>(null);
 
   if (!album) return null;
 
@@ -38,11 +41,13 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
   const isMine = album.deviceId === currentDeviceId && !album.isInitialSample;
   const canDelete = isMine || isAdminModerator;
 
-  const handlePrev = () => {
+  const handlePrev = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setCurrentPhotoIndex((prev) => (prev - 1 + photos.length) % photos.length);
   };
 
-  const handleNext = () => {
+  const handleNext = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     setCurrentPhotoIndex((prev) => (prev + 1) % photos.length);
   };
 
@@ -69,7 +74,8 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
     }
   };
 
-  const handleDeleteCurrentPhoto = () => {
+  const handleDeleteCurrentPhoto = (e?: React.MouseEvent) => {
+    e?.stopPropagation();
     if (!currentPhoto || !onDeletePhoto) return;
 
     const confirmMsg = isMine
@@ -103,8 +109,15 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
     e.preventDefault();
     if (!commentName.trim() || !commentText.trim()) return;
 
-    onAddComment(album.id, commentName.trim(), commentText.trim());
+    onAddComment(
+      album.id,
+      commentName.trim(),
+      commentText.trim(),
+      replyingTo?.senderName,
+      replyingTo?.id
+    );
     setCommentText('');
+    setReplyingTo(null);
     setCommentSuccess(true);
     setTimeout(() => setCommentSuccess(false), 2500);
   };
@@ -128,18 +141,28 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
 
         {/* Left Side: Photo Carousel & Thumbnails */}
         <div className="relative md:w-3/5 bg-[#101915] flex flex-col justify-between overflow-hidden min-h-[340px] md:min-h-[580px] p-4">
-          {/* Active Photo Container */}
-          <div className="relative flex-1 flex items-center justify-center overflow-hidden">
+          {/* Active Photo Container (Click to view Fullscreen) */}
+          <div
+            onClick={() => setIsFullscreenPhotoOpen(true)}
+            className="relative flex-1 flex items-center justify-center overflow-hidden cursor-zoom-in group"
+            title="Klik untuk melihat foto layar penuh"
+          >
             {currentPhoto ? (
               <img
                 key={currentPhoto.id || safeIndex}
                 src={currentPhoto.imageUrl}
                 alt={currentPhoto.caption || album.senderName}
-                className="max-w-full max-h-[55vh] object-contain rounded-xl shadow-2xl transition-all duration-300"
+                className="max-w-full max-h-[55vh] object-contain rounded-xl shadow-2xl transition-all duration-300 group-hover:scale-[1.02]"
               />
             ) : (
               <div className="text-gray-400 text-xs">Foto tidak tersedia</div>
             )}
+
+            {/* Fullscreen Expand Indicator */}
+            <div className="absolute bottom-3 right-3 z-20 px-2.5 py-1 rounded-full bg-black/75 hover:bg-black/90 backdrop-blur-md border border-[#E6CA92]/50 text-[#FAF9F5] text-[10px] font-sans font-bold flex items-center gap-1.5 shadow-md transition-all">
+              <Maximize2 className="w-3 h-3 text-[#E6CA92]" />
+              <span className="hidden sm:inline">Layar Penuh</span>
+            </div>
 
             {/* Top Right Action on Photo: Delete this single photo */}
             {canDelete && currentPhoto && (
@@ -308,12 +331,19 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
               </div>
 
               {/* Comments List */}
-              <div className="space-y-2.5 max-h-40 overflow-y-auto pr-1">
+              <div className="space-y-2.5 max-h-44 overflow-y-auto pr-1">
                 {album.comments && album.comments.length > 0 ? (
                   album.comments.map((c) => (
-                    <div key={c.id} className="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-1">
+                    <div key={c.id} className="p-3 rounded-xl bg-gray-50 border border-gray-100 space-y-1 transition-all hover:bg-gray-100/60">
                       <div className="flex items-center justify-between text-[11px]">
-                        <span className="font-bold text-[#0A261D]">{c.senderName}</span>
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-bold text-[#0A261D]">{c.senderName}</span>
+                          {c.replyToName && (
+                            <span className="text-[10px] bg-[#E6CA92]/30 text-[#0A261D] px-2 py-0.2 rounded-full font-semibold">
+                              membalas @{c.replyToName}
+                            </span>
+                          )}
+                        </div>
                         <span className="text-[10px] text-gray-400">
                           {new Date(c.createdAt).toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })}
                         </span>
@@ -321,6 +351,18 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                       <p className="text-xs text-gray-600 font-sans leading-relaxed">
                         {c.commentText}
                       </p>
+                      <div className="flex justify-end pt-0.5">
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setReplyingTo(c);
+                          }}
+                          className="text-[10px] text-[#C5A880] hover:text-[#0A261D] font-bold flex items-center gap-1 transition-colors cursor-pointer"
+                        >
+                          <Reply className="w-3 h-3" />
+                          <span>Balas</span>
+                        </button>
+                      </div>
                     </div>
                   ))
                 ) : (
@@ -330,8 +372,24 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                 )}
               </div>
 
-              {/* Add Comment Form */}
+              {/* Add Comment Form with Reply Indicator */}
               <form onSubmit={handleSubmitComment} className="space-y-2 pt-2 border-t border-gray-100 font-sans">
+                {replyingTo && (
+                  <div className="flex items-center justify-between px-3 py-1.5 rounded-xl bg-[#FAF9F5] border border-[#E6CA92]/50 text-xs animate-fade-in">
+                    <span className="text-[11px] font-bold text-[#0A261D] flex items-center gap-1.5">
+                      <Reply className="w-3 h-3 text-[#C5A880]" />
+                      <span>Membalas <span className="text-[#C5A880]">@{replyingTo.senderName}</span></span>
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setReplyingTo(null)}
+                      className="text-gray-400 hover:text-gray-700 p-0.5 rounded cursor-pointer"
+                      title="Batalkan Balasan"
+                    >
+                      <X className="w-3.5 h-3.5" />
+                    </button>
+                  </div>
+                )}
                 <input
                   type="text"
                   value={commentName}
@@ -346,7 +404,7 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                     type="text"
                     value={commentText}
                     onChange={(e) => setCommentText(e.target.value)}
-                    placeholder="Tulis ucapan atau komentar..."
+                    placeholder={replyingTo ? `Balas @${replyingTo.senderName}...` : "Tulis ucapan atau komentar..."}
                     maxLength={150}
                     className="flex-1 px-3 py-2 rounded-xl bg-[#FAF9F5] border border-gray-200 text-xs text-[#0A261D] placeholder-gray-400 focus:outline-none focus:border-[#C5A880]"
                     required
@@ -368,6 +426,16 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
           </div>
         </div>
       </div>
+
+      {/* Fullscreen Photo Lightbox Modal */}
+      <FullscreenPhotoModal
+        isOpen={isFullscreenPhotoOpen}
+        onClose={() => setIsFullscreenPhotoOpen(false)}
+        photos={photos}
+        initialIndex={safeIndex}
+        albumSenderName={album.senderName}
+        albumCaption={album.caption}
+      />
     </div>
   );
 };
