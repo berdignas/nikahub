@@ -96,10 +96,13 @@ async function uploadDirectSigV4(
 
   const putUrl = `https://${host}${canonicalUri}`;
 
+  // NOTE: In browser JavaScript (WHATWG Fetch standard), 'Host' is a forbidden header name
+  // and must NOT be explicitly passed in the headers dictionary.
+  // The browser/HTTP network stack automatically transmits the correct Host/authority header,
+  // which S3 SigV4 validates against canonicalHeaders.
   const response = await fetch(putUrl, {
     method: 'PUT',
     headers: {
-      'Host': host,
       'x-amz-date': amzDate,
       'x-amz-content-sha256': payloadHash,
       'Authorization': authHeader,
@@ -127,7 +130,9 @@ async function uploadViaBackendProxy(
 ): Promise<string> {
   const endpoints = [
     '/api/upload-r2',
-    'https://nikahub.my.id/api/upload-r2',
+    '/upload-r2',
+    'https://nikahhub.my.id/api/upload-r2',
+    'https://nikahhub.my.id/upload-r2',
     'http://localhost:3000/api/upload-r2',
     'http://localhost:5000/api/upload-r2',
   ];
@@ -190,7 +195,8 @@ export async function uploadBase64ToR2(
 
   // 1. Try Direct Web Crypto SigV4 PUT
   try {
-    const binaryString = atob(rawBase64);
+    const cleanB64 = rawBase64.replace(/\s/g, '');
+    const binaryString = atob(cleanB64);
     const len = binaryString.length;
     const bodyBytes = new Uint8Array(len);
     for (let i = 0; i < len; i++) {
