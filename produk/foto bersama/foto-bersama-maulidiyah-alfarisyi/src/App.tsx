@@ -35,10 +35,12 @@ export function App() {
   const [deviceId, setDeviceId] = useState<string>('');
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
 
-  // Moderator / Admin Mode (unlocked with 4-digit PIN)
+  // Moderator / Admin Mode (unlocked with 4-digit PIN per browser session)
   const [isAdminModerator, setIsAdminModerator] = useState<boolean>(() => {
     try {
-      return localStorage.getItem('wedding_is_admin_mode') === 'true';
+      // Clear legacy localStorage admin flag so browser does NOT stay permanently unlocked
+      localStorage.removeItem('wedding_is_admin_mode');
+      return sessionStorage.getItem('wedding_is_admin_mode') === 'true';
     } catch {
       return false;
     }
@@ -181,13 +183,15 @@ export function App() {
   const handleUnlockAdmin = () => {
     setIsAdminModerator(true);
     try {
-      localStorage.setItem('wedding_is_admin_mode', 'true');
+      sessionStorage.setItem('wedding_is_admin_mode', 'true');
+      localStorage.removeItem('wedding_is_admin_mode');
     } catch {}
   };
 
   const handleLockAdmin = () => {
     setIsAdminModerator(false);
     try {
+      sessionStorage.removeItem('wedding_is_admin_mode');
       localStorage.removeItem('wedding_is_admin_mode');
     } catch {}
   };

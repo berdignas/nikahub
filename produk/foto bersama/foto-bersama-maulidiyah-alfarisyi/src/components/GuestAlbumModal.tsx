@@ -38,7 +38,12 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
   const safeIndex = Math.min(currentPhotoIndex, Math.max(0, photos.length - 1));
   const currentPhoto = photos[safeIndex] || photos[0];
   const isLiked = album.likedByDevices?.includes(currentDeviceId);
-  const isMine = album.deviceId === currentDeviceId && !album.isInitialSample;
+  const isMine = Boolean(
+    currentDeviceId &&
+    album.deviceId &&
+    album.deviceId === currentDeviceId &&
+    !album.isInitialSample
+  );
   const canDelete = isMine || isAdminModerator;
 
   const handlePrev = (e?: React.MouseEvent) => {
@@ -169,10 +174,10 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
               <button
                 onClick={handleDeleteCurrentPhoto}
                 className="absolute top-3 right-3 z-20 px-3 py-1.5 rounded-full bg-red-600/90 hover:bg-red-700 text-white text-xs font-sans font-bold flex items-center gap-1.5 backdrop-blur-md shadow-lg transition-all active:scale-95 cursor-pointer"
-                title="Hapus foto ini saja"
+                title={isMine ? "Hapus foto milik Anda (mengembalikan kuota)" : "👑 [Mode Pengantin] Hapus foto tamu"}
               >
                 <Trash2 className="w-3.5 h-3.5" />
-                <span>Hapus Foto Ini</span>
+                <span>{isMine ? "Hapus Foto Saya" : "👑 Hapus Foto Tamu"}</span>
               </button>
             )}
 
@@ -316,7 +321,11 @@ export const GuestAlbumModal: React.FC<GuestAlbumModalProps> = ({
                   className="w-full py-2 px-3 rounded-xl border border-red-200 bg-red-50 hover:bg-red-100 text-red-700 text-xs font-sans font-bold flex items-center justify-center gap-1.5 transition-all cursor-pointer"
                 >
                   <Trash2 className="w-3.5 h-3.5" />
-                  <span>Hapus Seluruh Folder Ini ({photos.length} Foto)</span>
+                  <span>
+                    {isMine
+                      ? `Hapus Seluruh Folder Saya (${photos.length} Foto)`
+                      : `👑 [Mode Pengantin] Hapus Folder Tamu Ini (${photos.length} Foto)`}
+                  </span>
                 </button>
               </div>
             )}

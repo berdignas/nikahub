@@ -104,7 +104,12 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
   index = 0,
   totalCount = 1,
 }) => {
-  const isMine = album.deviceId === currentDeviceId && !album.isInitialSample;
+  const isMine = Boolean(
+    currentDeviceId &&
+    album.deviceId &&
+    album.deviceId === currentDeviceId &&
+    !album.isInitialSample
+  );
   const canDelete = isMine || isAdminModerator;
   const isLiked = album.likedByDevices?.includes(currentDeviceId);
   const photos = album.photos || [];
@@ -194,6 +199,10 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
               <span className="px-2 py-0.5 sm:px-3 sm:py-1 rounded-full bg-[#E6CA92] text-[#0A261D] text-[9px] sm:text-[10px] font-sans font-bold shadow-md">
                 ✨ Folder Anda
               </span>
+            ) : isAdminModerator ? (
+              <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-amber-500/20 text-amber-200 border border-amber-400/40 text-[9px] sm:text-[10px] font-sans font-bold">
+                👑 Tamu
+              </span>
             ) : mosaic.isFeatured ? (
               <span className="px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-full bg-black/50 backdrop-blur-md text-[9px] sm:text-[10px] font-sans text-[#E6CA92] border border-[#E6CA92]/30">
                 ⭐ Sorotan
@@ -209,7 +218,7 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
               <button
                 onClick={handleDeleteClick}
                 className="w-6 h-6 sm:w-7 sm:h-7 rounded-full bg-red-600/90 hover:bg-red-700 text-white flex items-center justify-center backdrop-blur-md transition-all shadow-md active:scale-90 cursor-pointer"
-                title={isAdminModerator && !isMine ? "👑 Hapus folder ini (Akses Pengantin)" : "Hapus folder Anda"}
+                title={isAdminModerator && !isMine ? "👑 [Akses Pengantin] Hapus folder tamu ini" : "Hapus folder milik Anda & kembalikan kuota"}
               >
                 <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
               </button>
@@ -278,17 +287,6 @@ export const PhotoCard: React.FC<PhotoCardProps> = ({
               <Clock className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
               <span>{formattedTime}</span>
             </div>
-          )}
-
-          {/* Bottom Delete Button */}
-          {canDelete && (
-            <button
-              onClick={handleDeleteClick}
-              className="p-1 rounded-full text-red-500 hover:text-red-700 hover:bg-red-50 transition-colors cursor-pointer"
-              title={isAdminModerator && !isMine ? "👑 Hapus folder ini (Akses Pengantin)" : "Hapus folder Anda & kembalikan kuota"}
-            >
-              <Trash2 className="w-3 h-3 sm:w-3.5 sm:h-3.5" />
-            </button>
           )}
         </div>
       </div>
